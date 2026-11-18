@@ -109,11 +109,12 @@
     },
     // LCO ID for the LCO → Broadband / Cable TV → LCO ID + OTP flow (same format as the LCO code)
     lcoid: {
-      label: "LCO ID", icon: I.key, placeholder: "Enter LCO ID (e.g. LCO1234)", maxlength: 8, inputmode: "text",
-      clean: (v) => v.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 8),
-      valid: (v) => /^[A-Z]{3}\d{3,5}$/.test(v),
-      hint: "3 letters followed by 3–5 digits",
-      err: "Enter a valid LCO ID, e.g. LCO1234",
+      // Any 7 characters, letters and/or digits (e.g. LCO1234, 1234567, AB12CD3)
+      label: "LCO ID", icon: I.key, placeholder: "Enter 7-character LCO ID", maxlength: 7, inputmode: "text",
+      clean: (v) => v.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 7),
+      valid: (v) => /^[A-Z0-9]{7}$/.test(v),
+      hint: "7 characters: letters and/or numbers",
+      err: "LCO ID must be exactly 7 letters/numbers",
       short: "LCO ID",
     },
   };

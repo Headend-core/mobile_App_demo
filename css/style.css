@@ -614,7 +614,7 @@ svg { display: block; }
 
 /* Hamburger (top-right) */
 .menu-btn {
-  margin-left: auto; flex: none;
+  margin-right: 4px; flex: none;
   width: 42px; height: 42px; border-radius: 50%;
   display: grid; place-items: center; position: relative;
   background: linear-gradient(180deg, #22143a, #130b20);

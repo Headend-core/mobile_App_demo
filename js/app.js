@@ -2259,11 +2259,12 @@
         <section class="screen-fixed tv" data-screen="home">
           <div class="tv-scroll" id="tvScroll">
             <header class="tv-head">
+              <!-- ☰ sits at the top-left, before the logo (the drawer slides in from the left) -->
+              <button class="menu-btn" data-act="menu" aria-label="Open menu" aria-expanded="false">${I.menu}</button>
               <div class="brand">
                 <img src="${MARK}" alt="VIBE" />
                 <small>&amp; OTT Partners</small>
               </div>
-              <button class="menu-btn" data-act="menu" aria-label="Open menu" aria-expanded="false">${I.menu}</button>
             </header>
             <div class="searchbar" id="searchbar" ${f.q ? "" : "hidden"}>
               ${I.search}

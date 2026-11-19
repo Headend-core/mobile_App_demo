@@ -19,6 +19,7 @@
     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" ${extra}>${p}</svg>`;
   const I = {
     back: s('<path d="M15 18l-6-6 6-6"/>'),
+    camera: s('<path d="M4 8.5h3l1.6-2.2h6.8L17 8.5h3v10.5H4z"/><circle cx="12" cy="13.5" r="3.4"/>'),
     user: s('<circle cx="12" cy="8" r="3.6"/><path d="M5 20c.8-3.6 3.6-5.5 7-5.5s6.2 1.9 7 5.5"/>'),
     userFill: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="7.5" r="4"/><path d="M4 20.5c.6-4.2 3.9-6.5 8-6.5s7.4 2.3 8 6.5z"/></svg>',
     store: s('<path d="M4 9.5V19a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9.5"/><path d="M3 9.5l1.6-4.6A1.4 1.4 0 0 1 5.9 4h12.2a1.4 1.4 0 0 1 1.3.9L21 9.5"/><path d="M3 9.5h18"/><path d="M9 20v-5h6v5"/><path d="M9 12.5h6"/>'),
@@ -403,10 +404,56 @@
         { at: ago(70, 10), kind: "closed", id: "TKT4311978", cat: "Network Issue" },
         { at: ago(71, 16), kind: "created", id: "TKT4311978", cat: "Network Issue" },
       ],
-      profile: { email: "demo.customer@example.com", gstin: "GSTIN Not Associated", mac: "No MAC Id associated",
-        address: "12, Demo Street, Salt Lake Sector V, Kolkata 700091, West Bengal, India", aadhaar: "XXXX XXXX 1234", ekyc: "Not Verified" },
+      profile: { email: "demo.customer@example.com", gstin: "GSTIN Not Associated", 
+        address: "12, Demo Street, Salt Lake Sector V, Kolkata 700091, West Bengal, India", ekyc: "Not Verified" },
     };
   })();
+
+  // Broadband self-care (Dashboard → My Device / Udm, Usage → Session): devices and data sessions, all fictional
+  // Udm device: [host, wifi band ("2G" | "5G") or "LAN", active]; IP / MAC / traffic are generated (fictional)
+  const mkDev = (o, hosts) => {
+    o.clients = hosts.map(([host, band, on], j) => ({
+      host, lan: band === "LAN", ssid: band === "LAN" ? "—" : `${o.ssid} ${band}`, on, blocked: false,
+      ip: on ? `192.168.1.${2 + j}` : "—", mac: `0E:5A:C4:${p2(10 + j * 7)}:${p2(21 + j * 3)}:${p2(40 + j)}`,
+      sent: on ? 180 + ((j * 397) % 1100) : 0, recv: on ? 60 + ((j * 211) % 250) : 0,
+    }));
+    o.wifi = [{ name: "SSID1", ssid: `${o.ssid} 2G`, on: true }, { name: "SSID5", ssid: `${o.ssid} 5G`, on: true }, { name: "SSID2", ssid: `${o.ssid} Guest`, on: false }];
+    return o;
+  };
+  const CTV_DEV = [
+    mkDev({ name: "VBF-5515", serial: "VBFT2451A06C", ip: "100.64.126.178", mac: "02:5A:C4:00:00:43", model: "VBF-5515", brand: "VIBE Fiber",
+      ssid: "VIBE Home", tx: "2.20 dBm", rx: "-19.40 dBm", on: Date.now() - 111 * 6e4, synced: Date.now() },
+      [["Living-Room-TV", "5G", true], ["Android-Phone", "5G", true], ["Work-Laptop", "2G", false], ["Tablet-5G", "5G", false], ["Smart-Speaker", "2G", false], ["Set-top-Box", "LAN", true]]),
+    mkDev({ name: "VBF-3300", serial: "VBFT2318B11D", ip: "100.64.98.24", mac: "02:5A:C4:00:01:9E", model: "VBF-3300", brand: "VIBE Fiber",
+      ssid: "VIBE Office", tx: "1.85 dBm", rx: "-21.10 dBm", on: Date.now() - 3 * 864e5 - 290 * 6e4, synced: Date.now() },
+      [["Office-PC", "LAN", true], ["Printer", "2G", true]]),
+  ];
+  const ctvDev = () => CTV_DEV[state.ctvDev || 0];
+  // Data sessions of one month, newest day first: [{ day, list: [{ start, end, mins, up, dn, nas }] }] (sizes in MB, fixed per date)
+  function ctvSessions(y, m) {
+    const now = new Date();
+    const last = y === now.getFullYear() && m === now.getMonth() ? now.getDate() : new Date(y, m + 1, 0).getDate();
+    const out = [];
+    for (let d = last; d >= 1; d--) {
+      const seed = d * 7 + m * 13 + y;
+      const list = [];
+      for (let j = 0; j < (seed % 3 === 0 ? 2 : 1); j++) {
+        const s = seed + j * 11, zero = s % 5 === 0;
+        const mins = zero ? 0 : (s * 53) % 1380 + 12;
+        const start = new Date(y, m, d, (s * 7) % 20, (s * 13) % 60, (s * 17) % 60);
+        const dn = zero ? 0 : ((s * 379) % 2400) + 18.5 + (s % 100) / 100;
+        list.push({ start, end: new Date(start.getTime() + mins * 6e4), mins, dn, up: dn * (0.08 + (s % 7) / 50), nas: `eth 0/1/0/${1000 + (s * 31) % 900}:${100 + (s % 50)}` });
+      }
+      out.push({ day: new Date(y, m, d), list });
+    }
+    return out;
+  }
+  const ctvMonthTotals = (y, m) => ctvSessions(y, m).reduce((a, g) => { g.list.forEach((x) => { a.up += x.up; a.dn += x.dn; }); return a; }, { up: 0, dn: 0 });
+  const mbFmt = (mb) => (mb >= 1024 ? `${(mb / 1024).toFixed(2)} GB` : `${mb.toFixed(2)} MB`);
+  const durFmt = (mins) => `${Math.floor(mins / 1440)}d ${Math.floor((mins % 1440) / 60)}h :${p2(mins % 60)}m`;
+  const dFmt = (d) => `${p2(d.getDate())} ${MON[d.getMonth()]} ${d.getFullYear()}`;                       // 06 Nov 2026
+  const hmFmt = (d) => `${p2(d.getHours() % 12 || 12)}:${p2(d.getMinutes())} ${d.getHours() < 12 ? "AM" : "PM"}`;
+  const tFmt = (d) => `${dFmt(d)} ${d.getHours() % 12 || 12}:${p2(d.getMinutes())}:${p2(d.getSeconds())} ${d.getHours() < 12 ? "AM" : "PM"}`;
 
   // Broadband LCO ☰ → Profile ("Customer details"): editable contact details, filled on first open
   const BB_ACCOUNT = {};
@@ -2950,6 +2997,7 @@
       const hi = h < 12 ? "Good Morning" : h < 17 ? "Good Afternoon" : "Good Evening";
       const from = new Date(Date.now() - 130 * 864e5), to = new Date(from.getTime() + 1828 * 864e5);
       const left = Math.round((to - Date.now()) / 864e5);
+      const now = new Date(), use = ctvMonthTotals(now.getFullYear(), now.getMonth()), dv = ctvDev();
       const QA = [["faq", I.help, "FAQ"], ["broadband", I.wifi, "Broadband"], ["usage", I.pie, "My Usage"], ["vas", I.play, "Vas"], ["support", I.headset, "Support"], ["plan", I.news, "My Plan"]];
       const root = el(`
         <section class="screen-fixed tv ctv" data-screen="ctv-dashboard">
@@ -2963,12 +3011,18 @@
             <div class="lco-card ctv-card">
               <div class="ctv-row"><b>My Account</b><span class="ctv-online">Online<i></i></span></div>
               <div class="ctv-row">${I.pin}<span>Status</span><b class="ok">Active</b></div>
-              <div class="ctv-row">${I.news}<span>Open Service Request</span><b>0</b></div>
+              <div class="ctv-row">${I.news}<span>Open Service Request</span><b>${CTV.tickets.filter((t) => t.status !== "Closed").length}</b></div>
               <button class="ctv-support" data-qa="Support">${I.headset}Support</button>
               <hr />
               <div class="ctv-row">${I.pie}<span>Current Usage</span></div>
-              <div class="ctv-usage"><span>${I.up}14.99 GB</span><span>${I.down}135.16 GB</span><span>${I.swapv}150.15 GB</span></div>
+              <div class="ctv-usage"><span>${I.up}${mbFmt(use.up)}</span><span>${I.down}${mbFmt(use.dn)}</span><span>${I.swapv}${mbFmt(use.up + use.dn)}</span></div>
               <button class="ctv-more" data-act="more">More Details ${ARROW}</button>
+            </div>
+            <div class="lco-card ctv-card ctv-devc">
+              <div class="ctv-devh">${I.wifi}<b>My Device</b><select class="ctv-sel" id="devSel" aria-label="Device">${CTV_DEV.map((x, j) => `<option value="${j}"${x === dv ? " selected" : ""}>${x.name}</option>`).join("")}</select></div>
+              <div class="ctv-kv"><span>Serial Number</span><b id="devSn">${dv.serial}</b></div>
+              <div class="ctv-kv"><span>Connected Devices :</span><b id="devCn">${dv.clients.length}</b></div>
+              <div class="ctv-devf"><button class="ctv-ref" data-act="dev-ref" aria-label="Refresh device">${I.refresh}</button><button class="link" data-act="dev-more">More Details</button></div>
             </div>
             <div class="lco-card ctv-card">
               <b class="ctv-t">My Plan</b>
@@ -2978,6 +3032,7 @@
                 <span>${I.pie}<small>Used / Allocated</small><b>150 GB / Unlimited</b></span>
                 <span>${I.calendar}<small>Validity</small><b>${dmy(from)} – ${dmy(to)}</b></span>
               </div>
+              <button class="ctv-more ctv-renew" data-act="renew">Quick Renew ${ARROW}</button>
             </div>
             <div class="lco-card ctv-card">
               <b class="ctv-t">Quick Action</b>
@@ -2989,15 +3044,18 @@
         </section>`);
       $$("[data-toast]", root).forEach((b) => b.addEventListener("click", () => toast(b.dataset.toast)));
       bindCtvMenu(root);
-      $('[data-act="more"]', root).addEventListener("click", () => openSheet(`
-        <h3>Usage details</h3>
-        <div class="lco-inv">
-          <span><small>Upload</small><b>14.99 GB</b></span>
-          <span><small>Download</small><b>135.16 GB</b></span>
-          <span class="tot"><small>Total this cycle</small><b>150.15 GB</b></span>
-        </div>
-        <span class="demo-tag">Demo usage</span>
-        <button class="btn ghost" id="usX">Close</button>`, (sh) => $("#usX", sh).addEventListener("click", closeSheet)));
+      $('[data-act="more"]', root).addEventListener("click", () => go("ctvSession"));
+      $('[data-act="renew"]', root).addEventListener("click", () => ctvGo("Broadband"));
+      $("#devSel", root).addEventListener("change", (e) => {
+        state.ctvDev = +e.target.value;
+        const d = ctvDev();
+        $("#devSn", root).textContent = d.serial; $("#devCn", root).textContent = d.clients.length;
+      });
+      $('[data-act="dev-ref"]', root).addEventListener("click", async (e) => {
+        const b = e.currentTarget; b.classList.add("spin"); await wait(900); b.classList.remove("spin");
+        ctvDev().synced = Date.now(); toast("Device details refreshed (demo)", "success");
+      });
+      $('[data-act="dev-more"]', root).addEventListener("click", () => go("ctvUdm"));
       bindCtvNav(root, "dash");
       return root;
     },
@@ -3082,10 +3140,57 @@
     },
 
     /* ---- Watch OTT self-care: Support (bottom bar, or pushed from the menu) ---- */
-    ctvSupport({ sub } = {}) {
-      const root = ctvShell("ctv-support", "Support", { sub, nav: "support",
-        extra: `<button class="bb-fab ctv-fab" data-act="new-ticket" aria-label="Create ticket">${I.plus}</button>` });
+    ctvSupport({ sub, raise } = {}) {
+      const root = ctvShell("ctv-support", "Support", { sub, nav: "support" });
       const box = $("#cx", root);
+      // "Raise a Ticket" → New Ticket / Service Request form (old app): Type, reasons for Problem, Customer Information
+      const TYPES = ["Problem", "Feedback", "Question", "Request"];
+      const REASONS = ["Slow Browsing", "Mail Server - Outgoing", "Mail Server - Incoming", "Ping issue", "Router not working", "High Latency - Particular Site",
+        "High Latency - All Sites", "Lco Support", "VPN - Not Able to Connect", "VPN - Frequently Disconnected", "Speed Issue - Upload", "Speed Issue - Peering",
+        "Speed Issue - Normal Download", "Speed Issue - Streaming", "P2P Delivery", "LCO Personal Job"];
+      const u = tvUser();
+      // null = ticket list; else { type, reason, more, info, desc }. raise (Self Help → Create Ticket) opens the form directly
+      let form = raise === undefined ? null : { type: "Problem", reason: raise, more: !!raise && !REASONS.slice(0, 10).includes(raise), info: false, desc: "" };
+      const formHTML = () => {
+        const f = form, prob = f.type === "Problem";
+        const shown = f.more ? REASONS : REASONS.slice(0, 10);
+        return `
+          <div class="lco-card ctv-nt">
+            <div class="ctv-nt-h"><b>New Ticket/ Service Request</b><button class="lco-ic" data-act="nt-x" aria-label="Close form">${I.close}</button></div>
+            <label class="ctv-nt-l" for="ntType">Type :</label>
+            <select class="ctv-sel ctv-nt-sel" id="ntType">${TYPES.map((t) => `<option${t === f.type ? " selected" : ""}>${t}</option>`).join("")}</select>
+            ${prob ? `
+              <p class="ctv-nt-l">Select Reason :</p>
+              <div class="ctv-nt-chips" id="ntChips">${shown.map((r) => `<button class="${r === f.reason ? "on" : ""}" data-rs="${esc(r)}">${esc(r)}</button>`).join("")}</div>
+              <button class="link ctv-nt-more" data-act="nt-more">${f.more ? "Show Less" : "Show More"}</button>
+              ${f.more ? `<select class="ctv-sel ctv-nt-sel" id="ntReason" aria-label="Reason"><option value="">Select reason</option>${REASONS.map((r) => `<option${r === f.reason ? " selected" : ""}>${r}</option>`).join("")}</select>` : ""}` : ""}
+            <button class="ctv-nt-acc${f.info ? " open" : ""}" data-act="nt-info" aria-expanded="${f.info}"><span>Customer Information</span>${I.chev}</button>
+            ${f.info ? `
+              <div class="ctv-nt-info">
+                <div class="ctv-nt-in">${I.userFill}<span>${esc(u.id)}</span></div>
+                <div class="ctv-nt-in">${I.mail}<span>${esc(CTV.profile.email)}</span></div>
+                <div class="ctv-nt-in">${I.phone}<span>${esc(CTV.profile.mobile || u.mobile)}</span></div>
+                <label class="ctv-nt-in" id="ntDW">${I.news}<input id="ntDesc" maxlength="120" placeholder="Description" value="${esc(f.desc)}" aria-label="Description" /></label>
+              </div>` : ""}
+            <p class="hint err" id="ntErr"></p>
+            <button class="ctv-more ctv-nt-go" data-act="nt-create">${I.lock}Create</button>
+          </div>
+          <span class="demo-tag">Demo • no real ticket is raised</span>`;
+      };
+      const listHTML = () => `
+        <button class="ctv-raise" data-act="raise">${I.plus}Raise a Ticket</button>
+        ${CTV.tickets.map((t, j) => `
+          <div class="lco-card ctv-tk">
+            <div class="ctv-tk-h"><b>${esc(t.id)}</b><span class="ctv-st ${t.status === "Closed" ? "closed" : "open"}">${esc(t.status)}</span></div>
+            <dl>
+              <dt>Ticket Title</dt><dd>${esc(t.title)}</dd>
+              <dt>Ticket Reason</dt><dd>${esc(t.reason)}</dd>
+              <dt>Last Modified Date</dt><dd>${stamp(t.at)}</dd>
+            </dl>
+            <div class="ctv-tk-a"><button class="ctv-remark" data-rem="${j}">Add Remark</button>
+              ${t.status !== "Closed" ? `<button class="ctv-remark" data-done="${j}">Complete</button>` : ""}
+              <button class="lco-ic" data-view="${j}" aria-label="View ${esc(t.id)}">${I.eye}</button></div>
+          </div>`).join("")}`;
       const draw = () => {
         box.innerHTML = `
           <div class="lco-card ctv-contact">
@@ -3093,18 +3198,17 @@
             <div>${I.mail}<span>support@vibe-demo.example</span></div>
             <div>${I.phone}<span>1800 000 0000 (demo)</span></div>
           </div>
-          ${CTV.tickets.map((t, j) => `
-            <div class="lco-card ctv-tk">
-              <div class="ctv-tk-h"><b>${esc(t.id)}</b><span class="ctv-st ${t.status === "Closed" ? "closed" : "open"}">${esc(t.status)}</span></div>
-              <dl>
-                <dt>Ticket Title</dt><dd>${esc(t.title)}</dd>
-                <dt>Ticket Reason</dt><dd>${esc(t.reason)}</dd>
-                <dt>Last Modified Date</dt><dd>${stamp(t.at)}</dd>
-              </dl>
-              <div class="ctv-tk-a"><button class="ctv-remark" data-rem="${j}">Add Remark</button>
-                <button class="lco-ic" data-view="${j}" aria-label="View ${esc(t.id)}">${I.eye}</button></div>
-            </div>`).join("")}`;
+          ${form ? formHTML() : listHTML()}`;
+        if (form) return bindForm();
+        $('[data-act="raise"]', box).addEventListener("click", () => { form = { type: "Problem", reason: "", more: false, info: false, desc: "" }; draw(); });
         $$("[data-view]", box).forEach((b) => b.addEventListener("click", () => openTicket(CTV.tickets[+b.dataset.view])));
+        $$("[data-done]", box).forEach((b) => b.addEventListener("click", () => {
+          const t = CTV.tickets[+b.dataset.done];
+          t.status = "Closed"; t.at = new Date();
+          CTV.notes.unshift({ at: t.at, kind: "closed", id: t.id, cat: t.reason });
+          toast(`${t.id} marked complete (demo)`, "success");
+          draw();
+        }));
         $$("[data-rem]", box).forEach((b) => b.addEventListener("click", () => {
           const t = CTV.tickets[+b.dataset.rem];
           editSheet(`Add Remark · ${t.id}`, "", { max: 120, check: (v) => v.length >= 3, err: "Remark must be at least 3 characters" }, (v) => {
@@ -3115,8 +3219,33 @@
           });
         }));
       };
+      const keepDesc = () => { const d = $("#ntDesc", box); if (d) form.desc = d.value; };
+      const bindForm = () => {
+        const on = (a, fn) => $(`[data-act="${a}"]`, box).addEventListener("click", fn);
+        on("nt-x", () => { form = null; draw(); });
+        on("nt-info", () => { keepDesc(); form.info = !form.info; draw(); });
+        $("#ntType", box).addEventListener("change", (e) => { keepDesc(); form.type = e.target.value; form.reason = ""; draw(); });
+        if (form.type === "Problem") {
+          on("nt-more", () => { keepDesc(); form.more = !form.more; draw(); });
+          $$("[data-rs]", box).forEach((b) => b.addEventListener("click", () => { keepDesc(); form.reason = b.dataset.rs; draw(); }));
+          const rs = $("#ntReason", box);
+          if (rs) rs.addEventListener("change", () => { keepDesc(); form.reason = rs.value; draw(); });
+        }
+        on("nt-create", async () => {
+          keepDesc();
+          const prob = form.type === "Problem", d = form.desc.trim();
+          const err = prob && !form.reason ? "Please select a reason" : !prob && d.length < 3 ? "Please open Customer Information and add a description" : "";
+          if (err) { $("#ntErr", box).textContent = err; shake($(".ctv-nt", box)); return; }
+          showLoader("Creating ticket…"); await wait(1000); hideLoader();
+          const id = "TKT" + (4400000 + Math.floor(Math.random() * 99999)), now = new Date();
+          const title = prob ? form.reason : d;
+          CTV.tickets.unshift({ id, title, reason: prob ? "Network Issue" : form.type, at: now, status: "Open", remarks: prob && d ? [d] : [] });
+          CTV.notes.unshift({ at: now, kind: "created", id, cat: prob ? form.reason : form.type });
+          form = null; draw();
+          toast(`Ticket ${id} created (demo)`, "success");
+        });
+      };
       draw();
-      $('[data-act="new-ticket"]', root).addEventListener("click", () => openNewTicket(draw));
       ctvBind(root, "support", sub);
       return root;
     },
@@ -3137,16 +3266,21 @@
       };
       const views = {
         info: () => `
-          <p class="ctv-cap">Customer Information</p>
-          <div class="ctv-pcard"><span class="tvpf-av">${esc(u.name[0])}</span><span><b>${esc(u.name)}</b><small class="ctv-online"><i></i>Online</small></span></div>
+          <div class="lco-card ctv-ci">
+            <b class="ctv-ci-t">Customer Information</b>
+            <div class="ctv-ci-box">
+              <span class="ctv-ci-av">${P.photo ? `<img src="${P.photo}" alt="Profile photo" />` : `<i>${esc(u.name[0])}</i>`}
+                <label class="ctv-ci-cam" aria-label="Change profile photo">${I.camera}<input type="file" id="ciPhoto" accept="image/*" /></label></span>
+              <span><b>${esc(u.name)}</b><small class="ctv-online"><i></i>Online</small></span>
+            </div>
+          </div>
           <div class="lco-card ctv-prl">
             ${row(I.user, "Name", u.name)}
             ${row(I.mail, "Email", P.email, "email")}
             ${row(I.phone, "Mobile", P.mobile, "mobile")}
             ${row(I.hash, "GSTIN", P.gstin, "gstin")}
-            ${row(I.router, "MAC Address", P.mac)}
+            ${row(I.router, "MAC Address", ctvDev().mac)}
             ${row(I.home, "Address", P.address)}
-            ${row(I.idcard, "Aadhaar Number", P.aadhaar)}
             ${row(I.scan, "eKYC Status", P.ekyc)}
             <div class="ctv-pr">${I.finger}<span><b>Biometric Authorization</b></span>
               <button class="ctv-sw${P.bio ? " on" : ""}" id="bio" role="switch" aria-checked="${!!P.bio}" aria-label="Biometric Authorization"><i></i></button></div>
@@ -3163,6 +3297,7 @@
               <button class="lco-ic" data-doc="${j}" aria-label="View ${esc(d.type)}">${I.eye}</button></div>`).join("") : ctvEmpty("No documents uploaded")}`,
         pwd: () => `
           <div class="lco-card lco-form ctv-pwd">
+            <b class="ctv-pwd-t">Change Selfcare Password</b>
             <label class="lco-fl" id="pw1W"><small>New Password</small><input id="pw1" type="password" maxlength="20" placeholder="At least 8 characters" autocomplete="new-password" /></label>
             <label class="lco-fl" id="pw2W"><small>Confirm Password</small><input id="pw2" type="password" maxlength="20" placeholder="Re-enter password" autocomplete="new-password" /></label>
             <p class="hint" id="pwH">Use 8+ characters with letters and numbers</p>
@@ -3181,6 +3316,15 @@
               draw("info");
             });
           }));
+          // Camera: pick a photo from the phone; it stays in this page only (demo, nothing is uploaded)
+          $("#ciPhoto", box).addEventListener("change", (e) => {
+            const f = e.target.files && e.target.files[0];
+            if (!f) return;
+            if (!/^image\//.test(f.type)) { toast("Please choose an image", "error"); return; }
+            const r = new FileReader();
+            r.onload = () => { P.photo = r.result; draw("info"); toast("Profile photo updated (demo)", "success"); };
+            r.readAsDataURL(f);
+          });
           $("#bio", box).addEventListener("click", (e) => {
             P.bio = !P.bio;
             e.currentTarget.classList.toggle("on", P.bio);
@@ -3282,7 +3426,8 @@
         </div>`).join("") });
       $$("[data-fix]", root).forEach((b) => b.addEventListener("click", async () => {
         const k = b.dataset.fix;
-        if (k === "ticket") openNewTicket(null, b.dataset.cat.startsWith("Slow") ? "Slow Speed" : b.dataset.cat.startsWith("Wi-Fi") ? "CPE Not Working - Wi-Fi Router" : "Network Issue");
+        // Create Ticket → Support with the New Ticket / Service Request form open (reason pre-selected where one fits)
+        if (k === "ticket") go("ctvSupport", { sub: true, raise: b.dataset.cat.startsWith("Slow") ? "Slow Browsing" : b.dataset.cat.startsWith("Wi-Fi") ? "Router not working" : "" });
         else if (k === "renew") go("ctvRecharge", { sub: true });
         else if (k === "usage") go("ctvSession");
         else if (k === "cpe") editSheet("New CPE Password", "", { type: "password", max: 20, check: (v) => v.length >= 8, err: "Password must be at least 8 characters" }, () => toast("CPE password changed (demo)", "success"));
@@ -3371,46 +3516,251 @@
       return root;
     },
 
-    /* ---- Watch OTT self-care: My Usage → Session ---- */
+    /* ---- Self-care: Dashboard Usage "More Details" / My Usage → Session (Last Week chart, month donut, month session table) ---- */
     ctvSession() {
       const root = ctvShell("ctv-session", "Session", { sub: true, tabs: [["week", "Last Week Usage"], ["total", "Total Data Usage"], ["table", "Table View"]], tab: "week" });
       const box = $("#cx", root);
+      const now = new Date();
+      let y = now.getFullYear(), m = now.getMonth(), cur = "week";
       const days = CTV.week.map((v, j) => ({ d: new Date(Date.now() - (6 - j) * 864e5), dn: v[0], up: v[1] }));
       const sum = (k) => days.reduce((a, x) => a + x[k], 0);
       const gb = (n) => `${n.toFixed(2)} GB`;
       const totals = (up, dn) => `
-        <div class="ctv-tot"><span><b>${gb(up)}</b><small>Total Upload</small></span><span><b>${gb(dn)}</b><small>Total Download</small></span>
-          <span class="w"><b>${gb(up + dn)}</b><small>Total Data Usage</small></span></div>`;
+        <div class="ctv-tot"><span><b>${mbFmt(up)}</b><small>Total Upload</small></span><span><b>${mbFmt(dn)}</b><small>Total Download</small></span>
+          <span class="w"><b>${mbFmt(up + dn)}</b><small>Total Data Usage</small></span></div>`;
       const chart = () => {
         const W = 320, H = 190, L = 30, B = 24, max = 6, cw = (W - L - 6) / days.length;
-        const y = (v) => H - B - (v / max) * (H - B - 8);
+        const yy = (v) => H - B - (v / max) * (H - B - 8);
         return `
           <figure class="lco-card ctv-chart">
             <figcaption>${MON[days[6].d.getMonth()]} '${days[6].d.getFullYear()}</figcaption>
             <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Daily download and upload for the last 7 days, in GB">
-              ${[0, 2, 4, 6].map((v) => `<line x1="${L}" x2="${W - 4}" y1="${y(v)}" y2="${y(v)}" class="gl"/><text x="${L - 6}" y="${y(v) + 3}" class="ax" text-anchor="end">${v}</text>`).join("")}
+              ${[0, 2, 4, 6].map((v) => `<line x1="${L}" x2="${W - 4}" y1="${yy(v)}" y2="${yy(v)}" class="gl"/><text x="${L - 6}" y="${yy(v) + 3}" class="ax" text-anchor="end">${v}</text>`).join("")}
               ${days.map((x, j) => {
                 const cx = L + j * cw + cw / 2;
-                return `<rect x="${cx - 11}" y="${y(x.dn)}" width="10" height="${y(0) - y(x.dn)}" rx="2" class="dn"><title>${dmy(x.d)} download ${gb(x.dn)}</title></rect>
-                  <rect x="${cx + 1}" y="${y(x.up)}" width="10" height="${y(0) - y(x.up)}" rx="2" class="up"><title>${dmy(x.d)} upload ${gb(x.up)}</title></rect>
+                return `<rect x="${cx - 11}" y="${yy(x.dn)}" width="10" height="${yy(0) - yy(x.dn)}" rx="2" class="dn"><title>${dmy(x.d)} download ${gb(x.dn)}</title></rect>
+                  <rect x="${cx + 1}" y="${yy(x.up)}" width="10" height="${yy(0) - yy(x.up)}" rx="2" class="up"><title>${dmy(x.d)} upload ${gb(x.up)}</title></rect>
                   <text x="${cx}" y="${H - 8}" class="ax" text-anchor="middle">${p2(x.d.getDate())}</text>`;
               }).join("")}
             </svg>
             <div class="ctv-leg"><span><i class="dn"></i>Download</span><span><i class="up"></i>Upload</span><span class="u">Data in GB · Date</span></div>
           </figure>`;
       };
-      const views = {
-        week: () => chart() + totals(sum("up"), sum("dn")),
-        total: () => `<p class="ctv-cap">Current billing cycle</p>${totals(14.99, 135.16)}`,
-        table: () => `
-          <div class="lco-card ctv-tbl"><table>
-            <thead><tr><th>Date</th><th>Download</th><th>Upload</th><th>Total</th></tr></thead>
-            <tbody>${days.slice().reverse().map((x) => `<tr><td>${dmy(x.d)}</td><td>${gb(x.dn)}</td><td>${gb(x.up)}</td><td>${gb(x.dn + x.up)}</td></tr>`).join("")}</tbody>
-          </table></div>`,
+      // Month picker (Nov - 2026): a transparent native month input over the button
+      const picker = () => `
+        <div class="ctv-month-row"><label class="ctv-month">${I.calendar}<span>${MON[m]} - ${y}</span>
+          <input type="month" id="sesM" value="${y}-${p2(m + 1)}" max="${now.getFullYear()}-${p2(now.getMonth() + 1)}" aria-label="Choose month" /></label></div>`;
+      const donut = (up, dn) => {
+        const C = 2 * Math.PI * 70, f = up + dn ? up / (up + dn) : 0;
+        return `
+          <figure class="lco-card ctv-donut">
+            <svg viewBox="0 0 200 200" role="img" aria-label="Upload ${mbFmt(up)}, download ${mbFmt(dn)}">
+              <circle cx="100" cy="100" r="70" class="dn" /><circle cx="100" cy="100" r="70" class="up" stroke-dasharray="${(f * C).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 100 100)" />
+              <text x="100" y="96" text-anchor="middle" class="dv">${mbFmt(up + dn)}</text><text x="100" y="114" text-anchor="middle" class="dl">${MON[m]} ${y}</text>
+            </svg>
+            <div class="ctv-leg"><span><i class="up"></i>Total Upload Data</span><span><i class="dn"></i>Total Download Data</span></div>
+          </figure>`;
       };
-      const draw = (k) => { box.innerHTML = views[k](); };
+      const table = () => {
+        const groups = ctvSessions(y, m);
+        let first = true;
+        return groups.map((g) => `<p class="ses-day">${dFmt(g.day)}</p>` + g.list.map((x) => {
+          const open = first; first = false;
+          return `
+            <div class="lco-card ses${open ? " open" : ""}">
+              <button class="ses-h" aria-expanded="${open}">${I.swapv}<span><b>${mbFmt(x.up + x.dn)}</b><small>${durFmt(x.mins)}</small></span>${I.chev}</button>
+              <div class="ses-b">
+                <span><small>Session Start</small>${tFmt(x.start)}</span><span><small>Session end</small>${x.mins ? tFmt(x.end) : "—"}</span>
+                <span class="io">${I.up}${mbFmt(x.up)}</span><span class="io">${I.down}${mbFmt(x.dn)}</span>
+                <span class="w"><small>Nas Port Id</small>${x.nas}</span>
+              </div>
+            </div>`;
+        }).join("")).join("") || ctvEmpty("No sessions in this month");
+      };
+      const views = {
+        week: () => chart() + totals(sum("up") * 1024, sum("dn") * 1024),
+        total: () => { const t = ctvMonthTotals(y, m); return picker() + (t.up + t.dn ? donut(t.up, t.dn) : ctvEmpty("No data used in this month")) + totals(t.up, t.dn); },
+        table: () => picker() + table(),
+      };
+      const draw = (k) => {
+        cur = k;
+        box.innerHTML = views[k]();
+        const mi = $("#sesM", box);
+        if (mi) {
+          mi.addEventListener("click", () => { try { mi.showPicker(); } catch (e) { /* older browsers open it themselves */ } });
+          mi.addEventListener("change", () => { const [a, b] = mi.value.split("-").map(Number); if (a && b) { y = a; m = b - 1; draw(cur); } });
+        }
+        $$(".ses-h", box).forEach((b) => b.addEventListener("click", () => {
+          const c = b.closest(".ses"), open = c.classList.toggle("open");
+          b.setAttribute("aria-expanded", open);
+        }));
+      };
       bindCtvTabs(root, draw);
       draw("week");
+      ctvBind(root, "", true);
+      return root;
+    },
+
+    /* ---- Self-care: Dashboard My Device "More Details" → Udm (device detail + Overview / clients / Wi-Fi / LAN / WAN / diagnostics) ---- */
+    ctvUdm() {
+      const root = ctvShell("ctv-udm", "Udm", { sub: true });
+      const box = $("#cx", root);
+      const T = [["overview", "Overview"], ["clients", "Connected Devices"], ["wifi", "Wi-Fi"], ["lan", "LAN"], ["wan", "WAN"], ["ping", "Ping Diagnostic"], ["trace", "Trace Route Diagnostic"], ["aw", "Available Wi-Fi"]];
+      let tab = "overview";
+      const kv = (pairs) => `<div class="udm-kv">${pairs.map(([k, v]) => `<span><small>${k}</small><b>${esc(String(v))}</b></span>`).join("")}</div>`;
+      const upFmt = (ms) => { const n = Math.floor(ms / 6e4); return `${Math.floor(n / 1440)} Days, ${Math.floor((n % 1440) / 60)} Hours, ${n % 60} Minute`; };
+      const day = (t) => `${new Date(t).toLocaleDateString("en-GB", { weekday: "long" })}, ${dFmt(new Date(t))}`;
+      // Sub-tabs, filters and pages inside a tab (kept while switching devices)
+      const sub = { cl: "wifi", clf: "all", clp: 0, wf: "on", aw: "table" };
+      let ping = null, trace = null, scan = null;   // diagnostic results (null = not run yet)
+      const subTabs = (key, list) => `<div class="udm-sub" role="tablist">${list.map(([k, l]) => `<button role="tab" data-sub="${key}:${k}" class="${sub[key] === k ? "on" : ""}">${l}</button>`).join("")}</div>`;
+      const pager = (key, page, n, per) => `<div class="udm-pg"><span>${n ? `${page * per + 1}–${Math.min(n, (page + 1) * per)} of ${n}` : "0 of 0"}</span>
+        <button data-pg="${key}:-1" aria-label="Previous page"${page ? "" : " disabled"}>${I.back}</button><button data-pg="${key}:1" aria-label="Next page"${(page + 1) * per < n ? "" : " disabled"}>${I.chev}</button></div>`;
+      const runHead = (title) => `<div class="udm-rh"><b>${title}</b><button class="btn" data-act="u-run">Run Diagnostic</button></div>`;
+      const views = {
+        overview: (d) => `
+          <div class="lco-card udm-c"><p class="udm-up">Updated: Today - ${dFmt(new Date(d.synced))} ${hmFmt(new Date(d.synced))}</p>
+            ${kv([["Up Time", upFmt(Date.now() - d.on)], ["Last Switched On Time", day(d.on)], ["Tx Power", d.tx], ["Rx Power", d.rx]])}</div>
+          <div class="udm-acts">
+            <div class="lco-card"><b>Refresh Device</b><small>Click Refresh to synchronize the device</small><button class="btn" data-act="u-ref">Refresh</button></div>
+            <div class="lco-card"><b>Reboot Device</b><small>Click Reboot to restart the device</small><button class="btn" data-act="u-reb">Reboot</button></div>
+          </div>`,
+        // Connected Devices: All / Active / Inactive, Wi-Fi / LAN, 5 per page, Block / Unblock
+        clients: (d) => {
+          const all = d.clients.filter((c) => c.lan === (sub.cl === "lan") && (sub.clf === "all" || (sub.clf === "on") === c.on));
+          const page = Math.min(sub.clp, Math.max(0, Math.ceil(all.length / 5) - 1));
+          return `
+            <div class="lco-card udm-c">
+              <div class="udm-rh"><b>Connected Devices :</b><select class="ctv-sel" id="clF" aria-label="Filter devices">${[["all", "All"], ["on", "Active"], ["off", "Inactive"]].map(([k, l]) => `<option value="${k}"${sub.clf === k ? " selected" : ""}>${l}</option>`).join("")}</select></div>
+              ${subTabs("cl", [["wifi", "Wi-Fi"], ["lan", "LAN"]])}
+              ${all.slice(page * 5, page * 5 + 5).map((c) => `
+                <div class="udm-row${c.blocked ? " blk" : ""}">
+                  <div class="udm-rt"><i class="udm-dot${c.on && !c.blocked ? " on" : ""}"></i><b>${esc(c.host)}</b>
+                    <button class="udm-blk" data-blk="${d.clients.indexOf(c)}">${c.blocked ? "Unblock" : "Block"}</button></div>
+                  <div class="udm-rk"><span><small>IP Address</small>${c.ip}</span><span><small>Mac Address</small>${c.mac}</span>
+                    ${c.lan ? "" : `<span><small>SSID</small>${esc(c.ssid)}</span>`}<span><small>Sent / Received</small>${mbFmt(c.sent)} / ${mbFmt(c.recv)}</span></div>
+                </div>`).join("") || ctvEmpty("No devices for this filter")}
+              ${pager("clp", page, all.length, 5)}
+            </div>`;
+        },
+        // Wi-Fi: Active / InActive SSIDs with Change Password
+        wifi: (d) => {
+          const list = d.wifi.filter((w) => w.on === (sub.wf === "on"));
+          return `
+            <div class="lco-card udm-c">${subTabs("wf", [["on", "Active"], ["off", "InActive"]])}
+              ${list.map((w) => `
+                <div class="udm-row udm-wf"><span><small>${w.name}</small><b>${esc(w.ssid)}</b></span>
+                  ${w.on ? `<button class="udm-cp" data-wf="${d.wifi.indexOf(w)}">${I.wifi}Change Password</button>` : `<button class="udm-blk" data-wfon="${d.wifi.indexOf(w)}">Enable</button>`}</div>`).join("") || ctvEmpty("No SSIDs here")}
+              ${pager("wfp", 0, list.length, 5)}
+            </div>`;
+        },
+        lan: () => `
+          <div class="lco-card udm-c"><b class="udm-t">LAN</b>
+            ${["LAN - 0", "LAN - 1"].map((n, j) => `<div class="udm-row">${kv([["Name", n], ["MAC Address", `0E:40:A9:00:0${j}:43`], ["Maximum Bit Rate", "Auto"], ["Duplex Mode", "Auto"]])}</div>`).join("")}
+            ${pager("lanp", 0, 2, 5)}</div>`,
+        wan: (d) => `
+          <div class="lco-card udm-c"><b class="udm-t">WAN</b>
+            <div class="udm-row">${kv([["Name", "1_TR069_INTERNET_R_VID_100"], ["Type", "IPOE"], ["Conn Type", "IP_Routed"], ["Address Type", "Static"],
+              ["External Address", d.ip], ["Sent / Received", `${mbFmt(73.65)} / ${mbFmt(111.25)}`]])}
+              <div class="udm-st"><span><i class="udm-dot on"></i>Status: Up</span><span><i class="udm-dot on"></i>Enabled</span></div></div>
+            ${pager("wanp", 0, 1, 5)}</div>`,
+        ping: () => `
+          <div class="lco-card udm-c">${runHead("Ping Diagnostic")}
+            ${kv([["Host IP Address", ping ? ping.host : "—"], ["Failure Count", ping ? 0 : 0], ["Packet Size (bytes)", 56], ["Success Count", ping ? 4 : 0],
+              ["Number of Repetitions", 4], ["Minimum Response Time", ping ? ping.min + " ms" : 0], ["Diagnostics State", ping ? "Complete" : "None"],
+              ["Average Response Time", ping ? ping.avg + " ms" : 0], ["DSCP", 0], ["Maximum Response Time", ping ? ping.max + " ms" : 0], ["Wan Interface", ping ? "1_TR069_INTERNET_R_VID_100" : "—"]])}</div>`,
+        trace: () => `
+          <div class="lco-card udm-c">${runHead("Trace Route Diagnostic")}
+            ${kv([["Host IP Address", trace ? trace.host : "0.0.0.0"], ["IP Address Used", trace ? "100.64.126.178" : "—"], ["Packet Size (bytes)", 38],
+              ["Diagnostics State", trace ? "Complete" : "None"], ["Number of Tries", trace ? 3 : 0], ["Response Time", trace ? "14 ms" : 0],
+              ["Timeout (ms)", 4999], ["Route Hops", trace ? trace.hops.length : 0], ["Max TTL", 29], ["Wan Interface", trace ? "1_TR069_INTERNET_R_VID_100" : "—"]])}
+            ${trace ? `<div class="udm-hops">${trace.hops.map((h, j) => `<span><b>${j + 1}</b>${h[0]}<em>${h[1]} ms</em></span>`).join("")}</div>` : ""}</div>`,
+        // Available Wi-Fi: neighbouring networks by band
+        aw: () => {
+          const BANDS = [["table", "Table View"], ["24", "2.4 GHZ"], ["5l", "5 GHZ CH 34-64"], ["5h", "5 GHZ CH 100-165"]];
+          const list = (scan || []).filter((n) => sub.aw === "table" || n.band === sub.aw);
+          return `
+            <div class="lco-card udm-c">${runHead("Neighboring WiFi Diagnostic")}
+              ${subTabs("aw", BANDS)}
+              ${scan ? list.map((n) => `
+                <div class="udm-row udm-aw"><b>${esc(n.ssid)}</b>
+                  <div class="udm-rk"><span><small>Channel</small>${n.ch}</span><span><small>Frequency</small>${n.band === "24" ? "2.4 GHz" : "5 GHz"}</span>
+                    <span><small>Signal Strength</small>${n.sig} dBm</span><span><small>Width</small>${n.w} MHz</span></div></div>`).join("") || ctvEmpty("No networks on this band")
+              : ctvEmpty("Tap Run Diagnostic to scan nearby Wi-Fi networks")}
+            </div>`;
+        },
+      };
+      const bindBody = (d) => {
+        const body = $("#udBody", root);
+        const on = (a, fn) => { const b = $(`[data-act="${a}"]`, body); if (b) b.addEventListener("click", fn); };
+        on("u-ref", async () => { showLoader("Synchronizing device…"); await wait(1200); hideLoader(); d.synced = Date.now(); drawBody(); toast("Device details refreshed (demo)", "success"); });
+        on("u-reb", () => openSheet(`
+          <h3>Reboot ${esc(d.name)}?</h3><p>The internet connection will drop for about 2 minutes.</p>
+          <div class="lco-btn2"><button class="btn ghost" id="rbX">Cancel</button><button class="btn" id="rbOk">Reboot</button></div>`, (sh) => {
+          $("#rbX", sh).addEventListener("click", closeSheet);
+          $("#rbOk", sh).addEventListener("click", async () => { closeSheet(); showLoader("Sending reboot command…"); await wait(1400); hideLoader(); d.on = Date.now(); d.synced = Date.now(); drawBody(); toast("Reboot command sent (demo)", "success"); });
+        }));
+        on("u-run", async () => {
+          showLoader("Running diagnostic…"); await wait(1300); hideLoader();
+          if (tab === "ping") ping = { host: "100.64.0.10", min: 11, avg: 12.5, max: 15 };
+          else if (tab === "trace") trace = { host: "100.64.0.10", hops: [["192.168.1.1", 1.2], ["100.64.0.1", 4.8], ["10.10.4.1", 8.1], ["10.20.0.17", 11.6], ["100.64.0.10", 14.0]] };
+          else scan = [["VIBE_Neighbour_A", "24", 1, -48, 20], ["HomeNet-2G", "24", 6, -61, 20], ["Cafe_Free", "24", 11, -74, 40],
+            ["VIBE_Neighbour_A 5G", "5l", 36, -55, 80], ["Flat-3B_5G", "5l", 48, -68, 80], ["Office-Mesh", "5h", 149, -71, 80]].map(([ssid, band, ch, sig, w]) => ({ ssid, band, ch, sig, w }));
+          drawBody(); toast("Diagnostic complete (demo)", "success");
+        });
+        $$("[data-sub]", body).forEach((b) => b.addEventListener("click", () => { const [k, v] = b.dataset.sub.split(":"); sub[k] = v; if (k === "cl") sub.clp = 0; drawBody(); }));
+        $$("[data-pg]", body).forEach((b) => b.addEventListener("click", () => { const [k, v] = b.dataset.pg.split(":"); if (k in sub) { sub[k] += +v; drawBody(); } }));
+        const f = $("#clF", body);
+        if (f) f.addEventListener("change", () => { sub.clf = f.value; sub.clp = 0; drawBody(); });
+        $$("[data-blk]", body).forEach((b) => b.addEventListener("click", () => {
+          const c = d.clients[+b.dataset.blk];
+          const go = () => { c.blocked = !c.blocked; drawBody(); toast(`${c.host} ${c.blocked ? "blocked" : "unblocked"} (demo)`, "success"); };
+          if (c.blocked) return go();
+          openSheet(`<h3>Block ${esc(c.host)}?</h3><p>This device will lose internet access until you unblock it.</p>
+            <div class="lco-btn2"><button class="btn ghost" id="bkX">Cancel</button><button class="btn" id="bkOk">Block</button></div>`, (sh) => {
+            $("#bkX", sh).addEventListener("click", closeSheet);
+            $("#bkOk", sh).addEventListener("click", () => { closeSheet(); go(); });
+          });
+        }));
+        $$("[data-wfon]", body).forEach((b) => b.addEventListener("click", () => { d.wifi[+b.dataset.wfon].on = true; sub.wf = "on"; drawBody(); toast("SSID enabled (demo)", "success"); }));
+        $$("[data-wf]", body).forEach((b) => b.addEventListener("click", () => {
+          const w = d.wifi[+b.dataset.wf];
+          openSheet(`
+            <h3>Change Password</h3><p>${esc(w.ssid)}</p>
+            <label class="lco-fl"><small>New password (min 8 characters)</small><input id="wfP" type="password" maxlength="63" /></label>
+            <label class="lco-fl"><small>Confirm password</small><input id="wfC" type="password" maxlength="63" /></label>
+            <p class="hint err" id="wfE"></p>
+            <div class="lco-btn2"><button class="btn ghost" id="wfX">Cancel</button><button class="btn" id="wfOk">Save</button></div>`, (sh) => {
+            $("#wfX", sh).addEventListener("click", closeSheet);
+            $("#wfOk", sh).addEventListener("click", async () => {
+              const p = $("#wfP", sh).value, c = $("#wfC", sh).value;
+              const err = p.length < 8 ? "Password must be at least 8 characters" : p !== c ? "Passwords don't match" : "";
+              if (err) { $("#wfE", sh).textContent = err; return; }
+              closeSheet(); showLoader("Updating Wi-Fi…"); await wait(1200); hideLoader();
+              toast(`Password changed for ${w.ssid} (demo)`, "success");
+            });
+          });
+        }));
+      };
+      const drawBody = () => { const d = ctvDev(); $("#udBody", root).innerHTML = views[tab](d); bindBody(d); };
+      const draw = () => {
+        const d = ctvDev();
+        box.innerHTML = `
+          <div class="udm-top"><b>My Device</b><label>device :<select class="ctv-sel" id="udSel" aria-label="Device">${CTV_DEV.map((x, j) => `<option value="${j}"${x === d ? " selected" : ""}>${x.name}</option>`).join("")}</select></label></div>
+          <div class="lco-card udm-c"><b class="udm-t">Device Detail</b>
+            ${kv([["Hostname/IP", d.ip], ["MAC Address", d.mac], ["Operational Status", "ONLINE"], ["Model", d.model], ["Brand", d.brand], ["Serial Number", d.serial]])}</div>
+          <div class="ctv-tabs udm-tabs" role="tablist">${T.map(([k, l]) => `<button role="tab" data-ut="${k}" class="${k === tab ? "on" : ""}" aria-selected="${k === tab}">${l}</button>`).join("")}</div>
+          <div id="udBody"></div>`;
+        $("#udSel", box).addEventListener("change", (e) => { state.ctvDev = +e.target.value; draw(); });
+        $$("[data-ut]", box).forEach((b) => b.addEventListener("click", () => {
+          tab = b.dataset.ut;
+          $$("[data-ut]", box).forEach((x) => { x.classList.toggle("on", x === b); x.setAttribute("aria-selected", x === b); });
+          b.scrollIntoView({ block: "nearest", inline: "nearest" });
+          drawBody();
+        }));
+        drawBody();
+      };
+      draw();
       ctvBind(root, "", true);
       return root;
     },
@@ -5470,34 +5820,6 @@
   }
   const ctvEmpty = (msg) => `<div class="ctv-empty">${I.info}<p>${msg}</p></div>`;
 
-  // Support: raise a new ticket (Support FAB + Self Help "Create Ticket")
-  function openNewTicket(after, preset = "") {
-    const CATS = ["Network Issue", "Slow Speed", "CPE Not Working - Wi-Fi Router", "Billing", "KYC Update", "Other"];
-    openSheet(`
-      <h3>Create Ticket</h3>
-      <div class="lco-form ctv-sheetform">
-        <label class="lco-fl"><small>Problem Category</small>
-          <select id="ntCat">${CATS.map((c) => `<option${c === preset ? " selected" : ""}>${c}</option>`).join("")}</select></label>
-        <label class="lco-fl" id="ntWrap"><small>Description</small><input id="ntDesc" maxlength="80" placeholder="Describe the issue" /></label>
-        <p class="hint err" id="ntHint"></p>
-      </div>
-      <div class="lco-btn2"><button class="btn ghost" id="ntX">Cancel</button><button class="btn" id="ntOk">Submit</button></div>
-      <span class="demo-tag">Demo • no real ticket is raised</span>`, (sh) => {
-      $("#ntX", sh).addEventListener("click", closeSheet);
-      $("#ntOk", sh).addEventListener("click", () => {
-        const d = $("#ntDesc", sh).value.trim();
-        if (d.length < 3) { $("#ntHint", sh).textContent = "Please describe the issue (at least 3 characters)"; shake($("#ntWrap", sh)); return; }
-        const cat = $("#ntCat", sh).value;
-        const id = "TKT" + (4400000 + Math.floor(Math.random() * 99999));
-        const now = new Date();
-        CTV.tickets.unshift({ id, title: d, reason: cat, at: now, status: "Open", remarks: [] });
-        CTV.notes.unshift({ at: now, kind: "created", id, cat });
-        closeSheet();
-        toast(`Ticket ${id} created (demo)`, "success");
-        if (after) after();
-      });
-    });
-  }
   function openTicket(t) {
     openSheet(`
       <h3>${esc(t.id)}</h3>

@@ -147,6 +147,8 @@
       btn: "Login",
       btnReg: "Register",
       extra: "vsc",
+      otpLogin: true, otpAlways: true,   // OTP (DEMO_OTP) on every sign-in, registration included
+      otpSubLogin: "Enter the 6-digit OTP sent to your mobile number",
       extraOnlyOnRegister: true,
       done: "Login successful",
       doneMsg: "Welcome back! You are logged in with your registered mobile number.",
@@ -164,7 +166,7 @@
       extra: "bbid",
       extraOnlyOnRegister: true,
       otpRegister: true,
-      otpLogin: true,   // registered number → OTP step (DEMO_OTP) before logging in
+      otpLogin: true, otpAlways: true,   // OTP (DEMO_OTP) on every mobile sign-in
       otpSubLogin: "Enter the 6-digit OTP sent to your mobile number",
       otpSub: "New broadband customer? Enter your User ID – we'll send an OTP to your registered mobile",
       otpSubCode: "Enter the 6-digit OTP sent to your registered mobile",
@@ -189,10 +191,12 @@
     },
     guest: {
       // Guests register and log in with the mobile number only (no VSC / User ID)
-      sub: "Explore content without a subscription – just your mobile number",
+      sub: "Explore content without a subscription – sign in with your mobile number & OTP",
       label: "Join as Guest",
       btn: "Continue",
       track: true,
+      otpLogin: true, otpAlways: true,   // OTP (DEMO_OTP) on every sign-in, first time included
+      otpSubLogin: "Enter the 6-digit OTP sent to your mobile number",
       done: "Welcome back!",
       doneMsg: "You are logged in as a guest.",
       doneReg: "Guest registration successful",
@@ -404,6 +408,24 @@
   // Broadband LCO ☰ → Profile ("Customer details"): editable contact details, filled on first open
   const BB_ACCOUNT = {};
 
+  // Home ☰ → Partner Apps (names from the user's reference; plain text wordmarks, no logos)
+  const PARTNER_APPS = [["VZY", "Vzy", "#ffc107"], ["Zee5", "Z5", "#e8e8ee"], ["Klikk", "KLiKK", "#ff2a2a"]];
+
+  // Customer / guest Live TV: OTT home titles, purchases, devices (all fictional)
+  const OTT_TITLES = [
+    ["The Last Ferry", "Bengali", "Drama", ["#ff7a59", "#7b1010"]], ["Monsoon Letters", "Bengali", "Romance", ["#2fd8ff", "#3a6bff"]],
+    ["Detective Ira", "Bengali", "Thriller", ["#434343", "#9b5cff"]], ["Old Town Tales", "Bengali", "Classic", ["#bdc3c7", "#5c6b7a"]],
+    ["Night Shift", "Hindi", "Crime", ["#141e30", "#ff3fd0"]], ["Kitchen Kings", "Hindi", "Comedy", ["#ffb300", "#ff6f00"]],
+    ["Star Runner", "English", "Sci-Fi", ["#0f2027", "#2fd8ff"]], ["Wild Delta", "English", "Documentary", ["#11998e", "#38ef7d"]],
+    ["Hills Calling", "Odia", "Family", ["#56ccf2", "#2f80ed"]], ["Tiny Heroes", "Hindi", "Kids", ["#43e97b", "#0f9b8e"]],
+  ];
+  const CUST = {
+    ottPlan: null,          // { plan, at, expiry } after "Subscribe Now"
+    purchases: [{ at: new Date(Date.now() - 8 * 864e5), id: "#1764" + "402398156", what: "Welcome Plan", amount: 0, mode: "Cash", status: "Completed" }],
+    others: [{ name: "VIBE_TV_Box", at: new Date(Date.now() - 7 * 864e5 - 3e6) }],
+    login: new Date(),
+  };
+
   /* ---------- Broadband LCO demo data (Home / Case / Customer). All people, numbers and IDs are fictional ---------- */
   const BB_PLANS = [
     { name: "VIBE_FIBER_50", speed: "50 Mbps", price: 499, days: 30, ott: 3 },
@@ -490,6 +512,8 @@
       ["Sony TV", "Family Hour", "Hindi", ["#ff512f", "#3a1c71"]],
       ["Sun TV", "Evening Serial", "Tamil", ["#f7971e", "#7a1f1f"]],
       ["Star Maa", "Prime Drama", "Telugu", ["#8e2de2", "#f7797d"]],
+      ["DD National", "Rangoli", "Hindi", ["#1f4037", "#99f2c8"]],
+      ["DD Bangla", "Sandhya Bela", "Bengali", ["#614385", "#516395"]],
     ] },
     { key: "movies", name: "Movies", icon: I.clap, count: 49, items: [
       ["Star Gold", "Ravan Vadh", "Hindi", ["#e53935", "#7b1010"]],
@@ -506,6 +530,7 @@
       ["Times Now", "The Newshour", "English", ["#1a2980", "#c33764"]],
       ["Puthiya Thalaimurai", "Seithigal", "Tamil", ["#e65c00", "#b31217"]],
       ["TV9 Kannada", "Top Stories", "Kannada", ["#ee0979", "#141e30"]],
+      ["DD News", "Desh Videsh", "Hindi", ["#0f3443", "#34e89e"]],
     ] },
     { key: "kids", name: "Kids", icon: I.kids, count: 18, items: [
       ["Pogo", "Cartoon Marathon", "Hindi", ["#11998e", "#38ef7d"]],
@@ -528,6 +553,7 @@
       ["Discovery", "Planet Wild", "English", ["#134e5e", "#71b280"]],
       ["Nat Geo", "Mega Structures", "English", ["#f2c94c", "#232526"]],
       ["History TV18", "Ancient Secrets", "Hindi", ["#3e5151", "#decba4"]],
+      ["DD Kisan", "Krishi Darshan", "Hindi", ["#56ab2f", "#a8e063"]],
     ] },
   ];
   const LANGUAGES = ["Hindi", "English", "Tamil", "Telugu", "Kannada", "Malayalam", "Bengali", "Marathi",
@@ -558,6 +584,43 @@
     const id = CHANNELS.length;
     CHANNELS.push({ id, name, show, lang, colors, genre: g.key });
   }));
+
+  /* ---------- Channel plans for customers & guests ----------
+     Guest: Welcome Free Plan only (DD + a few free-to-air). Cable / Broadband customer: starts with a package.
+     Everyone can upgrade (payment gateway) → more genres. Only channels in the plan are shown. LCO Watch OTT sees all. */
+  const FREE_CH = new Set(CHANNELS.filter((c) => c.name.startsWith("DD ") || ["Aastha", "Sanskar", "SVBC"].includes(c.name)).map((c) => c.id));
+  const PACK_GENRES = [   // index-matched to CABLE_PACKS (same names / prices as the LCO side)
+    ["entertainment", "news"],
+    ["entertainment", "news", "music", "devotional"],
+    ["entertainment", "news", "music", "devotional", "movies", "kids"],
+    ["entertainment", "news", "music", "devotional", "movies", "kids", "sports"],
+    ["entertainment", "news", "music", "devotional", "movies", "kids", "sports", "infotainment"],
+    ["entertainment", "news", "music", "devotional", "movies", "kids", "sports", "infotainment"],
+  ];
+  const DEFAULT_PACK = { cable: 0, broadband: 1 };   // the package a customer already has
+  const PLAN_KEY = "vibe.channelPlans";              // { "type:mobile": {pack, at} } — survives reloads
+  const Plans = {
+    all() { try { return JSON.parse(localStorage.getItem(PLAN_KEY) || "{}"); } catch (e) { return Plans.mem || (Plans.mem = {}); } },
+    save(o) { try { localStorage.setItem(PLAN_KEY, JSON.stringify(o)); } catch (e) { Plans.mem = o; } },
+    key() { const s = state.session || {}; return `${s.type}:${s.mobile}`; },
+    // Current plan of the signed-in customer / guest: { pack: index | null, at }
+    get() {
+      const s = state.session || {};
+      const p = Plans.all()[Plans.key()];
+      if (p) return p;
+      return { pack: s.type in DEFAULT_PACK ? DEFAULT_PACK[s.type] : null, at: null };
+    },
+    set(pack) { const o = Plans.all(); o[Plans.key()] = { pack, at: Date.now() }; Plans.save(o); },
+  };
+  // null = no restriction (LCO Watch OTT / not signed in as customer or guest)
+  function allowedCh() {
+    const t = (state.session || {}).type;
+    if (t !== "guest" && t !== "cable" && t !== "broadband") return null;
+    const p = Plans.get(), g = p.pack === null ? [] : PACK_GENRES[p.pack];
+    return new Set(CHANNELS.filter((c) => FREE_CH.has(c.id) || g.includes(c.genre)).map((c) => c.id));
+  }
+  const canWatch = (c) => { const a = allowedCh(); return !a || a.has(c.id); };
+  const myChannels = () => CHANNELS.filter(canWatch);
 
   const grad = (g, deg = 135) => `linear-gradient(${deg}deg, ${g.join(", ")})`;
 
@@ -972,13 +1035,15 @@
           lResend.textContent = "Resend OTP";
         }, 1000);
       }
-      function startLoginOtp() {
+      function startLoginOtp(isNew = false) {
         otpStep = true;
         mob.readOnly = true;
+        if (xin) xin.readOnly = true;
+        if (sw) sw.hidden = true;
         $("#subTxt", root).textContent = cfg.otpSubLogin;
         lOtpWrap.hidden = false;
         lOtpWrap.classList.remove("reveal"); void lOtpWrap.offsetWidth; lOtpWrap.classList.add("reveal");
-        $(".lbl", btn).textContent = "Verify & Login";
+        $(".lbl", btn).textContent = isNew ? "Verify & Register" : "Verify & Login";
         btn.classList.add("dim");
         sendLoginOtp();
         lOtp.focus();
@@ -988,6 +1053,8 @@
         clearInterval(otpTimer);
         lOtpWrap.hidden = true;
         mob.readOnly = false;
+        if (xin) xin.readOnly = false;
+        if (sw) sw.hidden = false;
         setMode(reg, false);
         mob.focus();
       }
@@ -1035,6 +1102,7 @@
 
         let registered = signup;   // which success message to show
         let extraVal = ex && needEx() ? xin.value : undefined;
+        let pendingReg = null;     // Cable first-time registration: VSC to save once the OTP is verified
 
         if (once) {
           const known = Registry.get(type, mob.value);
@@ -1055,7 +1123,7 @@
             registered = false;
             extraVal = known.id;
           } else if (reg) {
-            Registry.add(type, mob.value, xin.value);
+            pendingReg = xin.value;   // saved only after the OTP is verified
             registered = true;
           } else {
             registered = false;
@@ -1063,9 +1131,14 @@
           }
         }
 
-        // Broadband: registered number → ask for the OTP before logging in
-        if (cfg.otpLogin && !registered && !otpOk) { startLoginOtp(); return; }
+        // OTP before signing in: every time for Cable / Broadband / Guest (otpAlways); otherwise only for logins
+        if (cfg.otpLogin && (cfg.otpAlways || !registered) && !otpOk) {
+          const isNew = registered || (cfg.track && !Registry.get(type, mob.value));
+          startLoginOtp(isNew);
+          return;
+        }
         clearInterval(otpTimer);
+        if (pendingReg !== null) Registry.add(type, mob.value, pendingReg);
 
         if (cfg.track) {
           // Guest: no extra ID – the mobile number alone registers the first time
@@ -2491,7 +2564,7 @@
     home({ fromLco = false } = {}) {
       const f = state.filter;
       const root = el(`
-        <section class="screen-fixed tv${fromLco ? " from-lco" : ""}" data-screen="home">
+        <section class="screen-fixed tv${fromLco ? " from-lco" : " tvx"}" data-screen="home">
           <div class="tv-scroll" id="tvScroll">
             <header class="tv-head">
               <!-- ☰ sits at the top-left, before the logo (the drawer slides in from the left) -->
@@ -2500,6 +2573,7 @@
                 <img src="${MARK}" alt="VIBE" />
                 <small>&amp; OTT Partners</small>
               </div>
+              ${fromLco ? "" : `<button class="menu-btn head-search${f.q ? " on" : ""}" data-act="search" aria-label="Search channels">${I.search}</button>`}
             </header>
             <div class="searchbar" id="searchbar" ${f.q ? "" : "hidden"}>
               ${I.search}
@@ -2509,7 +2583,7 @@
             <div class="filters" id="filters"></div>
             <div id="sections"></div>
           </div>
-          <button class="fab" data-act="fab" aria-label="${fromLco ? "TV Guide" : "Watch live TV"}">${I.tv}</button>
+          <button class="fab" data-act="fab" aria-label="TV Guide">${I.tv}</button>
           ${fromLco ? `<button class="lco-back-pill" data-act="to-lco">${I.back}Go Back to LCO</button>${ctvNavHTML("live")}` : ""}
           <!-- Left slide-in menu (hamburger). Same buttons/data-act as before, so every option works the same. -->
           <div class="drawer" id="drawer" aria-hidden="true">
@@ -2523,7 +2597,8 @@
                 <button class="drawer-x" data-close-menu aria-label="Close menu">${I.close}</button>
               </div>
               <button class="gp dr-item" data-act="ott">${I.monitor}<span>OTT</span></button>
-              <button class="gp dr-item${f.q ? " on" : ""}" data-act="search">${I.search}<span>Search</span></button>
+              <button class="gp dr-item" data-act="partners">${I.grid}<span>Partner Apps</span></button>
+              ${fromLco ? `<button class="gp dr-item${f.q ? " on" : ""}" data-act="search">${I.search}<span>Search</span></button>` : ""}
               <button class="gp dr-item" data-act="profile">${I.userFill}<span>Profile</span></button>
               <i class="dr-sep"></i>
               <button class="gp dr-item" data-act="lts">${I.router}<span>LTS</span></button>
@@ -2552,7 +2627,11 @@
       $$("[data-close-menu]", root).forEach((b) => b.addEventListener("click", closeDrawer));
       $$(".dr-item", root).forEach((b) => b.addEventListener("click", closeDrawer));
 
-      $('[data-act="ott"]', root).addEventListener("click", () => openSheet(`
+      // ☰ → Partner Apps: tiles that would open the partner's app (demo: toast only)
+      $('[data-act="partners"]', root).addEventListener("click", openPartnerApps);
+      // Customer / guest: OTT → the OTT home. LCO Watch OTT keeps the OTT Partners sheet.
+      $('[data-act="ott"]', root).addEventListener("click", () => fromLco ? null : go("ottHome"));
+      if (fromLco) $('[data-act="ott"]', root).addEventListener("click", () => openSheet(`
         <h3>OTT Partners</h3>
         <p>Stream apps included with your VIBE pack.</p>
         <div class="ott-grid">${OTT.map(([n, c]) => `<button class="ott" style="background:${grad(c)}" data-ott="${n}">${n}</button>`).join("")}</div>`, (sh) => {
@@ -2567,20 +2646,9 @@
         </div>`, (sh) => {
         $$("[data-lts]", sh).forEach((b) => b.addEventListener("click", () => { closeSheet(); toast(`${b.dataset.lts}: available in the full app`); }));
       }));
-      // LCO "Watch OTT": the old app's "Choose your Genre / Language" chip sheets (multi-select). Customer Home: unchanged.
-      $('[data-act="genre"]', root).addEventListener("click", () => fromLco
-        ? openChipSheet("genre", () => refreshHome(root, draw))
-        : pickSheet("Genre", ["All", ...GENRES.map((g) => g.name)],
-          f.genre ? GENRES.find((g) => g.key === f.genre).name : "All", (v) => {
-            f.genre = v === "All" ? null : GENRES.find((g) => g.name === v).key;
-            refreshHome(root, draw);
-          }));
-      $('[data-act="lang"]', root).addEventListener("click", () => fromLco
-        ? openChipSheet("lang", () => refreshHome(root, draw))
-        : pickSheet("Language", ["All", ...LANGUAGES], f.lang || "All", (v) => {
-          f.lang = v === "All" ? null : v;
-          refreshHome(root, draw);
-        }));
+      // The old app's "Choose your Genre / Language" chip sheets (multi-select) — same for LCO, customer and guest
+      $('[data-act="genre"]', root).addEventListener("click", () => openChipSheet("genre", () => refreshHome(root, draw)));
+      $('[data-act="lang"]', root).addEventListener("click", () => openChipSheet("lang", () => refreshHome(root, draw)));
       $('[data-act="search"]', root).addEventListener("click", () => {
         const bar = $("#searchbar", root);
         bar.hidden = !bar.hidden;
@@ -2591,8 +2659,8 @@
         f.q = ""; $("#q", root).value = ""; $("#searchbar", root).hidden = true;
         $('[data-act="search"]', root).classList.remove("on"); draw();
       });
-      $('[data-act="profile"]', root).addEventListener("click", () => go(fromLco ? "tvProfile" : "profile"));
-      $('[data-act="fab"]', root).addEventListener("click", () => (fromLco ? go("tvGuide") : playChannel(CHANNELS[0].id)));
+      $('[data-act="profile"]', root).addEventListener("click", () => go(fromLco ? "tvProfile" : "custProfile"));
+      $('[data-act="fab"]', root).addEventListener("click", () => go("tvGuide"));
       if (fromLco) bindCtvNav(root, "live");
       draw();
       return root;
@@ -2656,7 +2724,7 @@
           const c = CHANNELS[+b.dataset.pc];
           openProgPopup(c, epgFor(c).find((p) => p.start.getTime() === +b.dataset.ps));
         }));
-        $$("[data-chan]", epg).forEach((b) => b.addEventListener("click", () => go("tvChannel", { id: +b.dataset.chan })));
+        $$("[data-chan]", epg).forEach((b) => b.addEventListener("click", () => watchTv(+b.dataset.chan)));
       };
       $('[data-act="genre"]', root).addEventListener("click", () => openChipSheet("genre", draw));
       $('[data-act="lang"]', root).addEventListener("click", () => openChipSheet("lang", draw));
@@ -2672,6 +2740,7 @@
       const list = epgFor(c);
       const live = list.find((p) => p.live);
       const upcoming = list.filter((p) => p.start >= live.end).slice(0, 5);
+      state.recent = [c.id, ...(state.recent || []).filter((x) => x !== c.id)].slice(0, 8);   // OTT home → Recent Watched
       const root = el(`
         <section class="tv tvc" data-screen="tv-channel">
           <header class="tvc-head">
@@ -2708,7 +2777,8 @@
       $$("[data-remind]", root).forEach((b) => b.addEventListener("click", () => toast(`Reminder set: ${b.dataset.remind} (demo)`, "success")));
       // ‹ › switch channel in place (no extra Back steps)
       $$("[data-step]", root).forEach((b) => b.addEventListener("click", () => {
-        const n = (c.id + +b.dataset.step + CHANNELS.length) % CHANNELS.length;
+        const mine = myChannels(), at = mine.findIndex((x) => x.id === c.id);   // only channels in the plan
+        const n = mine[(Math.max(at, 0) + +b.dataset.step + mine.length) % mine.length].id;
         swapRoute("tvChannel", { id: n });
       }));
       return root;
@@ -3253,7 +3323,7 @@
         <section class="tv" data-screen="genre-${key}">
           <header class="sub-head">
             <button class="back-btn static" data-act="back" aria-label="Back">${I.back}</button>
-            <h2><span class="sec-ic">${g.icon}</span>${g.name} (${g.count})</h2>
+            <h2><span class="sec-ic">${g.icon}</span>${g.name} (${allowedCh() ? list.length : g.count})</h2>
           </header>
           <div class="ch-grid">${list.map((c) => cardHTML(c, true)).join("")}</div>
           <p class="more-note">Showing ${list.length} of ${g.count} channels in this demo</p>
@@ -3268,7 +3338,7 @@
       const c = CHANNELS[id];
       const sl = slot(id);
       const g = GENRES.find((x) => x.key === c.genre);
-      const next = CHANNELS.filter((x) => x.genre === c.genre && x.id !== id);
+      const next = CHANNELS.filter((x) => x.genre === c.genre && x.id !== id && canWatch(x));
       const root = el(`
         <section class="tv" data-screen="player">
           <div class="video" style="background:${grad(c.colors)}">
@@ -3331,19 +3401,11 @@
           <div class="menu">
             <button data-toast="Your watchlist is empty">${I.heart}My Watchlist<span class="chev">${I.chev}</span></button>
             <button data-toast="Settings are not available in this demo">${I.gear}Settings<span class="chev">${I.chev}</span></button>
-            <button data-act="switch">${I.swap}Change user type<span class="chev">${I.chev}</span></button>
-            <button data-act="reset-reg">${I.card}Reset demo registrations<span class="chev">${Registry.count()} saved</span></button>
             <button class="danger" data-act="logout">${I.logout}${type === "guest" ? "Exit guest mode" : "Logout"}</button>
           </div>
         </section>`);
       bindCommon(root);
       $$("[data-toast]", root).forEach((b) => b.addEventListener("click", () => toast(b.dataset.toast)));
-      $('[data-act="switch"]', root).addEventListener("click", () => reset("role", { first: true }));
-      $('[data-act="reset-reg"]', root).addEventListener("click", (e) => {
-        Registry.clear();
-        $(".chev", e.currentTarget).textContent = "0 saved";
-        toast("Demo registrations cleared – Cable, Broadband, LCO & Guest users must register again", "success", 3000);
-      });
       $('[data-act="logout"]', root).addEventListener("click", async () => {
         showLoader("Signing out…");
         await wait(700);
@@ -3352,6 +3414,487 @@
         Object.assign(state.filter, { genre: null, lang: null, q: "", genres: null, langs: null });
         reset("role", { first: true });
         toast("Signed out", "success");
+      });
+      return root;
+    },
+
+    /* =====================================================================
+       Customer / guest Live TV (same TV as LCO Watch OTT, without the LCO bottom bar)
+       Home ☰ → OTT ─► ottHome      Home ☰ → Profile ─► custProfile ─► ottSubscribe / manageDevice
+       ===================================================================== */
+    ottHome() {
+      const f = state.filter;
+      const slides = OTT_TITLES.slice(0, 6);
+      // Genre / Language (same preferences as the TV): titles map Kids → kids, Documentary → infotainment, others → movies / entertainment
+      const tGenres = (t) => (t[2] === "Kids" ? ["kids"] : t[2] === "Documentary" ? ["infotainment"] : ["movies", "entertainment"]);
+      const titleOn = (t) => (!f.langs || f.langs.includes(t[1])) && (!f.genres || tGenres(t).some((g) => f.genres.includes(g)));
+      const chOn = (c) => canWatch(c) && (!f.langs || f.langs.includes(c.lang)) && (!f.genres || f.genres.includes(c.genre));
+      const poster = (t, j) => `<button class="otth-po" data-title="${j}" style="background:${grad(t[3], 160)}"><b>${esc(t[0])}</b><small>${t[1]} · ${t[2]}</small></button>`;
+      const chCard = (c) => `<button class="otth-ch" data-ch="${c.id}" style="background:${grad(c.colors)}"><span class="live-badge"><i></i>LIVE</span><b>${esc(c.name)}</b></button>`;
+      const rail = (title, body, all) => `
+        <div class="sec"><div class="sec-head"><h4>${title}</h4>${all ? `<button class="see-all" data-genre="${all}">See All ${I.chev}</button>` : ""}</div>
+          <div class="rail">${body}</div></div>`;
+      const bodyHTML = () => {
+        const news = CHANNELS.filter((c) => c.genre === "news" && chOn(c));
+        const recent = (state.recent || []).map((id) => CHANNELS[id]).filter((c) => c && chOn(c));
+        const titles = OTT_TITLES.map((t, j) => [t, j]).filter(([t]) => titleOn(t));
+        const bengali = titles.filter(([t]) => t[1] === "Bengali");
+        const html = [
+          rail("Recent Watched", recent.length ? recent.map(chCard).join("") : `<p class="otth-none">Channels you watch will show here.</p>`),
+          news.length ? rail("Live News", news.map(chCard).join(""), "news") : "",
+          bengali.length ? rail("Bengali Hits", bengali.map(([t, j]) => poster(t, j)).join("")) : "",
+          titles.length ? rail("Trending Now", titles.map(([t, j]) => poster(t, j)).reverse().join("")) : "",
+        ].join("");
+        const chips = [f.genres && ["genres", f.genres.length === 1 ? GENRES.find((g) => g.key === f.genres[0]).name : `${f.genres.length} genres`],
+          f.langs && ["langs", f.langs.length === 1 ? f.langs[0] : `${f.langs.length} languages`]].filter(Boolean);
+        return (chips.length ? `<div class="filters">${chips.map(([k, v]) => `<button class="fchip" data-clear="${k}">${v}${I.close}</button>`).join("")}</div>` : "") +
+          (titles.length || news.length ? html : html + `<div class="empty">${I.search}<b>Nothing for this selection</b><p>Try another genre or language.</p></div>`);
+      };
+      const root = el(`
+        <section class="screen-fixed tv otth" data-screen="ott-home">
+          <div class="tv-scroll">
+            <header class="tv-head otth-head">
+              <button class="menu-btn" data-act="menu" aria-label="Open menu" aria-expanded="false">${I.menu}</button>
+              <div class="brand"><img src="${MARK}" alt="VIBE" /><small>&amp; OTT Partners</small></div>
+              <button class="menu-btn head-search" data-act="osearch" aria-label="Search movies, shows or channels">${I.search}</button>
+            </header>
+            <div class="searchbar" id="osb" hidden>${I.search}<input id="oq" type="search" placeholder="Search movies, shows or channels" aria-label="Search OTT" /></div>
+            <div id="ores"></div>
+            <div class="otth-ban" id="ban">
+              ${slides.map((t, j) => `<button class="otth-slide${j ? "" : " on"}" data-title="${j}" style="background:${grad(t[3], 120)}"><small>${esc(OTT_APPS[j][0])} Original</small><b>${esc(t[0])}</b><span>${t[1]} · ${t[2]}</span></button>`).join("")}
+              <div class="otth-dots">${slides.map((_, j) => `<i class="${j ? "" : "on"}"></i>`).join("")}</div>
+            </div>
+            <div id="obody"></div>
+          </div>
+          <!-- Left slide-in menu (Search stays in the header, like the TV Home) -->
+          <div class="drawer" id="drawer" aria-hidden="true">
+            <div class="drawer-backdrop" data-close-menu></div>
+            <nav class="drawer-panel" aria-label="Menu">
+              <div class="drawer-head">
+                <div class="brand"><img src="${MARK}" alt="VIBE" /><small>&amp; OTT Partners</small></div>
+                <button class="drawer-x" data-close-menu aria-label="Close menu">${I.close}</button>
+              </div>
+              <button class="gp dr-item" data-act="live">${I.tv}<span>Live TV</span></button>
+              <button class="gp dr-item" data-act="oprofile">${I.userFill}<span>Profile</span></button>
+              <button class="gp dr-item" data-act="partners">${I.grid}<span>Partner Apps</span></button>
+              <i class="dr-sep"></i>
+              <button class="gp dr-item" data-act="genre">${I.masks}<span></span></button>
+              <button class="gp dr-item" data-act="lang">${I.lang}<span></span></button>
+            </nav>
+          </div>
+        </section>`);
+      const openTitle = (j) => {
+        const t = OTT_TITLES[j], app = OTT_APPS[j % OTT_APPS.length][0];
+        openSheet(`
+          <div class="otth-hero" style="background:${grad(t[3], 140)}"><b>${esc(t[0])}</b></div>
+          <div class="lco-inv"><span><small>Language · Genre</small><b>${t[1]} · ${t[2]}</b></span><span><small>Streaming on</small><b>${esc(app)}</b></span>
+            <span><small>Your OTT pack</small><b>${CUST.ottPlan ? esc(CUST.ottPlan.plan.name) : "Not subscribed"}</b></span></div>
+          <button class="btn" id="tPlay">${I.play} ${CUST.ottPlan ? "Play" : "Subscribe to watch"}</button>
+          <button class="btn ghost" id="tX">Close</button>`, (sh) => {
+          $("#tX", sh).addEventListener("click", closeSheet);
+          $("#tPlay", sh).addEventListener("click", () => { if (CUST.ottPlan) { closeSheet(); toast(`Playing ${t[0]} (demo)`); } else go("ottSubscribe"); });
+        });
+      };
+      const bindTitles = (box) => $$("[data-title]", box).forEach((b) => b.addEventListener("click", () => openTitle(+b.dataset.title)));
+      const draw = () => {
+        const box = $("#obody", root);
+        box.innerHTML = bodyHTML();
+        bindTitles(box);
+        bindCards(box);
+        $$("[data-genre]", box).forEach((b) => b.addEventListener("click", () => go("genre", { key: b.dataset.genre })));
+        $$("[data-clear]", box).forEach((b) => b.addEventListener("click", () => { f[b.dataset.clear] = null; draw(); }));
+        $('[data-act="genre"] span', root).textContent = genreLabel();
+        $('[data-act="genre"]', root).classList.toggle("on", !!f.genres);
+        $('[data-act="lang"] span', root).textContent = langLabel();
+        $('[data-act="lang"]', root).classList.toggle("on", !!f.langs);
+        syncMenuDot(root);
+      };
+      bindTitles($("#ban", root));
+      draw();
+      // Banner: auto-advance every 3.5 s while this screen is on screen
+      let k = 0;
+      const tick = setInterval(() => {
+        if (!root.isConnected) { clearInterval(tick); return; }
+        k = (k + 1) % slides.length;
+        $$(".otth-slide", root).forEach((s, j) => s.classList.toggle("on", j === k));
+        $$(".otth-dots i", root).forEach((s, j) => s.classList.toggle("on", j === k));
+      }, 3500);
+      // ☰ menu: every option closes the menu first
+      $('[data-act="menu"]', root).addEventListener("click", () => openDrawer(root));
+      $$("[data-close-menu]", root).forEach((b) => b.addEventListener("click", closeDrawer));
+      $$(".dr-item", root).forEach((b) => b.addEventListener("click", closeDrawer));
+      $('[data-act="live"]', root).addEventListener("click", () => setTimeout(back, 200));
+      $('[data-act="oprofile"]', root).addEventListener("click", () => go("custProfile"));
+      $('[data-act="partners"]', root).addEventListener("click", openPartnerApps);
+      $('[data-act="genre"]', root).addEventListener("click", () => openChipSheet("genre", draw));
+      $('[data-act="lang"]', root).addEventListener("click", () => openChipSheet("lang", draw));
+      $('[data-act="osearch"]', root).addEventListener("click", (e) => {
+        const bar = $("#osb", root);
+        bar.hidden = !bar.hidden;
+        e.currentTarget.classList.toggle("on", !bar.hidden);
+        if (!bar.hidden) $("#oq", root).focus();
+        else { $("#oq", root).value = ""; $("#ores", root).innerHTML = ""; $("#obody", root).hidden = false; $("#ban", root).hidden = false; }
+      });
+      $("#oq", root).addEventListener("input", (e) => {
+        const q = e.target.value.trim().toLowerCase(), res = $("#ores", root);
+        $("#obody", root).hidden = !!q;
+        $("#ban", root).hidden = !!q;
+        if (!q) { res.innerHTML = ""; return; }
+        const ts = OTT_TITLES.map((t, j) => [t, j]).filter(([t]) => (t[0] + " " + t[1] + " " + t[2]).toLowerCase().includes(q));
+        const cs = myChannels().filter((c) => (c.name + " " + c.show).toLowerCase().includes(q)).slice(0, 12);
+        res.innerHTML = ts.length || cs.length
+          ? (ts.length ? rail("Movies &amp; Shows", ts.map(([t, j]) => poster(t, j)).join("")) : "") + (cs.length ? rail("Live Channels", cs.map(chCard).join("")) : "")
+          : `<div class="empty">${I.search}<b>Nothing found</b><p>Try another title or channel.</p></div>`;
+        bindTitles(res);
+        bindCards(res);
+      });
+      return root;
+    },
+
+    custProfile() {
+      const sess = state.session || {};
+      const guest = (sess.type || "guest") === "guest";
+      const label = { guest: "Guest Customer", cable: "Cable TV Customer", broadband: "Broadband Customer" }[sess.type] || "Customer";
+      const mob = sess.mobile || DEMO_MOBILE;
+      const f = state.filter;
+      const prefText = (arr, all) => (arr && arr.length ? arr.slice(0, 3).join(", ") + (arr.length > 3 ? ", …" : "") : all);
+      const genreNames = () => f.genres && f.genres.map((k) => GENRES.find((g) => g.key === k).name);
+      const P = CUST.ottPlan;
+      const CP = Plans.get(), mine = myChannels();   // channel plan (null pack = Welcome Free Plan only)
+      const last = CUST.purchases[0];
+      const root = el(`
+        <section class="tv tvpf cpf" data-screen="cust-profile">
+          <header class="sub-head">
+            <button class="back-btn static" data-act="back" aria-label="Back">${I.back}</button>
+            <h2>Profile</h2>
+          </header>
+          <div class="tvpf-user"><span class="tvpf-av">${guest ? "G" : label[0]}</span><span><small>${label}</small><b>${mob}</b></span></div>
+          <h4 class="tvpf-h">Profiles</h4>
+          <div class="tvpf-profiles">
+            <button class="tvpf-prof on" data-toast="This profile is active"><span class="tvpf-av sm">${guest ? "G" : label[0]}</span><small>${guest ? "Guest" : "Me"}</small></button>
+            <button class="tvpf-prof add" data-toast="Add Profile (demo)"><span class="tvpf-plus">${I.plus}</span><small>Add Profile</small></button>
+          </div>
+          <div class="tvpf-upg">
+            <div><b>${I.crown}Upgrade to OTT Package</b><small>Unlock more channels &amp; exclusive benefits</small>
+              <button class="lco-pill" data-act="upgrade">Upgrade Now</button></div>
+            <span class="tvpf-crown">${I.crown}</span>
+          </div>
+          <div class="tvpf-row"><h4 class="tvpf-h">Other Services</h4><button class="cpf-link" data-act="add-acc">Add Cable / Broadband Account ${I.plus}</button></div>
+          <div class="tvpf-svcs one">
+            <button class="tvpf-svc on" data-toast="${label} is active"><span class="tvpf-svc-ic">${I.userFill}</span><span><b>${mob}</b><small>${label}</small></span><i class="tvpf-radio">${I.check}</i></button>
+          </div>
+          <div class="tvpf-row"><h4 class="tvpf-h">Live Channels</h4><button class="lco-pill" data-act="ch-upgrade">${CP.pack === null ? "Upgrade Plan" : "Upgrade Package"}</button></div>
+          <div class="cpf-cplan${CP.pack === null ? " free" : ""}">
+            ${CP.pack === null
+              ? `<span class="cpf-noplan">No active plan</span>
+                 <div class="cpf-cplan-h"><b>Welcome Free Plan</b><small>(${mine.length}) Channels Available</small></div>
+                 <small class="cpf-cplan-s">Free-to-air channels. Upgrade to watch more.</small>`
+              : `<span class="cpf-active">Active</span>
+                 <div class="cpf-cplan-h"><b>${esc(CABLE_PACKS[CP.pack].name)}</b><small>(${mine.length}) Channels Available</small></div>
+                 <small class="cpf-cplan-s">₹ ${CABLE_PACKS[CP.pack].price}/month · ${CP.at ? "since " + dmy(new Date(CP.at)) : "your current package"} · includes the Welcome Free Plan</small>`}
+            <div class="cpf-chs">${mine.slice(0, 8).map((c) => `<button data-ch="${c.id}" style="background:${grad(c.colors)}"><b>${esc(c.name)}</b></button>`).join("")}
+              ${mine.length > 8 ? `<button class="more" data-act="all-ch">+${mine.length - 8} more</button>` : ""}</div>
+          </div>
+          ${P ? `
+            <div class="cpf-pack">
+              <div class="cpf-pack-h"><b>${esc(P.plan.name)} (${P.plan.apps})</b><small>${dmy(P.expiry)}</small></div>
+              <div class="cpf-apps">${planApps(P.plan).map(([n, g]) => `<span><i style="background:${grad(g)}">${I.tv}</i><small>${esc(n)} Available</small></span>`).join("")}</div>
+            </div>` : ""}
+          <div class="tvpf-row"><h4 class="tvpf-h">Recent Purchase</h4><button class="cpf-link" data-act="purchases">More Detail</button></div>
+          <div class="cpf-buy">
+            <div><b>${dmy(last.at)}</b><small>${esc(last.id)}</small></div>
+            <div class="r"><b>₹ ${last.amount}</b><small>${last.mode} · ${last.status}</small></div>
+            <button class="lco-pill" data-act="dl">Download</button>
+          </div>
+          <h4 class="tvpf-h">Settings</h4>
+          <div class="tvpf-set">
+            <button data-act="devices"><span class="tvpf-si">${I.device}</span><span><b>Manage Device</b><small>View devices connected to your account</small></span>${I.chev}</button>
+            <button data-act="lang-pref"><span class="tvpf-si">${I.lang}</span><span><b>Language Preference</b><small id="lp">${prefText(f.langs, "All languages")}</small></span>${I.chev}</button>
+            <button data-act="genre-pref"><span class="tvpf-si">${I.masks}</span><span><b>Genre Preference</b><small id="gp">${prefText(genreNames(), "All genres")}</small></span>${I.chev}</button>
+          </div>
+          <button class="btn tvpf-out" data-act="logout">${I.logout} ${guest ? "Exit guest mode" : "Log Out"}</button>
+          <button class="btn ghost tvpf-del" data-act="delete">Delete Account</button>
+          <p class="more-note">v1.0 demo</p>
+        </section>`);
+      bindCommon(root);
+      $$("[data-toast]", root).forEach((b) => b.addEventListener("click", () => toast(b.dataset.toast)));
+      $('[data-act="upgrade"]', root).addEventListener("click", () => go("ottSubscribe"));
+      $('[data-act="ch-upgrade"]', root).addEventListener("click", () => go("chPlans"));
+      $$(".cpf-chs [data-ch]", root).forEach((b) => b.addEventListener("click", () => watchTv(+b.dataset.ch)));
+      const allCh = $('[data-act="all-ch"]', root);
+      if (allCh) allCh.addEventListener("click", () => openSheet(`
+        <h3>Your channels (${mine.length})</h3>
+        <div class="cpf-chlist">${mine.map((c) => `<button data-c="${c.id}"><i style="background:${grad(c.colors)}"></i><span><b>${esc(c.name)}</b><small>${GENRES.find((g) => g.key === c.genre).name} · ${c.lang}</small></span>${I.chev}</button>`).join("")}</div>
+        <button class="btn ghost" id="acX">Close</button>`, (sh) => {
+        $("#acX", sh).addEventListener("click", closeSheet);
+        $$("[data-c]", sh).forEach((b) => b.addEventListener("click", () => watchTv(+b.dataset.c)));
+      }));
+      $('[data-act="devices"]', root).addEventListener("click", () => go("manageDevice"));
+      $('[data-act="add-acc"]', root).addEventListener("click", () => pickSheet("Add Account", ["Cable TV (VSC + Mobile)", "Broadband (User ID + OTP)"], "", (v) => {
+        const t = v.startsWith("Cable") ? "cable" : "broadband";
+        state.service = t;
+        go("login", { type: t, signup: true });
+      }));
+      $('[data-act="purchases"]', root).addEventListener("click", () => openSheet(`
+        <h3>Purchases</h3>
+        <div class="lco-inv">${CUST.purchases.map((p) => `<span><small>${dmy(p.at)} · ${esc(p.id)} · ${esc(p.what)}</small><b>₹ ${p.amount} · ${p.status}</b></span>`).join("")}</div>
+        <span class="demo-tag">Demo purchases</span>
+        <button class="btn ghost" id="puX">Close</button>`, (sh) => $("#puX", sh).addEventListener("click", closeSheet)));
+      $('[data-act="dl"]', root).addEventListener("click", () => toast("Receipt download (demo)"));
+      $('[data-act="lang-pref"]', root).addEventListener("click", () => openChipSheet("lang", () => { $("#lp", root).textContent = prefText(state.filter.langs, "All languages"); }));
+      $('[data-act="genre-pref"]', root).addEventListener("click", () => openChipSheet("genre", () => { $("#gp", root).textContent = prefText(genreNames(), "All genres"); }));
+      $('[data-act="logout"]', root).addEventListener("click", lcoLogout);   // same sign-out: clears session + TV filters
+      $('[data-act="delete"]', root).addEventListener("click", () => toast("Delete Account is disabled in the demo"));
+      return root;
+    },
+
+    ottSubscribe() {
+      const cur = CUST.ottPlan && CUST.ottPlan.plan.name;
+      const root = el(`
+        <section class="tv osub" data-screen="ott-subscribe">
+          <header class="sub-head">
+            <button class="back-btn static" data-act="back" aria-label="Back">${I.back}</button>
+            <h2>OTT Subscription<small>Choose your plan and start watching</small></h2>
+          </header>
+          ${OTT_PLANS.map((p, j) => `
+            <div class="osub-card" style="--c1:${p.colors[0]};--c2:${p.colors[1]}">
+              <div class="osub-top">
+                <span class="osub-ic">${I.monitor}</span>
+                <span class="osub-p"><b>₹ ${p.price}</b><small>${esc(p.name)}</small></span>
+                <span class="osub-n">${I.play}${p.apps} OTT${p.apps > 1 ? "s" : ""}</span>
+              </div>
+              <small class="osub-l">OTT App${p.apps > 1 ? "s" : ""}</small>
+              <div class="lco-apps">${planApps(p).map(([n, g]) => `<i title="${n}" style="background:${grad(g)}">${n.split(" ").map((w) => w[0]).join("").slice(0, 2)}</i>`).join("")}</div>
+              <button class="osub-go" data-sub="${j}">${p.name === cur ? "Current plan · Renew" : "Subscribe Now"}<span>${ARROW}</span></button>
+            </div>`).join("")}
+          <p class="more-note">Demo • no real payment</p>
+        </section>`);
+      bindCommon(root);
+      $$("[data-sub]", root).forEach((b) => b.addEventListener("click", () => {
+        const p = OTT_PLANS[+b.dataset.sub];
+        openSheet(`
+          <h3>Subscribe ${esc(p.name)}</h3>
+          <div class="lco-inv"><span><small>OTT apps</small><b>${planApps(p).map((a) => a[0]).join(", ")}</b></span><span><small>Validity</small><b>30 days</b></span>
+            <span class="tot"><small>Amount</small><b>₹ ${p.price}</b></span></div>
+          <div class="lco-btn2"><button class="btn ghost" id="osX">Cancel</button><button class="btn" id="osOk">Pay ₹ ${p.price}</button></div>
+          <span class="demo-tag">Demo • no real payment</span>`, (sh) => {
+          $("#osX", sh).addEventListener("click", closeSheet);
+          // Pay → payment gateway screen; on success it returns here and the plan is activated
+          $("#osOk", sh).addEventListener("click", () => startPayment({ amount: p.price, purpose: `OTT Subscription · ${p.name}` }, (pay) => {
+            const now = new Date();
+            CUST.ottPlan = { plan: p, at: now, expiry: new Date(now.getTime() + 30 * 864e5) };
+            CUST.purchases.unshift({ at: now, id: "#" + pay.txn, what: p.name, amount: p.price, mode: `Online · ${pay.method}`, status: "Completed" });
+            openSheet(`
+              <div class="ok-badge">${I.checkBig}</div>
+              <h3>Subscribed</h3>
+              <p class="ctv-sheetp"><b>${esc(p.name)}</b> is active till ${dmy(CUST.ottPlan.expiry)}.</p>
+              <span class="demo-tag">Demo • no real payment</span>
+              <button class="btn" id="osDone">Done</button>`, (s2) => $("#osDone", s2).addEventListener("click", () => { closeSheet(); back(); }));
+          }));
+        });
+      }));
+      return root;
+    },
+
+    /* ---- Customer / guest: Channel Packages (upgrade the live-TV plan → payment gateway) ---- */
+    chPlans() {
+      const cur = Plans.get().pack;   // null = Welcome Free Plan only (guest)
+      const count = (k) => CHANNELS.filter((c) => FREE_CH.has(c.id) || PACK_GENRES[k].includes(c.genre)).length;
+      const gname = (k) => GENRES.find((g) => g.key === k).name;
+      const root = el(`
+        <section class="tv osub chp" data-screen="ch-plans">
+          <header class="sub-head">
+            <button class="back-btn static" data-act="back" aria-label="Back">${I.back}</button>
+            <h2>Channel Packages<small>Upgrade your plan to watch more channels</small></h2>
+          </header>
+          <div class="chp-now">${cur === null
+            ? `<b>No active plan</b><small>Welcome Free Plan · ${FREE_CH.size} free channels</small>`
+            : `<b>${esc(CABLE_PACKS[cur].name)}</b><small>Current package · ${count(cur)} channels</small>`}</div>
+          ${CABLE_PACKS.map((p, k) => {
+            const state_ = cur === k ? "cur" : cur !== null && k < cur ? "low" : "up";
+            return `
+            <div class="osub-card chp-card ${state_}" style="--c1:${["#2fd8ff", "#9b5cff", "#ff7a59", "#43e97b", "#ffb300", "#ff3fd0"][k]};--c2:#3a6bff">
+              <div class="osub-top">
+                <span class="osub-ic">${I.tv}</span>
+                <span class="osub-p"><b>₹ ${p.price}<small class="chp-mo">/month</small></b><small>${esc(p.name)}</small></span>
+                <span class="osub-n">${I.tv}${count(k)} channels</span>
+              </div>
+              <div class="chp-g">${["Free channels", ...PACK_GENRES[k].map(gname)].map((n) => `<span>${n}</span>`).join("")}${p.hd ? `<span class="hd">${p.hd} HD</span>` : ""}</div>
+              <button class="osub-go" data-pk="${k}" ${state_ === "up" ? "" : "disabled"}>${state_ === "cur" ? "Current plan" : state_ === "low" ? "Included in your plan" : cur === null ? "Subscribe" : "Upgrade"}${state_ === "up" ? `<span>${ARROW}</span>` : ""}</button>
+            </div>`;
+          }).join("")}
+          <p class="more-note">Demo • prices are monthly and fictional</p>
+        </section>`);
+      bindCommon(root);
+      $$("[data-pk]", root).forEach((b) => b.addEventListener("click", () => {
+        const k = +b.dataset.pk, p = CABLE_PACKS[k], n = count(k);
+        openSheet(`
+          <h3>${cur === null ? "Subscribe" : "Upgrade to"} ${esc(p.name)}</h3>
+          <div class="lco-inv">
+            <span><small>Channels</small><b>${n} channels (${PACK_GENRES[k].map(gname).join(", ")} + free)</b></span>
+            ${cur !== null ? `<span><small>Current package</small><b>${esc(CABLE_PACKS[cur].name)}</b></span>` : ""}
+            <span><small>Validity</small><b>30 days</b></span>
+            <span class="tot"><small>Amount</small><b>₹ ${p.price}</b></span>
+          </div>
+          <div class="lco-btn2"><button class="btn ghost" id="cpX">Cancel</button><button class="btn" id="cpOk">Pay ₹ ${p.price}</button></div>
+          <span class="demo-tag">Demo • no real payment</span>`, (sh) => {
+          $("#cpX", sh).addEventListener("click", closeSheet);
+          $("#cpOk", sh).addEventListener("click", () => startPayment({ amount: p.price, purpose: `Channel Package · ${p.name}` }, (pay) => {
+            Plans.set(k);
+            CUST.purchases.unshift({ at: new Date(), id: "#" + pay.txn, what: p.name, amount: p.price, mode: `Online · ${pay.method}`, status: "Completed" });
+            openSheet(`
+              <div class="ok-badge">${I.checkBig}</div>
+              <h3>${esc(p.name)} is active</h3>
+              <p class="ctv-sheetp">You can now watch <b>${n} channels</b>.</p>
+              <span class="demo-tag">Demo • no real payment</span>
+              <button class="btn" id="cpDone">Done</button>`, (s2) => $("#cpDone", s2).addEventListener("click", () => { closeSheet(); back(); }));
+          }));
+        });
+      }));
+      return root;
+    },
+
+    /* ---- Simulated payment gateway ("VIBE Pay", demo). Nothing is charged and nothing leaves the browser ---- */
+    payGateway({ amount = 0, purpose = "", order = "" } = {}) {
+      const BANKS = ["Demo Bank A", "Demo Bank B", "Demo Co-op Bank", "Demo Rural Bank"];
+      const WALLETS = ["VIBE Wallet", "Demo Wallet"];
+      const M = [["upi", I.bolt, "UPI", "Pay with any UPI app"], ["card", I.card, "Credit / Debit Card", "Demo test card"],
+        ["nb", I.home, "Net Banking", "All major banks"], ["wallet", I.wallet, "Wallets", "Pay with a wallet"]];
+      const root = el(`
+        <section class="screen-fixed pg" data-screen="pay-gateway">
+          <header class="pg-top">
+            <button class="lco-ic" data-act="pg-cancel" aria-label="Cancel payment">${I.close}</button>
+            <span><b>VIBE Pay</b><small>${I.lock} Secure checkout · demo</small></span>
+          </header>
+          <div class="pg-scroll">
+            <div class="pg-merch">
+              <span class="pg-logo"><img src="${MARK}" alt="VIBE" /></span>
+              <span><b>VIBE &amp; OTT Partners</b><small>${esc(purpose)}</small><small>Order ${esc(order)}</small></span>
+              <b class="pg-amt">₹ ${money(amount)}</b>
+            </div>
+            <p class="pg-cap">Choose a payment method</p>
+            <div class="pg-methods">
+              ${M.map(([k, ic, l, d], j) => `
+                <div class="pg-m${j ? "" : " on"}" data-m="${k}">
+                  <button class="pg-mh" data-pick="${k}" aria-expanded="${!j}"><span class="pg-mi">${ic}</span><span><b>${l}</b><small>${d}</small></span><i class="pg-radio"></i></button>
+                  <div class="pg-mb">${{
+                    upi: `<label class="lco-fl" id="wUpi"><small>UPI ID</small><input id="pgUpi" placeholder="yourname@upi" autocomplete="off" /></label>
+                          <div class="pg-apps">${["VIBE UPI", "Demo Pay", "Any UPI"].map((a) => `<button class="pg-chip" data-upi="${a}">${a}</button>`).join("")}</div>`,
+                    card: `<div class="pg-card"><small>Demo test card — no real card is needed</small><b>4111 1111 1111 1111</b><span><span>VIBE DEMO USER</span><span>12/30</span></span></div>
+                          <label class="lco-fl" id="wCvv"><small>CVV (enter any 3 digits)</small><input id="pgCvv" type="password" inputmode="numeric" maxlength="3" placeholder="•••" /></label>`,
+                    nb: `<div class="pg-banks">${BANKS.map((b) => `<button class="pg-chip" data-bank="${b}">${b}</button>`).join("")}</div>`,
+                    wallet: `<div class="pg-banks">${WALLETS.map((b) => `<button class="pg-chip" data-wal="${b}">${b}</button>`).join("")}</div>`,
+                  }[k]}</div>
+                </div>`).join("")}
+            </div>
+            <p class="hint err pg-err" id="pgErr"></p>
+            <p class="pg-note">${I.lock} This is a simulated gateway for the demo. No money is charged and no details are sent anywhere.</p>
+          </div>
+          <div class="pg-foot"><button class="btn" id="pgPay">Pay ₹ ${money(amount)}</button></div>
+          <div class="pg-res" id="pgRes" hidden></div>
+        </section>`);
+      let method = "upi", pick = { bank: "", wal: "" };
+      const err = $("#pgErr", root);
+      const setM = (k) => {
+        method = k; err.textContent = "";
+        $$(".pg-m", root).forEach((m) => { const on = m.dataset.m === k; m.classList.toggle("on", on); $(".pg-mh", m).setAttribute("aria-expanded", on); });
+      };
+      $$("[data-pick]", root).forEach((b) => b.addEventListener("click", () => setM(b.dataset.pick)));
+      $$("[data-upi]", root).forEach((b) => b.addEventListener("click", () => { $("#pgUpi", root).value = "demo@" + b.dataset.upi.toLowerCase().replace(/\s/g, ""); }));
+      const chips = (attr, key) => $$(`[data-${attr}]`, root).forEach((b) => b.addEventListener("click", () => {
+        $$(`[data-${attr}]`, root).forEach((x) => x.classList.toggle("on", x === b));
+        pick[key] = b.dataset[attr];
+      }));
+      chips("bank", "bank"); chips("wal", "wal");
+      $("#pgCvv", root).addEventListener("input", (e) => { e.target.value = e.target.value.replace(/\D/g, ""); });
+      const cancel = () => openSheet(`
+        <h3>Cancel payment?</h3>
+        <p class="ctv-sheetp">Your plan will not be activated.</p>
+        <div class="lco-btn2"><button class="btn ghost" id="pcNo">Continue paying</button><button class="btn" id="pcYes">Cancel payment</button></div>`, (sh) => {
+        $("#pcNo", sh).addEventListener("click", closeSheet);
+        $("#pcYes", sh).addEventListener("click", () => { closeSheet(); PAY.cb = null; back(); toast("Payment cancelled", "error"); });
+      });
+      $('[data-act="pg-cancel"]', root).addEventListener("click", cancel);
+      $("#pgPay", root).addEventListener("click", async () => {
+        const fail = (msg, box) => { err.textContent = msg; if (box) shake($(box, root)); };
+        let label;
+        if (method === "upi") {
+          const v = $("#pgUpi", root).value.trim();
+          if (!/^[\w.-]{2,}@[a-z]{2,}$/i.test(v)) return fail("Enter a valid UPI ID, e.g. name@upi", "#wUpi");
+          label = "UPI";
+        } else if (method === "card") {
+          if (!/^\d{3}$/.test($("#pgCvv", root).value)) return fail("Enter the 3-digit CVV", "#wCvv");
+          label = "Card";
+        } else if (method === "nb") {
+          if (!pick.bank) return fail("Select a bank");
+          label = "Net Banking";
+        } else {
+          if (!pick.wal) return fail("Select a wallet");
+          label = "Wallet";
+        }
+        err.textContent = "";
+        const res = $("#pgRes", root);
+        res.hidden = false;
+        res.innerHTML = `<div class="loader-ring"></div><b>Processing ₹ ${money(amount)}…</b><small>Please don't press back (demo)</small>`;
+        await wait(1500);
+        const txn = String(Date.now()).slice(-12);
+        res.innerHTML = `<div class="ok-badge">${I.checkBig}</div><b>Payment successful</b><small>₹ ${money(amount)} · ${label}</small><small>Transaction ID ${txn}</small><small class="pg-redir">Redirecting to VIBE…</small>`;
+        await wait(1400);
+        const cb = PAY.cb;
+        PAY.cb = null;
+        back();
+        await wait(450);
+        if (cb) cb({ txn, method: label, amount });
+      });
+      return root;
+    },
+
+    manageDevice() {
+      const mob = (state.session && state.session.mobile) || DEMO_MOBILE;
+      const t = (d) => `${dmy(d)}, ${fmt(d)}`;
+      const root = el(`
+        <section class="tv mdev" data-screen="manage-device">
+          <header class="sub-head">
+            <button class="back-btn static" data-act="back" aria-label="Back">${I.back}</button>
+            <h2>Manage Device</h2>
+            <button class="lco-ic mdev-qr" data-act="qr" aria-label="Scan QR code">${I.grid}</button>
+          </header>
+          <div class="mdev-code">
+            <label class="field" id="mdW">${I.hash}<input id="mdC" maxlength="8" placeholder="Enter Unique Code" autocomplete="off" /></label>
+            <button class="lco-pill" data-act="validate">Validate</button>
+          </div>
+          <p class="hint" id="mdH">Enter the 6–8 character code shown on your TV</p>
+          <span class="mdev-tag">This Device</span>
+          <div class="mdev-card this">${I.device}<span><b>${mob}</b><small>This phone (browser)</small><small>${t(CUST.login)}</small></span></div>
+          <p class="mdev-h">Other Devices Where You Have Logged In.</p>
+          <div id="mdL"></div>
+        </section>`);
+      bindCommon(root);
+      const draw = () => {
+        $("#mdL", root).innerHTML = CUST.others.length
+          ? CUST.others.map((d, j) => `<div class="mdev-card">${I.tv}<span><b>${mob}</b><small>${esc(d.name)}</small><small>${t(d.at)}</small></span><button class="mdev-out" data-out="${j}">Logout</button></div>`).join("")
+          : `<p class="otth-none">No other devices.</p>`;
+        $$("[data-out]", root).forEach((b) => b.addEventListener("click", () => {
+          const d = CUST.others[+b.dataset.out];
+          CUST.others.splice(+b.dataset.out, 1);
+          draw();
+          toast(`Logged out from ${d.name} (demo)`, "success");
+        }));
+      };
+      draw();
+      const inp = $("#mdC", root), h = $("#mdH", root);
+      inp.addEventListener("input", () => { inp.value = inp.value.toUpperCase().replace(/[^A-Z0-9]/g, ""); });
+      $('[data-act="qr"]', root).addEventListener("click", () => toast("Scan the QR code on your TV (demo)"));
+      $('[data-act="validate"]', root).addEventListener("click", async () => {
+        if (!/^[A-Z0-9]{6,8}$/.test(inp.value)) { h.textContent = "Code must be 6–8 letters/numbers"; h.className = "hint err"; shake($("#mdW", root)); return; }
+        showLoader("Validating code…");
+        await wait(800);
+        hideLoader();
+        CUST.others.unshift({ name: `Smart TV (${inp.value})`, at: new Date() });
+        inp.value = "";
+        h.textContent = "Enter the 6–8 character code shown on your TV"; h.className = "hint";
+        draw();
+        toast("TV linked to your account (demo)", "success");
       });
       return root;
     },
@@ -3835,7 +4378,7 @@
   function filtered(g) {
     const { lang, q, langs } = state.filter;
     const ql = q.toLowerCase();
-    return CHANNELS.filter((c) => c.genre === g.key && (!lang || c.lang === lang) && (!langs || langs.includes(c.lang)) &&
+    return CHANNELS.filter((c) => c.genre === g.key && canWatch(c) && (!lang || c.lang === lang) && (!langs || langs.includes(c.lang)) &&
       (!ql || c.name.toLowerCase().includes(ql) || c.show.toLowerCase().includes(ql)));
   }
   // Genres to show (single Genre pick on the customer Home, multi-select chips on the LCO TV)
@@ -3864,7 +4407,7 @@
       return `
         <div class="sec">
           <div class="sec-head">
-            <h4><span class="sec-ic">${g.icon}</span>${g.name} (${g.count})</h4>
+            <h4><span class="sec-ic">${g.icon}</span>${g.name} (${allowedCh() ? list.length : g.count})</h4>
             <button class="see-all" data-genre="${g.key}">See All ${I.chev}</button>
           </div>
           <div class="rail">${list.map((c) => cardHTML(c)).join("")}</div>
@@ -3912,27 +4455,52 @@
   }
 
   function bindCards(root, replace = false) {
-    // On the LCO "Watch OTT" TV a channel opens the old app's channel page; everywhere else the normal player
+    // Live TV Home (LCO Watch OTT, customer and guest) and the OTT home open the old app's channel page; elsewhere the normal player
     $$("[data-ch]", root).forEach((b) => b.addEventListener("click", () => {
-      if (b.closest(".from-lco")) go("tvChannel", { id: +b.dataset.ch });
+      if (b.closest(".from-lco, .tvx, .otth")) watchTv(+b.dataset.ch);
       else playChannel(+b.dataset.ch, replace);
     }));
   }
 
+  // ☰ → Partner Apps (Home and OTT menus): tiles that would open the partner's app (demo: toast only)
+  function openPartnerApps() {
+    openSheet(`
+      <h3 class="pa-h">Partner Apps</h3>
+      <div class="pa-grid">${PARTNER_APPS.map(([n, word, color]) => `
+        <button class="pa-app" data-pa="${n}"><span class="pa-tile"><b style="color:${color}">${word}</b></span><small>${n}</small></button>`).join("")}</div>`, (sh) => {
+      $$("[data-pa]", sh).forEach((b) => b.addEventListener("click", () => { closeSheet(); toast(`Opening ${b.dataset.pa} (demo)`); }));
+    });
+  }
+
+  // A channel outside the viewer's plan (normally hidden) → offer the upgrade instead of playing it
+  function planGate(c) {
+    if (canWatch(c)) return false;
+    openSheet(`
+      <h3>Not in your plan</h3>
+      <p>${esc(c.name)} is not included in your current plan. Upgrade to watch it.</p>
+      <button class="btn" id="pgUp">See channel packages</button>
+      <button class="btn ghost" id="pgNo">Close</button>`, (sh) => {
+      $("#pgUp", sh).addEventListener("click", () => go("chPlans"));
+      $("#pgNo", sh).addEventListener("click", closeSheet);
+    });
+    return true;
+  }
+
+  // Pay buttons → simulated payment gateway screen. onSuccess({txn, method, amount}) runs after it returns.
+  const PAY = { cb: null };
+  function startPayment({ amount, purpose }, onSuccess) {
+    closeSheet();
+    PAY.cb = onSuccess;
+    go("payGateway", { amount, purpose, order: "VBO" + String(Date.now()).slice(-8) });
+  }
+  // Live TV channel page (same for LCO, customer and guest; only channels in the viewer's plan play)
+  function watchTv(id) {
+    if (planGate(CHANNELS[id])) return;
+    go("tvChannel", { id });
+  }
+
   function playChannel(id, replace = false) {
-    if ((state.session || {}).type === "guest") {
-      openSheet(`
-        <h3>Subscribe to watch</h3>
-        <p>Live channels need an active Cable TV or Broadband connection.</p>
-        <button class="btn" id="subCable">Register Cable TV (VSC + Mobile)</button>
-        <button class="btn ghost" id="subBb">Register Broadband (User ID + OTP)</button>
-        <button class="btn ghost" id="subPrev">Watch 2-minute preview</button>`, (sh) => {
-        $("#subCable", sh).addEventListener("click", () => { state.service = "cable"; go("login", { type: "cable", signup: true }); });
-        $("#subBb", sh).addEventListener("click", () => { state.service = "broadband"; go("login", { type: "broadband", signup: true }); });
-        $("#subPrev", sh).addEventListener("click", () => { closeSheet(); openPlayer(id, replace); toast("Preview mode (demo)"); });
-      });
-      return;
-    }
+    if (planGate(CHANNELS[id])) return;
     openPlayer(id, replace);
   }
   function openPlayer(id, replace) {
@@ -3993,7 +4561,7 @@
           : `<button class="btn" id="tvpRemind">${I.bell} Remind me</button>`}
       </div>`, (sh) => {
       const go_ = $("#tvpGo", sh), rem = $("#tvpRemind", sh), x = $("#tvpX", sh);
-      if (go_) go_.addEventListener("click", () => go("tvChannel", { id: c.id }));
+      if (go_) go_.addEventListener("click", () => watchTv(c.id));
       if (rem) rem.addEventListener("click", () => { closeSheet(); toast(`Reminder set for ${p.title} at ${fmt(p.start)} (demo)`, "success"); });
       if (x) x.addEventListener("click", closeSheet);
     });

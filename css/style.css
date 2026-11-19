@@ -2447,3 +2447,12 @@ button.lco-card:active { background: #1c1c22; }
 .pkd-sum b { display: block; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .pkd-sum small { display: block; font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .pkd-bar .btn { flex: none; width: auto; padding: 0 20px; height: 46px; }
+
+/* Package detail: Channels / HD / OTT apps boxes are buttons (jump to that section) */
+.pkd-stats .pkd-stat { padding: 8px 4px; border-radius: 10px; background: rgba(0, 0, 0, .3); text-align: center; color: inherit; border: 1px solid transparent; cursor: pointer; transition: border-color .2s, background .2s; }
+.pkd-stats .pkd-stat:active { transform: scale(.97); }
+.pkd-stats .pkd-stat.on { border-color: var(--accent); background: rgba(155, 92, 255, .18); }
+.pkd-stats .pkd-stat small { color: var(--muted); }
+
+/* Version number at the top of every ☰ menu */
+.dr-ver { margin: 0 0 6px; font-size: 11px; font-weight: 500; letter-spacing: .3px; color: var(--muted); opacity: .85; }

@@ -6,7 +6,9 @@
   "use strict";
 
   // Demo values (no SMS is ever sent)
-  const DEMO_OTP = "123456";          // OTP for Broadband login and registration
+  const DEMO_OTP = "1111";            // demo OTP everywhere (customers, other users, LCO)
+  const OTP_LEN = 4;                  // every OTP is 4 digits
+  const APP_VERSION = "1.0.0";        // shown small at the top of every ☰ menu
   const DEMO_MOBILE = "9000000000";   // registered mobile linked to every Broadband User ID; works out of the box
 
   const LOGO = "assets/logo/vibe-logo.png";   // full logo with "ALL-IN-ONE HUB"
@@ -97,7 +99,7 @@
     lco: { title: "LCO", desc: "Continue as a Partner/LCO", icon: I.store },
     broadband: { title: "Broadband", desc: "Continue with your broadband connection", icon: I.wifi },
     cable: { title: "Cable TV", desc: "Continue with your Cable TV service provider", icon: I.tv },
-    guest: { title: "Other Users", desc: "Explore free channels without a subscription", icon: I.guest },
+    guest: { title: "Other Users", desc: "I want to be a PLAYTOP user", icon: I.guest },
   };
 
   // Extra (non-mobile) fields used by some login types
@@ -149,7 +151,7 @@
       btnReg: "Register",
       extra: "vsc",
       otpLogin: true, otpAlways: true,   // OTP (DEMO_OTP) on every sign-in, registration included
-      otpSubLogin: "Enter the 6-digit OTP sent to your mobile number",
+      otpSubLogin: "Enter the 4-digit OTP sent to your mobile number",
       extraOnlyOnRegister: true,
       done: "Login successful",
       doneMsg: "Welcome back! You are logged in with your registered mobile number.",
@@ -168,9 +170,9 @@
       extraOnlyOnRegister: true,
       otpRegister: true,
       otpLogin: true, otpAlways: true,   // OTP (DEMO_OTP) on every mobile sign-in
-      otpSubLogin: "Enter the 6-digit OTP sent to your mobile number",
+      otpSubLogin: "Enter the 4-digit OTP sent to your mobile number",
       otpSub: "New broadband customer? Enter your User ID – we'll send an OTP to your registered mobile",
-      otpSubCode: "Enter the 6-digit OTP sent to your registered mobile",
+      otpSubCode: "Enter the 4-digit OTP sent to your registered mobile",
       done: "Login successful",
       doneMsg: "Welcome back! You are logged in with your registered mobile number.",
       doneReg: "Registration successful",
@@ -197,7 +199,7 @@
       btn: "Continue",
       track: true,
       otpLogin: true, otpAlways: true,   // OTP (DEMO_OTP) on every sign-in, first time included
-      otpSubLogin: "Enter the 6-digit OTP sent to your mobile number",
+      otpSubLogin: "Enter the 4-digit OTP sent to your mobile number",
       done: "Welcome back!",
       doneMsg: "You are logged in as an other user.",
       doneReg: "Registration successful",
@@ -215,7 +217,7 @@
     noLoginLink: true,
     dashboard: true,
     otpSub: "Enter your LCO ID – we'll send an OTP to your registered mobile number",
-    otpSubCode: "Enter the 6-digit OTP sent to your registered mobile",
+    otpSubCode: "Enter the 4-digit OTP sent to your registered mobile",
     done: "Welcome back, Partner",
     doneMsg: "You are logged in with your LCO ID.",
     doneReg: "Partner registration successful",
@@ -680,6 +682,14 @@
     },
     set(pack) { const o = Plans.all(); o[Plans.key()] = { pack, at: Date.now() }; Plans.save(o); },
   };
+  // SITI Vibes purchases (separate from the package a customer already has): nothing until the viewer buys a
+  // package from ☰ → SITI Vibes. { "type:mobile": {pack, at} }
+  const SITI_KEY = "vibe.sitiPlans";
+  const Siti = {
+    all() { try { return JSON.parse(localStorage.getItem(SITI_KEY) || "{}"); } catch (e) { return Siti.mem || (Siti.mem = {}); } },
+    get() { const p = Siti.all()[Plans.key()]; return p ? p.pack : null; },   // null = no SITI package yet
+    set(pack) { const o = Siti.all(); o[Plans.key()] = { pack, at: Date.now() }; try { localStorage.setItem(SITI_KEY, JSON.stringify(o)); } catch (e) { Siti.mem = o; } },
+  };
   // null = no restriction (LCO Watch OTT / not signed in as customer or guest)
   // linear = the Cable TV package only (LTS). Otherwise Cable TV customers can also play every TVE channel in the app.
   function allowedCh(linear = false) {
@@ -1014,7 +1024,7 @@
             <div class="ex-wrap" id="lOtpWrap" hidden>
               <label class="field" id="lOtpField">
                 ${I.key}
-                <input id="lOtp" class="otp-in" type="text" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="Enter 6-digit OTP" aria-label="OTP" />
+                <input id="lOtp" class="otp-in" type="text" inputmode="numeric" maxlength="4" autocomplete="one-time-code" placeholder="Enter 4-digit OTP" aria-label="OTP" />
               </label>
               <p class="hint" id="lOtpHint"></p>
               <div class="otp-links">
@@ -1144,10 +1154,10 @@
       }
       if (lOtp) {
         lOtp.addEventListener("input", () => {
-          lOtp.value = lOtp.value.replace(/\D/g, "").slice(0, 6);
+          lOtp.value = lOtp.value.replace(/\D/g, "").slice(0, OTP_LEN);
           lOtpField.classList.remove("invalid");
-          btn.classList.toggle("dim", lOtp.value.length !== 6);
-          if (lOtp.value.length === 6) btn.click();   // auto-verify once all 6 digits are in
+          btn.classList.toggle("dim", lOtp.value.length !== OTP_LEN);
+          if (lOtp.value.length === OTP_LEN) btn.click();   // auto-verify once all digits are in
         });
         lOtp.addEventListener("keydown", (e) => { if (e.key === "Enter") btn.click(); });
         $("#lOtpEdit", root).addEventListener("click", endLoginOtp);
@@ -1159,9 +1169,9 @@
         if (otpStep) {
           if (lOtp.value !== DEMO_OTP) {
             shake(lOtpField);
-            lOtpHint.textContent = lOtp.value.length < 6 ? "Enter the 6-digit OTP" : "Incorrect OTP – please try again";
+            lOtpHint.textContent = lOtp.value.length < OTP_LEN ? "Enter the 4-digit OTP" : "Incorrect OTP – please try again";
             lOtpHint.className = "hint err";
-            if (lOtp.value.length === 6) toast("Incorrect OTP", "error");
+            if (lOtp.value.length === OTP_LEN) toast("Incorrect OTP", "error");
             return lOtp.focus();
           }
           otpOk = true;
@@ -2676,6 +2686,7 @@
           <div class="drawer" id="drawer" aria-hidden="true">
             <div class="drawer-backdrop" data-close-menu></div>
             <nav class="drawer-panel" aria-label="Menu">
+              <p class="dr-ver">Version ${APP_VERSION}</p>
               <div class="drawer-head">
                 <div class="brand">
                   <img src="${MARK}" alt="VIBE" />
@@ -3532,12 +3543,16 @@
         <div class="sec"><div class="sec-head"><h4>${title}</h4></div>
           <div class="rail${cls}">${body}</div></div>`;
       const bodyHTML = () => {
+        const popCh = getPopularChannels();   // same Popular Channels rail as the Live TV Home (follows Genre / Language)
         const recent = (state.recentOtt || []).filter((j) => titleOn(OTT_TITLES[j])).map((j) => [OTT_TITLES[j], j]);
         const titles = OTT_TITLES.map((t, j) => [t, j]).filter(([t]) => titleOn(t));
         const bengali = titles.filter(([t]) => t[1] === "Bengali");
         const others = titles.filter(([t]) => t[1] !== "Bengali");
         const html = [
           rail(`<span class="sec-ic">${I.fire}</span>Popular OTT`, OTT_APPS.map(appTile).join(""), " pop-rail"),
+          popCh.length ? `<div class="sec sec-pop"><div class="sec-head"><h4><span class="sec-ic">${I.tv}</span>Popular Channels</h4>
+            <button class="see-all" data-act="pop-all">See All ${I.chev}</button></div>
+            <div class="rail pop-rail">${popCh.map((c) => popCardHTML(c)).join("")}</div></div>` : "",
           recent.length ? rail("Continue Watching", recent.map(([t, j]) => wide(t, j)).join("")) : "",
           bengali.length ? rail("Bengali Hits", bengali.map(([t, j]) => poster(t, j)).join(""), " rail-tall") : "",
           others.length ? rail("New Releases", others.map(([t, j]) => wide(t, j)).join("")) : "",
@@ -3569,10 +3584,12 @@
           <div class="drawer" id="drawer" aria-hidden="true">
             <div class="drawer-backdrop" data-close-menu></div>
             <nav class="drawer-panel" aria-label="Menu">
+              <p class="dr-ver">Version ${APP_VERSION}</p>
               <div class="drawer-head">
                 <div class="brand"><img src="${MARK}" alt="VIBE" /><small>&amp; OTT Partners</small></div>
                 <button class="drawer-x" data-close-menu aria-label="Close menu">${I.close}</button>
               </div>
+              <button class="gp dr-item" data-act="ositi">${I.crown}<span>SITI Vibes</span></button>
               <button class="gp dr-item" data-act="live">${I.tv}<span>Live TV</span></button>
               <button class="gp dr-item" data-act="oprofile">${I.userFill}<span>Profile</span></button>
               <i class="dr-sep"></i>
@@ -3618,6 +3635,8 @@
         box.innerHTML = bodyHTML();
         bindTitles(box);
         $$("[data-app]", box).forEach((b) => b.addEventListener("click", () => openApp(+b.dataset.app)));
+        bindCards(box);   // Popular Channels → channel page (locked → "Not in your plan")
+        $$('[data-act="pop-all"]', box).forEach((b) => b.addEventListener("click", () => go("popularAll")));
         $$("[data-clear]", box).forEach((b) => b.addEventListener("click", () => { f[b.dataset.clear] = null; draw(); }));
         $('[data-act="genre"] span', root).textContent = genreLabel();
         $('[data-act="genre"]', root).classList.toggle("on", !!f.genres);
@@ -3641,6 +3660,7 @@
       $$(".dr-item", root).forEach((b) => b.addEventListener("click", closeDrawer));
       $('[data-act="live"]', root).addEventListener("click", () => setTimeout(back, 200));
       $('[data-act="oprofile"]', root).addEventListener("click", () => go("custProfile"));
+      $('[data-act="ositi"]', root).addEventListener("click", () => go("chPlans", { siti: true }));
       if (bar) bindCtvNav(root, "ott");
       bindDrawerExtras(root);
       $('[data-act="genre"]', root).addEventListener("click", () => openChipSheet("genre", draw));
@@ -3923,7 +3943,7 @@
     // Channel packages list. Opened from Profile → Upgrade Package, and from ☰ → SITI Vibes ({siti:true}).
     // Top: the viewer's own package card; every card opens the package detail page (purchase is only offered there).
     chPlans({ siti = false } = {}) {
-      const cur = Plans.get().pack;   // null = Welcome Free Plan only (guest)
+      const cur = siti ? Siti.get() : Plans.get().pack;   // SITI Vibes: only a package bought there; Upgrade: null = Welcome Free Plan (guest)
       const gname = (k) => GENRES.find((g) => g.key === k).name;
       const C1 = ["#2fd8ff", "#9b5cff", "#ff7a59", "#43e97b", "#ffb300", "#ff3fd0"];
       const root = el(`
@@ -3932,17 +3952,17 @@
             <button class="back-btn static" data-act="back" aria-label="Back">${I.back}</button>
             <h2>${siti ? "SITI Vibes" : "Channel Packages"}<small>${siti ? "Your package and all channel packages" : "Upgrade your plan to watch more channels"}</small></h2>
           </header>
-          <p class="chp-cap">Your package</p>
+          ${siti && cur === null ? "" : `<p class="chp-cap">Your package</p>
           <button class="chp-now chp-mine" data-pd="${cur === null ? "free" : cur}">
             <span class="chp-mine-ic">${I.tv}</span>
             <span class="chp-mine-t">${cur === null
               ? `<b>Welcome Free Plan</b><small>No active plan · ${packChannels(null).length} free channels</small>`
               : `<b>${esc(CABLE_PACKS[cur].name)}</b><small>Active · ₹ ${CABLE_PACKS[cur].price}/month · ${packChannels(cur).length} channels${CABLE_PACKS[cur].hd ? ` · ${packChannels(cur).filter((c) => c.hd).length} HD` : ""}</small>`}</span>
             <span class="chp-mine-go">Details ${I.chev}</span>
-          </button>
+          </button>`}
           <p class="chp-cap">All packages</p>
           ${CABLE_PACKS.map((p, k) => {
-            const st = packState(k);
+            const st = packState(k, siti);
             const list = packChannels(k);
             return `
             <div class="osub-card chp-card ${st}" data-pd="${k}" role="button" tabindex="0" style="--c1:${C1[k]};--c2:#3a6bff">
@@ -3961,7 +3981,7 @@
       $$("[data-pd]", root).forEach((b) => b.addEventListener("click", (e) => {
         e.stopPropagation();
         const k = b.dataset.pd;
-        go("packDetail", { k: k === "free" ? "free" : +k });
+        go("packDetail", { k: k === "free" ? "free" : +k, siti });
       }));
       return root;
     },
@@ -3970,12 +3990,12 @@
     // summary → sticky "Browse by category" tabs (with counts, incl. OTT Apps) + language filter + search → channel grid
     // → fixed bottom bar "Package · N channels · M OTT apps · ₹X/month" + Proceed to Pay (VIBE Pay gateway).
     // Same view for the viewer's own package (SITI Vibes card, Profile package card) and for upgrade packages.
-    packDetail({ k = "free" } = {}) {
+    packDetail({ k = "free", siti = false } = {}) {
       const free = k === "free";
       const p = free ? { name: "Welcome Free Plan", price: 0, hd: 0, ott: 0 } : CABLE_PACKS[k];
       const list = packChannels(free ? null : k);
       const apps = OTT_APPS.slice(0, p.ott || 0);
-      const st = free ? (Plans.get().pack === null ? "cur" : "low") : packState(k);
+      const st = free ? (Plans.get().pack === null ? "cur" : "low") : packState(k, siti);
       const hd = list.filter((c) => c.hd).length;
       const genres = GENRES.filter((g) => list.some((c) => c.genre === g.key));
       const langs = [...new Set(list.map((c) => c.lang))].sort((a, b) => list.filter((c) => c.lang === b).length - list.filter((c) => c.lang === a).length);
@@ -3988,12 +4008,16 @@
           <span class="pop-tile" style="background:${grad(c)}"><span class="ott-logo"><b>${esc(n.split(" ").map((w) => w[0]).join(""))}</b><small>${esc(n)}</small></span></span>
           <span class="pop-name">${esc(n)}</span>
         </button>`).join("")}</div>`;
-      const tabsHTML = () => [["all", "All", list.filter(match).length], ...genres.map((g) => [g.key, g.name, count(g.key)]), ...(apps.length ? [["ott", "OTT Apps", apps.length]] : [])]
+      const tabsHTML = () => [["all", "All", list.filter(match).length], ...(hd ? [["hd", "HD", list.filter((c) => c.hd && match(c)).length]] : []), ...genres.map((g) => [g.key, g.name, count(g.key)]), ...(apps.length ? [["ott", "OTT Apps", apps.length]] : [])]
         .map(([key, name, n]) => `<button class="pkd-tab${cat === key ? " on" : ""}" data-cat="${key}">${name} <i>${n}</i></button>`).join("");
       const bodyHTML = () => {
-        if (cat === "ott") return appGrid() || `<div class="empty">${I.search}<b>No apps found</b></div>`;
-        const secs = (cat === "all" ? genres : genres.filter((g) => g.key === cat)).map((g) => {
-          const gl = list.filter((c) => c.genre === g.key && match(c)).sort((a, b) => isDD(a) - isDD(b));
+        if (cat === "ott") {
+          if (!apps.length) return `<div class="empty">${I.monitor}<b>No OTT apps in this package</b><p>Packages with OTT apps show them here.</p></div>`;
+          return `<div class="sec"><div class="sec-head"><h4><span class="sec-ic">${I.monitor}</span>OTT apps you get (${apps.length})</h4></div>${appGrid()}</div>`.replace(/<div class="lts-grid"><\/div>/, `<div class="empty">${I.search}<b>No apps found</b></div>`);
+        }
+        if (cat === "hd" && !hd) return `<div class="empty">${I.tv}<b>No HD channels in this package</b><p>This is an SD-only package.</p></div>`;
+        const secs = (cat === "all" || cat === "hd" ? genres : genres.filter((g) => g.key === cat)).map((g) => {
+          const gl = list.filter((c) => c.genre === g.key && match(c) && (cat !== "hd" || c.hd)).sort((a, b) => isDD(a) - isDD(b));
           return gl.length ? `<div class="sec"><div class="sec-head"><h4><span class="sec-ic">${g.icon}</span>${g.name} (${gl.length})</h4></div>${grid(gl)}</div>` : "";
         }).join("");
         const ott = cat === "all" && apps.length && !q && lang === "all" ? `<div class="sec"><div class="sec-head"><h4><span class="sec-ic">${I.monitor}</span>OTT Apps (${apps.length})</h4></div>${appGrid()}</div>` : "";
@@ -4013,9 +4037,9 @@
               <span class="pkd-st ${st}">${st === "cur" ? "Your current package" : st === "low" ? "Included in your plan" : "Available"}</span>
               <b class="pkd-price">${free ? "Free" : `₹ ${p.price}`}${free ? "" : `<small>/month</small>`}</b>
               <div class="pkd-stats">
-                <span><b>${list.length}</b><small>Channels</small></span>
-                <span><b>${hd}</b><small>HD</small></span>
-                <span><b>${apps.length}</b><small>OTT apps</small></span>
+                <button class="pkd-stat" data-stat="all"><b>${list.length}</b><small>Channels</small></button>
+                <button class="pkd-stat" data-stat="hd" aria-label="See HD channels"><b>${hd}</b><small>HD ›</small></button>
+                <button class="pkd-stat" data-stat="ott" aria-label="See OTT apps"><b>${apps.length}</b><small>OTT apps ›</small></button>
                 <span><b>30</b><small>Days</small></span>
               </div>
             </div>
@@ -4038,12 +4062,23 @@
         </section>`);
       const draw = () => {
         $("#pkTabs", root).innerHTML = tabsHTML();
+        $$("[data-stat]", root).forEach((b) => b.classList.toggle("on", b.dataset.stat === cat && cat !== "all"));
         $$("[data-cat]", root).forEach((b) => b.addEventListener("click", () => { cat = b.dataset.cat; draw(); }));
         const box = $("#pkBody", root);
         box.innerHTML = bodyHTML();
         bindCards(box);
         $$("[data-papp]", box).forEach((b) => b.addEventListener("click", () => toast(`${b.dataset.papp} is included in ${p.name} (demo)`)));
       };
+      // Channels / HD / OTT apps boxes: jump to that section of the package (HD channels, OTT apps it includes)
+      $$("[data-stat]", root).forEach((b) => b.addEventListener("click", () => {
+        cat = b.dataset.stat;
+        if (cat !== "all") { lang = "all"; $$("[data-lang]", root).forEach((x) => x.classList.toggle("on", x.dataset.lang === "all")); }
+        draw();
+        const sc = $(".tv-scroll", root), hero = $(".pkd-hero", root);
+        sc.scrollTo({ top: sc.scrollTop + hero.getBoundingClientRect().bottom - sc.getBoundingClientRect().top - $(".lts-top", root).offsetHeight, behavior: "smooth" });
+        const t = $(`.pkd-tab[data-cat="${cat}"]`, root);
+        if (t) t.scrollIntoView({ block: "nearest", inline: "center" });
+      }));
       $$("[data-lang]", root).forEach((b) => b.addEventListener("click", () => {
         lang = b.dataset.lang;
         $$("[data-lang]", root).forEach((x) => x.classList.toggle("on", x === b));
@@ -4059,7 +4094,7 @@
       $("#pkQ", root).addEventListener("input", (e) => { q = e.target.value.trim().toLowerCase(); draw(); });
       bindCommon(root);
       const buy = $("#pkdBuy", root);
-      if (buy) buy.addEventListener("click", () => buyPack(k));
+      if (buy) buy.addEventListener("click", () => buyPack(k, siti));
       // The filters stick right under the fixed top bar
       requestAnimationFrame(() => { const t = $(".lts-top", root); if (t && t.offsetHeight) root.style.setProperty("--pkd-top", t.offsetHeight + "px"); });
       draw();
@@ -4246,7 +4281,7 @@
           <div class="ex-wrap" id="otpWrap" hidden>
             <label class="field" id="otpField">
               ${I.key}
-              <input id="otp" class="otp-in" type="text" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="Enter 6-digit OTP" aria-label="OTP" />
+              <input id="otp" class="otp-in" type="text" inputmode="numeric" maxlength="4" autocomplete="one-time-code" placeholder="Enter 4-digit OTP" aria-label="OTP" />
             </label>
             <p class="hint" id="otpHint"></p>
             <div class="otp-links">
@@ -4281,7 +4316,7 @@
     // (LCO keeps its own bucket keyed by LCO ID, so many LCO IDs can share the demo mobile)
     const known = () => (cfg.regBucket ? Registry.get(cfg.regBucket, xin.value) : Registry.findById(type, xin.value));
     const setBtn = (t) => { $(".lbl", btn).textContent = t; };
-    const refreshDim = () => btn.classList.toggle("dim", step === "id" ? !ex.valid(xin.value) : otp.value.length !== 6);
+    const refreshDim = () => btn.classList.toggle("dim", step === "id" ? !ex.valid(xin.value) : otp.value.length !== OTP_LEN);
 
     function idHint() {
       if (!xin.value) { xHint.textContent = ex.hint; xHint.className = "hint"; }
@@ -4352,9 +4387,9 @@
     let busy = false;
     async function verify() {
       if (busy) return;
-      if (otp.value.length !== 6) {
+      if (otp.value.length !== OTP_LEN) {
         shake(oField);
-        oHint.textContent = "Enter the 6-digit OTP"; oHint.className = "hint err";
+        oHint.textContent = "Enter the 4-digit OTP"; oHint.className = "hint err";
         return otp.focus();
       }
       if (otp.value !== code) {
@@ -4403,10 +4438,10 @@
     });
     xin.addEventListener("keydown", (e) => { if (e.key === "Enter" && step === "id") sendOtp(); });
     otp.addEventListener("input", () => {
-      otp.value = otp.value.replace(/\D/g, "").slice(0, 6);
+      otp.value = otp.value.replace(/\D/g, "").slice(0, OTP_LEN);
       oField.classList.remove("invalid");
       refreshDim();
-      if (otp.value.length === 6) verify();   // auto-verify once all 6 digits are in
+      if (otp.value.length === OTP_LEN) verify();   // auto-verify once all digits are in
     });
     otp.addEventListener("keydown", (e) => { if (e.key === "Enter") verify(); });
     $("#editId", root).addEventListener("click", toIdStep);
@@ -5178,13 +5213,14 @@
     return CHANNELS.filter((c) => FREE_CH.has(c.id) || (PACK_GENRES[k].includes(c.genre) && !(sdOnly && c.hd)));
   }
   // "cur" = the viewer's package, "low" = lower (already included), "up" = can be bought
-  function packState(k) {
-    const cur = Plans.get().pack;
+  // siti = SITI Vibes: compared with the package bought there (none at first → every package can be bought)
+  function packState(k, siti = false) {
+    const cur = siti ? Siti.get() : Plans.get().pack;
     return cur === k ? "cur" : cur !== null && k < cur ? "low" : "up";
   }
   // Confirm sheet → VIBE Pay (demo) → package active → Done goes back to the packages list
-  function buyPack(k) {
-    const cur = Plans.get().pack, p = CABLE_PACKS[k], n = packChannels(k).length;
+  function buyPack(k, siti = false) {
+    const cur = siti ? Siti.get() : Plans.get().pack, p = CABLE_PACKS[k], n = packChannels(k).length;
     const gname = (g) => GENRES.find((x) => x.key === g).name;
     openSheet(`
       <h3>${cur === null ? "Subscribe" : "Upgrade to"} ${esc(p.name)}</h3>
@@ -5198,7 +5234,11 @@
       <span class="demo-tag">Demo • no real payment</span>`, (sh) => {
       $("#cpX", sh).addEventListener("click", closeSheet);
       $("#cpOk", sh).addEventListener("click", () => startPayment({ amount: p.price, purpose: `Channel Package · ${p.name}` }, (pay) => {
-        Plans.set(k);
+        if (siti) {
+          Siti.set(k);
+          const have = Plans.get().pack;
+          if (have === null || k > have) Plans.set(k);   // unlock the channels; never downgrade the package they already have
+        } else Plans.set(k);
         CUST.purchases.unshift({ at: new Date(), id: "#" + pay.txn, what: p.name, amount: p.price, mode: `Online · ${pay.method}`, status: "Completed" });
         openSheet(`
           <div class="ok-badge">${I.checkBig}</div>
@@ -5362,7 +5402,8 @@
       <div class="drawer" id="drawer" aria-hidden="true">
         <div class="drawer-backdrop" data-close-menu></div>
         <nav class="drawer-panel ctv-drawer" aria-label="Menu">
-          <div class="drawer-head"><div class="brand"><img src="${MARK}" alt="VIBE" /><small>&amp; OTT Partners</small></div>
+          <p class="dr-ver">Version ${APP_VERSION}</p>
+              <div class="drawer-head"><div class="brand"><img src="${MARK}" alt="VIBE" /><small>&amp; OTT Partners</small></div>
             <button class="drawer-x" data-close-menu aria-label="Close menu">${I.close}</button></div>
           <div class="ctv-ucard">
             <button class="ctv-uname" data-act="dr-profile">${esc(u.id)} ${I.chev}</button>

@@ -254,12 +254,12 @@
 
   /* ---------- Cable TV packages (LCO → Active STB → subscriber → Upgrade Package). Fictional names/prices ---------- */
   const CABLE_PACKS = [
-    { name: "VIBE Basic SD", price: 199, ch: 180, hd: 0 },
-    { name: "VIBE Bangla Value", price: 299, ch: 230, hd: 15 },
-    { name: "VIBE Family HD", price: 399, ch: 280, hd: 40 },
-    { name: "VIBE Sports Plus HD", price: 499, ch: 310, hd: 60 },
-    { name: "VIBE Premium HD", price: 649, ch: 360, hd: 90 },
-    { name: "VIBE Ultimate 4K", price: 799, ch: 400, hd: 120 },
+    { name: "VIBE Basic SD", price: 199, ch: 180, hd: 0, ott: 0 },        // ott = number of OTT_APPS included (customer packages)
+    { name: "VIBE Bangla Value", price: 299, ch: 230, hd: 15, ott: 2 },
+    { name: "VIBE Family HD", price: 399, ch: 280, hd: 40, ott: 4 },
+    { name: "VIBE Sports Plus HD", price: 499, ch: 310, hd: 60, ott: 6 },
+    { name: "VIBE Premium HD", price: 649, ch: 360, hd: 90, ott: 9 },
+    { name: "VIBE Ultimate 4K", price: 799, ch: 400, hd: 120, ott: 11 },
   ];
 
   /* ---------- LCO dashboard demo data (fictional people & numbers; generated once, stable per load) ---------- */
@@ -640,10 +640,15 @@
     "Colors", "Colors Bangla", "Sony TV", "Sony SAB", "Sun TV", "Star Gold", "Star Movies", "Zee Cinema", "Zee Bangla Cinema", "&pictures",
     "Sony Max", "Sony Pix", "Colors Cineplex", "Jalsha Movies", "R. Bharat", "Aaj Tak", "NDTV India", "Zee News", "ABP Ananda", "India Today",
     "Times Now", "Pogo", "Cartoon Network", "Sony Yay", "Discovery Kids", "9XM", "MTV Beats", "Sangeet Bangla", "Discovery", "Nat Geo", "Sony BBC Earth"]);
+  // HD feeds (linear Cable TV only, not TVE): added right after their SD channel, so DD channels stay last
+  const HD_OF = new Set(["Star Sports 1", "Star Sports 2", "Star Sports Select 1", "Sony Ten 1", "Sony Ten 2", "Sony Ten 3", "Sports18",
+    "Star Plus", "Star Jalsha", "Star Maa", "Zee TV", "Zee Bangla", "Colors", "Sony TV", "Sony SAB", "Star Gold", "Star Movies",
+    "Zee Cinema", "&pictures", "Sony Max", "Sony Pix", "Colors Cineplex", "Movies Now", "Discovery", "Nat Geo", "Animal Planet", "Sony BBC Earth"]);
+  GENRES.forEach((g) => { g.items = g.items.flatMap((it) => (HD_OF.has(it[0]) ? [it, [it[0] + " HD", it[1], it[2], it[3]]] : [it])); });
   const CHANNELS = [];
   GENRES.forEach((g) => g.items.forEach(([name, show, lang, colors]) => {
     const id = CHANNELS.length;
-    CHANNELS.push({ id, name, show, lang, colors: colors || CH_PAL[id % CH_PAL.length], genre: g.key, tve: TVE.has(name) });
+    CHANNELS.push({ id, name, show, lang, colors: colors || CH_PAL[id % CH_PAL.length], genre: g.key, tve: TVE.has(name), hd: / HD$/.test(name) });
   }));
   const isDD = (c) => c.name.startsWith("DD ");
   const chByName = (names) => names.map((n) => CHANNELS.find((c) => c.name === n)).filter(Boolean);
@@ -660,7 +665,7 @@
     ["entertainment", "news", "music", "devotional", "movies", "kids", "sports", "infotainment"],
     ["entertainment", "news", "music", "devotional", "movies", "kids", "sports", "infotainment"],
   ];
-  const DEFAULT_PACK = { cable: 0, broadband: 1 };   // the package a customer already has
+  const DEFAULT_PACK = { cable: 3, broadband: 1 };   // Cable TV: VIBE Sports Plus HD (SD + HD, sports); Broadband: VIBE Bangla Value   // the package a customer already has
   const PLAN_KEY = "vibe.channelPlans";              // { "type:mobile": {pack, at} } — survives reloads
   const Plans = {
     all() { try { return JSON.parse(localStorage.getItem(PLAN_KEY) || "{}"); } catch (e) { return Plans.mem || (Plans.mem = {}); } },
@@ -682,7 +687,8 @@
     if (t !== "guest" && t !== "cable" && t !== "broadband") return null;
     const p = Plans.get(), g = p.pack === null ? [] : PACK_GENRES[p.pack];
     const tve = t === "cable" && !linear;
-    return new Set(CHANNELS.filter((c) => FREE_CH.has(c.id) || g.includes(c.genre) || (tve && c.tve)).map((c) => c.id));
+    const sdOnly = p.pack !== null && !CABLE_PACKS[p.pack].hd;   // e.g. VIBE Basic SD: no HD feeds
+    return new Set(CHANNELS.filter((c) => FREE_CH.has(c.id) || (g.includes(c.genre) && !(sdOnly && c.hd)) || (tve && c.tve)).map((c) => c.id));
   }
   const canWatch = (c) => { const a = allowedCh(); return !a || a.has(c.id); };
   const myChannels = () => CHANNELS.filter(canWatch);
@@ -2677,6 +2683,7 @@
                 </div>
                 <button class="drawer-x" data-close-menu aria-label="Close menu">${I.close}</button>
               </div>
+              ${fromLco ? "" : `<button class="gp dr-item" data-act="siti">${I.crown}<span>SITI Vibes</span></button>`}
               <button class="gp dr-item" data-act="ott">${I.monitor}<span>OTT</span></button>
               ${fromLco ? `<button class="gp dr-item${f.q ? " on" : ""}" data-act="search">${I.search}<span>Search</span></button>` : ""}
               <button class="gp dr-item" data-act="profile">${I.userFill}<span>Profile</span></button>
@@ -2708,6 +2715,7 @@
       $$("[data-close-menu]", root).forEach((b) => b.addEventListener("click", closeDrawer));
       $$(".dr-item", root).forEach((b) => b.addEventListener("click", closeDrawer));
 
+      if (!fromLco) $('[data-act="siti"]', root).addEventListener("click", () => go("chPlans", { siti: true }));
       // ☰ → FAQ + Partner apps tiles (bottom of the menu)
       bindDrawerExtras(root);
       // Customer / guest: OTT → the OTT home. LCO Watch OTT keeps the OTT Partners sheet.
@@ -3397,17 +3405,17 @@
     },
 
     /* ---- See All for one genre ---- */
-    genre({ key }) {
+    genre({ key, lts = false }) {
       const g = GENRES.find((x) => x.key === key);
-      const list = filtered(g);
+      const list = lts ? linearChannels().filter((c) => c.genre === key).sort(chSort) : filtered(g);
       const root = el(`
-        <section class="tv" data-screen="genre-${key}">
+        <section class="tv${lts ? " lts" : ""}" data-screen="genre-${key}">
           <header class="sub-head">
             <button class="back-btn static" data-act="back" aria-label="Back">${I.back}</button>
             <h2><span class="sec-ic">${g.icon}</span>${g.name} (${allowedCh() || hasCableTv() ? list.length : g.count})</h2>
           </header>
           <div class="ch-grid">${list.map((c) => cardHTML(c, true)).join("")}</div>
-          <p class="more-note">Showing ${list.length} of ${g.count} channels in this demo</p>
+          ${lts ? "" : `<p class="more-note">Showing ${list.length} of ${g.count} channels in this demo</p>`}
         </section>`);
       bindCommon(root);
       bindCards(root);
@@ -3505,6 +3513,7 @@
        ===================================================================== */
     ottHome() {
       const f = state.filter;
+      const bar = (state.session || {}).type === "broadband";   // Broadband customer: same fixed bottom bar as the Live TV Home
       const slides = OTT_TITLES.slice(0, 6);
       // Genre / Language (same preferences as the TV): titles map Kids → kids, Documentary → infotainment, others → movies / entertainment
       const tGenres = (t) => (t[2] === "Kids" ? ["kids"] : t[2] === "Documentary" ? ["infotainment"] : ["movies", "entertainment"]);
@@ -3540,7 +3549,7 @@
           (titles.length ? html : html + `<div class="empty">${I.search}<b>Nothing for this selection</b><p>Try another genre or language.</p></div>`);
       };
       const root = el(`
-        <section class="screen-fixed tv otth" data-screen="ott-home">
+        <section class="screen-fixed tv otth${bar ? " has-bar" : ""}" data-screen="ott-home">
           <div class="tv-scroll">
             <header class="tv-head otth-head">
               <button class="menu-btn" data-act="menu" aria-label="Open menu" aria-expanded="false">${I.menu}</button>
@@ -3555,6 +3564,7 @@
             </div>
             <div id="obody"></div>
           </div>
+          ${bar ? ctvNavHTML("ott") : ""}
           <!-- Left slide-in menu (Search stays in the header, like the TV Home) -->
           <div class="drawer" id="drawer" aria-hidden="true">
             <div class="drawer-backdrop" data-close-menu></div>
@@ -3631,6 +3641,7 @@
       $$(".dr-item", root).forEach((b) => b.addEventListener("click", closeDrawer));
       $('[data-act="live"]', root).addEventListener("click", () => setTimeout(back, 200));
       $('[data-act="oprofile"]', root).addEventListener("click", () => go("custProfile"));
+      if (bar) bindCtvNav(root, "ott");
       bindDrawerExtras(root);
       $('[data-act="genre"]', root).addEventListener("click", () => openChipSheet("genre", draw));
       $('[data-act="lang"]', root).addEventListener("click", () => openChipSheet("lang", draw));
@@ -3657,39 +3668,60 @@
       return root;
     },
 
-    // ☰ → LTS (Cable TV customer / Cable TV LCO): every channel in the Cable TV package as square logo tiles; tap → playback
+    // ☰ → LTS (Cable TV customer / Cable TV LCO): the linear channels of the Cable TV package (SD + HD), laid out like Home:
+    // Popular Channels (square tiles), then genre rails alternating portrait / landscape. The top bar stays fixed.
     ltsHome() {
       const p = Plans.get();
       const pack = allowedCh() && p.pack !== null ? CABLE_PACKS[p.pack].name : "All channels";
       let q = "";
-      const tile = (c) => `
-        <button class="pop-ch lts-ch" data-ch="${c.id}" aria-label="${esc(c.name)}">
-          <span class="pop-tile" style="background:${grad(c.colors)}"><span class="pop-tile-inner">${channelLogoHTML(c)}</span><span class="pop-live-dot" title="Live"></span></span>
-          <span class="pop-name">${esc(c.name)}</span>
-        </button>`;
+      const match = (c) => !q || (c.name + " " + c.show).toLowerCase().includes(q);
       const bodyHTML = () => {
-        const mine = linearChannels().filter((c) => !q || (c.name + " " + c.show).toLowerCase().includes(q));
-        const html = GENRES.map((g) => {
-          const list = mine.filter((c) => c.genre === g.key);
-          return list.length ? `
-            <div class="sec"><div class="sec-head"><h4><span class="sec-ic">${g.icon}</span>${g.name} (${list.length})</h4></div>
-              <div class="lts-grid">${list.map(tile).join("")}</div></div>` : "";
+        const mine = linearChannels().filter(match);
+        const ids = new Set(mine.map((c) => c.id));
+        const pop = chByName(POPULAR_CH.flatMap((n) => [n, n + " HD"])).filter((c) => ids.has(c.id)).sort(chSort);
+        let n = 0;
+        const rails = GENRES.map((g) => {
+          const list = mine.filter((c) => c.genre === g.key).sort(chSort);
+          if (!list.length) return "";
+          const tall = n++ % 2 === 0;
+          const hd = list.filter((c) => c.hd).length;
+          return `
+            <div class="sec">
+              <div class="sec-head">
+                <h4><span class="sec-ic">${g.icon}</span>${g.name} (${list.length})${hd ? `<small class="lts-hd">${hd} HD</small>` : ""}</h4>
+                <button class="see-all" data-genre="${g.key}">See All ${I.chev}</button>
+              </div>
+              <div class="rail${tall ? " rail-tall" : ""}">${list.map((c) => cardHTML(c, false, tall)).join("")}</div>
+            </div>`;
         }).join("");
-        return html || `<div class="empty">${I.search}<b>No channels found</b><p>Try another channel name.</p></div>`;
+        const popHTML = pop.length ? `
+          <div class="sec sec-pop">
+            <div class="sec-head"><h4><span class="sec-ic">${I.fire}</span>Popular Channels</h4></div>
+            <div class="rail pop-rail">${pop.map(popCardHTML).join("")}</div>
+          </div>` : "";
+        return popHTML + rails || `<div class="empty">${I.search}<b>No channels found</b><p>Try another channel name.</p></div>`;
       };
+      const all = linearChannels();
       const root = el(`
         <section class="screen-fixed tv lts" data-screen="lts-home">
           <div class="tv-scroll">
-            <header class="sub-head lts-head">
-              <button class="back-btn static" data-act="back" aria-label="Back">${I.back}</button>
-              <div class="lts-t"><h2>LTS</h2><small>${esc(pack)} · ${linearChannels().length} channels</small></div>
-              <button class="menu-btn head-search" data-act="lsearch" aria-label="Search channels">${I.search}</button>
-            </header>
-            <div class="searchbar" id="lsb" hidden>${I.search}<input id="lq" type="search" placeholder="Search channels in your pack" aria-label="Search channels" /></div>
+            <div class="lts-top">
+              <header class="sub-head lts-head">
+                <button class="back-btn static" data-act="back" aria-label="Back">${I.back}</button>
+                <div class="lts-t"><h2>LTS</h2><small>${esc(pack)} · ${all.length} channels · ${all.filter((c) => c.hd).length} HD</small></div>
+                <button class="menu-btn head-search" data-act="lsearch" aria-label="Search channels">${I.search}</button>
+              </header>
+              <div class="searchbar" id="lsb" hidden>${I.search}<input id="lq" type="search" placeholder="Search channels in your pack" aria-label="Search channels" /></div>
+            </div>
             <div id="lbody"></div>
           </div>
         </section>`);
-      const draw = () => { const box = $("#lbody", root); box.innerHTML = bodyHTML(); bindCards(box); };
+      const draw = () => {
+        const box = $("#lbody", root);
+        box.innerHTML = bodyHTML();
+        bindCards(box);
+        $$("[data-genre]", box).forEach((b) => b.addEventListener("click", () => go("genre", { key: b.dataset.genre, lts: true })));
+      };
       bindCommon(root);
       $('[data-act="lsearch"]', root).addEventListener("click", (e) => {
         const bar = $("#lsb", root);
@@ -3771,8 +3803,7 @@
             <span class="tvpf-crown">${I.crown}</span>
           </div>
           <div class="tvpf-row"><h4 class="tvpf-h">Other Services</h4><button class="cpf-link" data-act="add-acc">Add Cable / Broadband Account ${I.plus}</button></div>
-          <div class="tvpf-svcs one">
-            <button class="tvpf-svc on" data-toast="${label} is active"><span class="tvpf-svc-ic">${I.userFill}</span><span><b>${mob}</b><small>${label}</small></span><i class="tvpf-radio">${I.check}</i></button>
+          <div class="tvpf-svcs one" id="svcs">${accountsHTML()}
           </div>
           <div class="tvpf-row"><h4 class="tvpf-h">Live Channels</h4><button class="lco-pill" data-act="ch-upgrade">${CP.pack === null ? "Upgrade Plan" : "Upgrade Package"}</button></div>
           <div class="cpf-cplan${CP.pack === null ? " free" : ""}">
@@ -3811,6 +3842,8 @@
       $$("[data-toast]", root).forEach((b) => b.addEventListener("click", () => toast(b.dataset.toast)));
       $('[data-act="upgrade"]', root).addEventListener("click", () => go("ottSubscribe"));
       $('[data-act="ch-upgrade"]', root).addEventListener("click", () => go("chPlans"));
+      // Tapping the package card (not its channel tiles) opens the package details
+      $(".cpf-cplan", root).addEventListener("click", (e) => { if (!e.target.closest("button")) go("packDetail", { k: CP.pack === null ? "free" : CP.pack }); });
       $$(".cpf-chs [data-ch]", root).forEach((b) => b.addEventListener("click", () => watchTv(+b.dataset.ch)));
       const allCh = $('[data-act="all-ch"]', root);
       if (allCh) allCh.addEventListener("click", () => openSheet(`
@@ -3821,11 +3854,10 @@
         $$("[data-c]", sh).forEach((b) => b.addEventListener("click", () => watchTv(+b.dataset.c)));
       }));
       $('[data-act="devices"]', root).addEventListener("click", () => go("manageDevice"));
-      $('[data-act="add-acc"]', root).addEventListener("click", () => pickSheet("Add Account", ["Cable TV (VSC + Mobile)", "Broadband (User ID + OTP)"], "", (v) => {
-        const t = v.startsWith("Cable") ? "cable" : "broadband";
-        state.service = t;
-        go("login", { type: t, signup: true });
-      }));
+      // Other Services: linked Cable / Broadband accounts. Tap one to switch to it; "Add" opens the bottom sheet.
+      const drawSvcs = () => { $("#svcs", root).innerHTML = accountsHTML(); bindAccounts($("#svcs", root)); };
+      bindAccounts($("#svcs", root));
+      $('[data-act="add-acc"]', root).addEventListener("click", () => openAddAccount(drawSvcs));
       $('[data-act="purchases"]', root).addEventListener("click", () => openSheet(`
         <h3>Purchases</h3>
         <div class="lco-inv">${CUST.purchases.map((p) => `<span><small>${dmy(p.at)} · ${esc(p.id)} · ${esc(p.what)}</small><b>₹ ${p.amount} · ${p.status}</b></span>`).join("")}</div>
@@ -3888,60 +3920,149 @@
     },
 
     /* ---- Customer / guest: Channel Packages (upgrade the live-TV plan → payment gateway) ---- */
-    chPlans() {
+    // Channel packages list. Opened from Profile → Upgrade Package, and from ☰ → SITI Vibes ({siti:true}).
+    // Top: the viewer's own package card; every card opens the package detail page (purchase is only offered there).
+    chPlans({ siti = false } = {}) {
       const cur = Plans.get().pack;   // null = Welcome Free Plan only (guest)
-      const count = (k) => CHANNELS.filter((c) => FREE_CH.has(c.id) || PACK_GENRES[k].includes(c.genre)).length;
       const gname = (k) => GENRES.find((g) => g.key === k).name;
+      const C1 = ["#2fd8ff", "#9b5cff", "#ff7a59", "#43e97b", "#ffb300", "#ff3fd0"];
       const root = el(`
-        <section class="tv osub chp" data-screen="ch-plans">
+        <section class="tv osub chp" data-screen="${siti ? "siti-vibes" : "ch-plans"}">
           <header class="sub-head">
             <button class="back-btn static" data-act="back" aria-label="Back">${I.back}</button>
-            <h2>Channel Packages<small>Upgrade your plan to watch more channels</small></h2>
+            <h2>${siti ? "SITI Vibes" : "Channel Packages"}<small>${siti ? "Your package and all channel packages" : "Upgrade your plan to watch more channels"}</small></h2>
           </header>
-          <div class="chp-now">${cur === null
-            ? `<b>No active plan</b><small>Welcome Free Plan · ${FREE_CH.size} free channels</small>`
-            : `<b>${esc(CABLE_PACKS[cur].name)}</b><small>Current package · ${count(cur)} channels</small>`}</div>
+          <p class="chp-cap">Your package</p>
+          <button class="chp-now chp-mine" data-pd="${cur === null ? "free" : cur}">
+            <span class="chp-mine-ic">${I.tv}</span>
+            <span class="chp-mine-t">${cur === null
+              ? `<b>Welcome Free Plan</b><small>No active plan · ${packChannels(null).length} free channels</small>`
+              : `<b>${esc(CABLE_PACKS[cur].name)}</b><small>Active · ₹ ${CABLE_PACKS[cur].price}/month · ${packChannels(cur).length} channels${CABLE_PACKS[cur].hd ? ` · ${packChannels(cur).filter((c) => c.hd).length} HD` : ""}</small>`}</span>
+            <span class="chp-mine-go">Details ${I.chev}</span>
+          </button>
+          <p class="chp-cap">All packages</p>
           ${CABLE_PACKS.map((p, k) => {
-            const state_ = cur === k ? "cur" : cur !== null && k < cur ? "low" : "up";
+            const st = packState(k);
+            const list = packChannels(k);
             return `
-            <div class="osub-card chp-card ${state_}" style="--c1:${["#2fd8ff", "#9b5cff", "#ff7a59", "#43e97b", "#ffb300", "#ff3fd0"][k]};--c2:#3a6bff">
+            <div class="osub-card chp-card ${st}" data-pd="${k}" role="button" tabindex="0" style="--c1:${C1[k]};--c2:#3a6bff">
               <div class="osub-top">
                 <span class="osub-ic">${I.tv}</span>
                 <span class="osub-p"><b>₹ ${p.price}<small class="chp-mo">/month</small></b><small>${esc(p.name)}</small></span>
-                <span class="osub-n">${I.tv}${count(k)} channels</span>
+                <span class="osub-n">${I.tv}${list.length} channels</span>
               </div>
-              <div class="chp-g">${["Free channels", ...PACK_GENRES[k].map(gname)].map((n) => `<span>${n}</span>`).join("")}${p.hd ? `<span class="hd">${p.hd} HD</span>` : ""}</div>
-              <button class="osub-go" data-pk="${k}" ${state_ === "up" ? "" : "disabled"}>${state_ === "cur" ? "Current plan" : state_ === "low" ? "Included in your plan" : cur === null ? "Subscribe" : "Upgrade"}${state_ === "up" ? `<span>${ARROW}</span>` : ""}</button>
+              <div class="chp-g">${["Free channels", ...PACK_GENRES[k].map(gname)].map((n) => `<span>${n}</span>`).join("")}${p.hd ? `<span class="hd">${list.filter((c) => c.hd).length} HD</span>` : ""}${p.ott ? `<span class="hd">${p.ott} OTT apps</span>` : ""}</div>
+              <button class="osub-go" data-pd="${k}">${st === "cur" ? "Current plan · View details" : st === "low" ? "Included in your plan · View details" : "View details"}<span>${ARROW}</span></button>
             </div>`;
           }).join("")}
           <p class="more-note">Demo • prices are monthly and fictional</p>
         </section>`);
       bindCommon(root);
-      $$("[data-pk]", root).forEach((b) => b.addEventListener("click", () => {
-        const k = +b.dataset.pk, p = CABLE_PACKS[k], n = count(k);
-        openSheet(`
-          <h3>${cur === null ? "Subscribe" : "Upgrade to"} ${esc(p.name)}</h3>
-          <div class="lco-inv">
-            <span><small>Channels</small><b>${n} channels (${PACK_GENRES[k].map(gname).join(", ")} + free)</b></span>
-            ${cur !== null ? `<span><small>Current package</small><b>${esc(CABLE_PACKS[cur].name)}</b></span>` : ""}
-            <span><small>Validity</small><b>30 days</b></span>
-            <span class="tot"><small>Amount</small><b>₹ ${p.price}</b></span>
-          </div>
-          <div class="lco-btn2"><button class="btn ghost" id="cpX">Cancel</button><button class="btn" id="cpOk">Pay ₹ ${p.price}</button></div>
-          <span class="demo-tag">Demo • no real payment</span>`, (sh) => {
-          $("#cpX", sh).addEventListener("click", closeSheet);
-          $("#cpOk", sh).addEventListener("click", () => startPayment({ amount: p.price, purpose: `Channel Package · ${p.name}` }, (pay) => {
-            Plans.set(k);
-            CUST.purchases.unshift({ at: new Date(), id: "#" + pay.txn, what: p.name, amount: p.price, mode: `Online · ${pay.method}`, status: "Completed" });
-            openSheet(`
-              <div class="ok-badge">${I.checkBig}</div>
-              <h3>${esc(p.name)} is active</h3>
-              <p class="ctv-sheetp">You can now watch <b>${n} channels</b>.</p>
-              <span class="demo-tag">Demo • no real payment</span>
-              <button class="btn" id="cpDone">Done</button>`, (s2) => $("#cpDone", s2).addEventListener("click", () => { closeSheet(); back(); }));
-          }));
-        });
+      $$("[data-pd]", root).forEach((b) => b.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const k = b.dataset.pd;
+        go("packDetail", { k: k === "free" ? "free" : +k });
       }));
+      return root;
+    },
+
+    // One package, explorable (ideas from the SITI Android TV app, laid out for a phone):
+    // summary → sticky "Browse by category" tabs (with counts, incl. OTT Apps) + language filter + search → channel grid
+    // → fixed bottom bar "Package · N channels · M OTT apps · ₹X/month" + Proceed to Pay (VIBE Pay gateway).
+    // Same view for the viewer's own package (SITI Vibes card, Profile package card) and for upgrade packages.
+    packDetail({ k = "free" } = {}) {
+      const free = k === "free";
+      const p = free ? { name: "Welcome Free Plan", price: 0, hd: 0, ott: 0 } : CABLE_PACKS[k];
+      const list = packChannels(free ? null : k);
+      const apps = OTT_APPS.slice(0, p.ott || 0);
+      const st = free ? (Plans.get().pack === null ? "cur" : "low") : packState(k);
+      const hd = list.filter((c) => c.hd).length;
+      const genres = GENRES.filter((g) => list.some((c) => c.genre === g.key));
+      const langs = [...new Set(list.map((c) => c.lang))].sort((a, b) => list.filter((c) => c.lang === b).length - list.filter((c) => c.lang === a).length);
+      let cat = "all", lang = "all", q = "";
+      const match = (c) => (lang === "all" || c.lang === lang) && (!q || (c.name + " " + c.show).toLowerCase().includes(q));
+      const count = (key) => list.filter((c) => c.genre === key && match(c)).length;
+      const grid = (arr) => `<div class="lts-grid">${arr.map(popCardHTML).join("")}</div>`;
+      const appGrid = () => `<div class="lts-grid">${apps.filter(([n]) => !q || n.toLowerCase().includes(q)).map(([n, c]) => `
+        <button class="pop-ch" data-papp="${esc(n)}" aria-label="${esc(n)}">
+          <span class="pop-tile" style="background:${grad(c)}"><span class="ott-logo"><b>${esc(n.split(" ").map((w) => w[0]).join(""))}</b><small>${esc(n)}</small></span></span>
+          <span class="pop-name">${esc(n)}</span>
+        </button>`).join("")}</div>`;
+      const tabsHTML = () => [["all", "All", list.filter(match).length], ...genres.map((g) => [g.key, g.name, count(g.key)]), ...(apps.length ? [["ott", "OTT Apps", apps.length]] : [])]
+        .map(([key, name, n]) => `<button class="pkd-tab${cat === key ? " on" : ""}" data-cat="${key}">${name} <i>${n}</i></button>`).join("");
+      const bodyHTML = () => {
+        if (cat === "ott") return appGrid() || `<div class="empty">${I.search}<b>No apps found</b></div>`;
+        const secs = (cat === "all" ? genres : genres.filter((g) => g.key === cat)).map((g) => {
+          const gl = list.filter((c) => c.genre === g.key && match(c)).sort((a, b) => isDD(a) - isDD(b));
+          return gl.length ? `<div class="sec"><div class="sec-head"><h4><span class="sec-ic">${g.icon}</span>${g.name} (${gl.length})</h4></div>${grid(gl)}</div>` : "";
+        }).join("");
+        const ott = cat === "all" && apps.length && !q && lang === "all" ? `<div class="sec"><div class="sec-head"><h4><span class="sec-ic">${I.monitor}</span>OTT Apps (${apps.length})</h4></div>${appGrid()}</div>` : "";
+        return secs + ott || `<div class="empty">${I.search}<b>No channels found</b><p>Try another language or name.</p></div>`;
+      };
+      const root = el(`
+        <section class="screen-fixed tv lts pkd" data-screen="pack-detail">
+          <div class="tv-scroll">
+            <div class="lts-top">
+              <header class="sub-head lts-head">
+                <button class="back-btn static" data-act="back" aria-label="Back">${I.back}</button>
+                <div class="lts-t"><h2>${esc(p.name)}</h2><small>${list.length} TV channels${apps.length ? ` · ${apps.length} OTT apps` : ""}</small></div>
+                <button class="menu-btn head-search" data-act="psearch" aria-label="Search this package">${I.search}</button>
+              </header>
+            </div>
+            <div class="pkd-hero">
+              <span class="pkd-st ${st}">${st === "cur" ? "Your current package" : st === "low" ? "Included in your plan" : "Available"}</span>
+              <b class="pkd-price">${free ? "Free" : `₹ ${p.price}`}${free ? "" : `<small>/month</small>`}</b>
+              <div class="pkd-stats">
+                <span><b>${list.length}</b><small>Channels</small></span>
+                <span><b>${hd}</b><small>HD</small></span>
+                <span><b>${apps.length}</b><small>OTT apps</small></span>
+                <span><b>30</b><small>Days</small></span>
+              </div>
+            </div>
+            <div class="pkd-filters">
+              <div class="searchbar" id="pkSb" hidden>${I.search}<input id="pkQ" type="search" placeholder="Search channels in this package" aria-label="Search channels" /></div>
+              <p class="pkd-lbl">Browse by category</p>
+              <div class="pkd-tabs" id="pkTabs" role="tablist"></div>
+              <div class="pkd-langs" role="radiogroup" aria-label="Filter by language">
+                <span>Language</span>${["all", ...langs].map((l) => `<button class="pkd-lang${l === "all" ? " on" : ""}" data-lang="${l}">${l === "all" ? "All" : l}</button>`).join("")}
+              </div>
+            </div>
+            <div id="pkBody"></div>
+          </div>
+          <div class="pkd-bar">
+            <div class="pkd-sum"><b>${esc(p.name)}</b><small>${list.length} TV channels${apps.length ? ` · ${apps.length} OTT apps` : ""} · ${free ? "Free" : `₹ ${p.price}/month`}</small></div>
+            ${st === "up"
+              ? `<button class="btn" id="pkdBuy">Proceed to Pay</button>`
+              : `<button class="btn" disabled>${st === "cur" ? "Current" : "Included"}</button>`}
+          </div>
+        </section>`);
+      const draw = () => {
+        $("#pkTabs", root).innerHTML = tabsHTML();
+        $$("[data-cat]", root).forEach((b) => b.addEventListener("click", () => { cat = b.dataset.cat; draw(); }));
+        const box = $("#pkBody", root);
+        box.innerHTML = bodyHTML();
+        bindCards(box);
+        $$("[data-papp]", box).forEach((b) => b.addEventListener("click", () => toast(`${b.dataset.papp} is included in ${p.name} (demo)`)));
+      };
+      $$("[data-lang]", root).forEach((b) => b.addEventListener("click", () => {
+        lang = b.dataset.lang;
+        $$("[data-lang]", root).forEach((x) => x.classList.toggle("on", x === b));
+        if (cat === "ott") cat = "all";
+        draw();
+      }));
+      $('[data-act="psearch"]', root).addEventListener("click", (e) => {
+        const bar = $("#pkSb", root);
+        bar.hidden = !bar.hidden;
+        e.currentTarget.classList.toggle("on", !bar.hidden);
+        if (!bar.hidden) $("#pkQ", root).focus(); else { $("#pkQ", root).value = ""; q = ""; draw(); }
+      });
+      $("#pkQ", root).addEventListener("input", (e) => { q = e.target.value.trim().toLowerCase(); draw(); });
+      bindCommon(root);
+      const buy = $("#pkdBuy", root);
+      if (buy) buy.addEventListener("click", () => buyPack(k));
+      // The filters stick right under the fixed top bar
+      requestAnimationFrame(() => { const t = $(".lts-top", root); if (t && t.offsetHeight) root.style.setProperty("--pkd-top", t.offsetHeight + "px"); });
+      draw();
       return root;
     },
 
@@ -4542,6 +4663,7 @@
     await wait(700);
     hideLoader();
     state.session = null;
+    state.accounts = null;
     Object.assign(state.filter, { genre: null, lang: null, q: "", genres: null, langs: null });   // Watch OTT TV filters
     reset("role", { first: true });
     toast("Signed out", "success");
@@ -4623,6 +4745,7 @@
     "Zee Bangla", "Sony SAB", "Star Sports 3", "Zee Cinema", "Sony Ten 3", "Cartoon Network", "Discovery", "9XM", "Aastha", "DD National", "DD Sports"];
 
   function channelLogoHTML(c) {
+    if (c.hd) return channelLogoHTML({ ...c, name: c.name.replace(/ HD$/, ""), hd: false }) + `<span class="hd-tag">HD</span>`;
     const n = c.name;
     if (n.startsWith("DD ")) {
       const sub = n.slice(3).toUpperCase();
@@ -4794,7 +4917,7 @@
     return `
       <button class="ch-card${grid ? " in-grid" : ""}${tall ? " tall" : ""}${locked ? " locked" : ""}" data-ch="${c.id}">
         <div class="thumb" style="background:${grad(c.colors)}">
-          ${locked ? `<span class="ch-lock" title="Upgrade to watch">${I.lock}</span>` : `<span class="live-badge"><i></i>LIVE</span>`}
+          ${locked ? `<span class="ch-lock" title="Upgrade to watch">${I.lock}</span>` : `<span class="live-badge"><i></i>LIVE</span>`}${c.hd ? `<span class="hd-chip">HD</span>` : ""}
           <b class="prog">${esc(c.show)}</b>
           <span class="prog-bar"><i style="width:${sl.pct}%"></i></span>
         </div>
@@ -5047,6 +5170,146 @@
   }
 
   // Demo account shown on the old app's Profile / Dashboard (the logged-in LCO watching TV)
+  /* ---------- Channel packages: channel list, state and purchase (Channel Packages, SITI Vibes, package detail) ---------- */
+  // Channels in package k (null = Welcome Free Plan). SD-only packs (hd: 0) leave out the HD feeds.
+  function packChannels(k) {
+    if (k === null) return CHANNELS.filter((c) => FREE_CH.has(c.id));
+    const sdOnly = !CABLE_PACKS[k].hd;
+    return CHANNELS.filter((c) => FREE_CH.has(c.id) || (PACK_GENRES[k].includes(c.genre) && !(sdOnly && c.hd)));
+  }
+  // "cur" = the viewer's package, "low" = lower (already included), "up" = can be bought
+  function packState(k) {
+    const cur = Plans.get().pack;
+    return cur === k ? "cur" : cur !== null && k < cur ? "low" : "up";
+  }
+  // Confirm sheet → VIBE Pay (demo) → package active → Done goes back to the packages list
+  function buyPack(k) {
+    const cur = Plans.get().pack, p = CABLE_PACKS[k], n = packChannels(k).length;
+    const gname = (g) => GENRES.find((x) => x.key === g).name;
+    openSheet(`
+      <h3>${cur === null ? "Subscribe" : "Upgrade to"} ${esc(p.name)}</h3>
+      <div class="lco-inv">
+        <span><small>Channels</small><b>${n} channels (${PACK_GENRES[k].map(gname).join(", ")} + free)</b></span>
+        ${cur !== null ? `<span><small>Current package</small><b>${esc(CABLE_PACKS[cur].name)}</b></span>` : ""}
+        <span><small>Validity</small><b>30 days</b></span>
+        <span class="tot"><small>Amount</small><b>₹ ${p.price}</b></span>
+      </div>
+      <div class="lco-btn2"><button class="btn ghost" id="cpX">Cancel</button><button class="btn" id="cpOk">Pay ₹ ${p.price}</button></div>
+      <span class="demo-tag">Demo • no real payment</span>`, (sh) => {
+      $("#cpX", sh).addEventListener("click", closeSheet);
+      $("#cpOk", sh).addEventListener("click", () => startPayment({ amount: p.price, purpose: `Channel Package · ${p.name}` }, (pay) => {
+        Plans.set(k);
+        CUST.purchases.unshift({ at: new Date(), id: "#" + pay.txn, what: p.name, amount: p.price, mode: `Online · ${pay.method}`, status: "Completed" });
+        openSheet(`
+          <div class="ok-badge">${I.checkBig}</div>
+          <h3>${esc(p.name)} is active</h3>
+          <p class="ctv-sheetp">You can now watch <b>${n} channels</b>.</p>
+          <span class="demo-tag">Demo • no real payment</span>
+          <button class="btn" id="cpDone">Done</button>`, (s2) => $("#cpDone", s2).addEventListener("click", () => { closeSheet(); back(); }));
+      }));
+    });
+  }
+
+  /* ---------- Customer Profile → Other Services: linked Cable TV / Broadband accounts (front-end only) ----------
+     The signed-in account comes first. Cable TV accounts are added by an 11-digit VC number; Broadband shows a demo
+     account (User ID VIBEDEMO01) that can be added. Tapping an account switches the app to it. */
+  const ACC_LABEL = { cable: "Cable TV Customer", broadband: "Broadband Customer", guest: "Other User" };
+  function linkedAccounts() {
+    if (!state.accounts) {
+      const s = state.session || {};
+      const reg = (s.type === "cable" || s.type === "broadband") && Registry.get(s.type, s.mobile);
+      const id = s.type === "cable" ? s.vsc || (reg && reg.id) || "" : s.type === "broadband" ? s.bbid || (reg && reg.id) || "" : "";
+      state.accounts = [{ type: s.type || "guest", id, mobile: s.mobile || DEMO_MOBILE }];
+      state.activeAcc = 0;
+    }
+    return state.accounts;
+  }
+  const isActiveAcc = (a) => linkedAccounts()[state.activeAcc] === a;
+  function accountsHTML() {
+    return linkedAccounts().map((a, i) => {
+      const on = isActiveAcc(a);
+      const ic = a.type === "cable" ? I.tv : a.type === "broadband" ? I.wifi : I.userFill;
+      const idTxt = a.type === "cable" ? `VC No ${a.id || "—"}` : a.type === "broadband" ? `User ID ${a.id || "—"}` : a.mobile;
+      return `<button class="tvpf-svc${on ? " on" : ""}" data-acc="${i}"><span class="tvpf-svc-ic">${ic}</span><span><b>${esc(idTxt)}</b><small>${ACC_LABEL[a.type]} · ${esc(a.mobile)}</small></span><i class="tvpf-radio">${I.check}</i></button>`;
+    }).join("");
+  }
+  function bindAccounts(box) {
+    $$("[data-acc]", box).forEach((b) => b.addEventListener("click", () => {
+      const i = +b.dataset.acc, a = linkedAccounts()[i];
+      if (isActiveAcc(a)) { toast(`${ACC_LABEL[a.type]} is active`); return; }
+      openSheet(`
+        <h3>Switch account?</h3>
+        <p>Switch to ${ACC_LABEL[a.type]} ${a.type === "cable" ? "VC No" : a.type === "broadband" ? "User ID" : ""} <b>${esc(a.id || a.mobile)}</b>. Home will show this account's channels.</p>
+        <button class="btn" id="swOk">Switch</button>
+        <button class="btn ghost" id="swX">Cancel</button>`, (sh) => {
+        $("#swX", sh).addEventListener("click", closeSheet);
+        $("#swOk", sh).addEventListener("click", async () => {
+          closeSheet(); showLoader("Switching account…"); await wait(800); hideLoader();
+          state.session = { type: a.type, mobile: a.mobile };
+          if (a.type === "cable") state.session.vsc = a.id;
+          if (a.type === "broadband") state.session.bbid = a.id;
+          state.activeAcc = i;
+          state.recent = null;
+          reset("home", {}, "fwd");
+          toast(`Switched to ${ACC_LABEL[a.type]} (demo)`, "success");
+        });
+      });
+    }));
+  }
+  function openAddAccount(after) {
+    let kind = "cable";
+    const body = () => {
+      const list = linkedAccounts();
+      if (kind === "cable") {
+        const cab = list.filter((a) => a.type === "cable");
+        return `
+          ${cab.length ? `<p class="aa-cap">Your Cable TV account${cab.length > 1 ? "s" : ""}</p>${cab.map((a) => `<div class="aa-acc">${I.tv}<span><b>VC No ${esc(a.id)}</b><small>${isActiveAcc(a) ? "Active" : "Linked"} · ${esc(a.mobile)}</small></span></div>`).join("")}` : ""}
+          <p class="aa-cap">Add another Cable TV account</p>
+          <label class="aa-in">${I.card}<input id="aaVc" inputmode="numeric" maxlength="11" placeholder="Virtual Card Number (11 Digit)" aria-label="Virtual Card Number" /></label>
+          <small class="aa-err" id="aaErr"></small>
+          <button class="btn" id="aaSub">Submit</button>`;
+      }
+      const has = list.some((a) => a.type === "broadband" && a.id === "VIBEDEMO01");
+      return `
+        <p class="aa-cap">Broadband account found for +91 ${DEMO_MOBILE.slice(0, 5)} ${DEMO_MOBILE.slice(5)} (demo)</p>
+        <div class="aa-acc">${I.wifi}<span><b>User ID VIBEDEMO01</b><small>VIBE Broadband · ${has ? "Already in your account" : "Not linked yet"}</small></span></div>
+        <button class="btn" id="aaBb" ${has ? "disabled" : ""}>${has ? "Added to account" : "Add to account"}</button>`;
+    };
+    openSheet(`
+      <h3>Add Cable / Broadband Account</h3>
+      <div class="aa-radios" role="radiogroup" aria-label="Account type">
+        <button class="aa-r" role="radio" data-k="broadband"><i></i>Broadband</button>
+        <button class="aa-r" role="radio" data-k="cable"><i></i>Cable TV</button>
+      </div>
+      <div id="aaBody"></div>`, (sh) => {
+      const draw = () => {
+        $$(".aa-r", sh).forEach((r) => { r.classList.toggle("on", r.dataset.k === kind); r.setAttribute("aria-checked", r.dataset.k === kind); });
+        $("#aaBody", sh).innerHTML = body();
+        const vc = $("#aaVc", sh);
+        if (vc) {
+          vc.addEventListener("input", () => { vc.value = vc.value.replace(/\D/g, "").slice(0, 11); $("#aaErr", sh).textContent = ""; });
+          $("#aaSub", sh).addEventListener("click", async () => {
+            const v = vc.value;
+            const err = !/^\d{11}$/.test(v) ? "Enter the 11-digit Virtual Card Number"
+              : linkedAccounts().some((a) => a.type === "cable" && a.id === v) ? "This VC number is already in your account" : "";
+            if (err) { $("#aaErr", sh).textContent = err; shake(vc.parentNode); return; }
+            showLoader("Linking account…"); await wait(800); hideLoader();
+            linkedAccounts().push({ type: "cable", id: v, mobile: (state.session && state.session.mobile) || DEMO_MOBILE });
+            closeSheet(); toast(`Cable TV account ${v} added (demo)`, "success"); after();
+          });
+        }
+        const bb = $("#aaBb", sh);
+        if (bb && !bb.disabled) bb.addEventListener("click", async () => {
+          showLoader("Linking account…"); await wait(800); hideLoader();
+          linkedAccounts().push({ type: "broadband", id: "VIBEDEMO01", mobile: DEMO_MOBILE });
+          closeSheet(); toast("Broadband account VIBEDEMO01 added (demo)", "success"); after();
+        });
+      };
+      $$(".aa-r", sh).forEach((r) => r.addEventListener("click", () => { kind = r.dataset.k; draw(); }));
+      draw();
+    });
+  }
+
   // Cable TV customer / Cable TV LCO only: subscriber name, VC number and installation address (all fictional)
   function vcCardHTML() {
     if (!hasCableTv()) return "";
@@ -5083,7 +5346,7 @@
     $$("[data-cnav]", root).forEach((b) => b.addEventListener("click", () => {
       const t = b.dataset.cnav;
       if (t === tab) { const sc = $(".tv-scroll", root); if (sc) sc.scrollTo({ top: 0, behavior: "smooth" }); return; }
-      if (t === "live") swapRoute("home", { fromLco: (state.session || {}).type === "lco" });   // tab switch: Back still returns to the LCO dashboard
+      if (t === "live") { if (tab === "ott") back(); else swapRoute("home", { fromLco: (state.session || {}).type === "lco" }); }   // tab switch: Back still returns to the LCO dashboard
       else if (t === "dash") swapRoute("ctvDash");
       else if (t === "profile") swapRoute("ctvProfile");
       else if (t === "recharge") swapRoute("ctvRecharge");

@@ -361,7 +361,7 @@ svg { display: block; }
 }
 @keyframes rot { to { transform: rotate(360deg); } }
 
-.signup { display: block; margin: 12px 0 0 auto; }
+.signup { display: block; margin: 14px 0 0 auto; font-size: 15px; font-weight: 700; padding: 8px 2px; }
 .mode-switch { display: block; margin: 14px auto 0; font-size: 12.5px; }
 .ex-wrap.reveal { animation: reveal .4s var(--ease) both; }
 /* Broadband OTP step */
@@ -2368,3 +2368,82 @@ button.lco-card:active { background: #1c1c22; }
 .lco-pills .lco-pill { flex: 1 1 0; min-width: 0; height: 40px; padding: 0 10px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 12.5px; font-weight: 600; }
 .lco-pills .lco-pill svg { flex: none; width: 16px; height: 16px; color: var(--accent-cyan); }
 .bb .lco-pills .lco-pill:first-child { flex: 1.15 1 0; color: #fff; }
+
+/* ===== Live TV Home + OTT: header (menu, logo, search) stays fixed while scrolling ===== */
+.tv-scroll > .tv-head { position: sticky; top: 0; z-index: 15; padding-bottom: 10px; background: linear-gradient(180deg, #070708 82%, rgba(7, 7, 8, 0)); }
+.otth.has-bar .tv-scroll { padding-bottom: 100px; }
+
+/* ===== Profile: Add Cable / Broadband Account sheet ===== */
+.aa-radios { display: flex; gap: 22px; margin: 6px 0 14px; }
+.aa-r { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; color: var(--muted); }
+.aa-r i { width: 18px; height: 18px; border-radius: 50%; border: 2px solid #5a5a66; position: relative; }
+.aa-r.on { color: var(--text); }
+.aa-r.on i { border-color: var(--accent); }
+.aa-r.on i::after { content: ""; position: absolute; inset: 3px; border-radius: 50%; background: var(--grad); }
+.aa-cap { font-size: 12px; color: var(--muted); margin: 4px 0 8px; }
+.aa-acc { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 12px; background: #1c1a26; border: 1px solid var(--accent); margin-bottom: 12px; }
+.aa-acc svg { flex: none; width: 22px; height: 22px; color: var(--accent); }
+.aa-acc b { display: block; font-size: 13.5px; }
+.aa-acc small { font-size: 11.5px; color: var(--muted); }
+.aa-in { display: flex; align-items: center; gap: 10px; height: 48px; padding: 0 14px; border-radius: 12px; background: #16161a; border: 1px solid #2c2c33; }
+.aa-in svg { flex: none; width: 18px; height: 18px; color: var(--dim); }
+.aa-in input { flex: 1; min-width: 0; background: none; border: 0; outline: 0; color: var(--text); font: inherit; font-size: 14px; }
+.aa-in.invalid { border-color: var(--danger, #ff5a6e); }
+.aa-err { display: block; min-height: 16px; margin: 6px 2px 8px; font-size: 11.5px; color: var(--danger, #ff5a6e); }
+.sheet #aaBb:disabled { opacity: .55; }
+
+/* ===== LTS: Home-style layout, fixed top bar, HD badges ===== */
+.tv-scroll > .lts-top { position: sticky; top: 0; z-index: 15; padding-bottom: 6px; background: linear-gradient(180deg, #070708 85%, rgba(7, 7, 8, 0)); }
+.lts-top .lts-head { padding-bottom: 6px; }
+.lts-top .searchbar { margin: 4px 12px 4px; }
+.lts-hd { margin-left: 8px; padding: 2px 7px; border-radius: 6px; font-size: 10.5px; font-weight: 700; color: var(--accent-cyan); background: rgba(47, 216, 255, .12); }
+.hd-chip { position: absolute; top: 6px; left: 6px; z-index: 2; padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 800; letter-spacing: .4px; background: rgba(0, 0, 0, .6); color: #2fd8ff; border: 1px solid rgba(47, 216, 255, .5); }
+.pop-tile-inner { position: relative; }
+.pop-tile-inner > .hd-tag { position: absolute; left: 8px; bottom: 8px; transform: none; padding: 2px 6px; border-radius: 5px; font-size: 10px; font-weight: 800; letter-spacing: .4px; background: rgba(0, 0, 0, .6); color: #2fd8ff; border: 1px solid rgba(47, 216, 255, .5); }
+
+/* ===== SITI Vibes / Channel Packages: "Your package" card + package detail page ===== */
+.chp-cap { margin: 14px 16px 0; font-size: 12px; font-weight: 600; letter-spacing: .4px; text-transform: uppercase; color: var(--muted); flex-shrink: 0; }
+.chp-now.chp-mine { display: flex; align-items: center; gap: 12px; width: calc(100% - 24px); text-align: left; border-color: var(--accent); background: linear-gradient(135deg, rgba(155, 92, 255, .18), rgba(47, 216, 255, .08)); }
+.chp-mine-ic { flex: none; width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; background: var(--grad); color: #fff; }
+.chp-mine-ic svg { width: 22px; height: 22px; }
+.chp-mine-t { flex: 1; min-width: 0; }
+.chp-mine-go { flex: none; display: flex; align-items: center; gap: 2px; font-size: 12px; font-weight: 600; color: var(--accent); }
+.chp-mine-go svg { width: 14px; height: 14px; }
+.chp-card { cursor: pointer; }
+.chp-card .osub-go:disabled { opacity: 1; }
+.pkd .tv-scroll { padding-bottom: 20px; }
+.pkd-hero { margin: 6px 12px 4px; padding: 16px; border-radius: 16px; background: linear-gradient(135deg, rgba(155, 92, 255, .2), rgba(47, 216, 255, .08)); border: 1px solid #3a2b55; flex-shrink: 0; }
+.pkd-st { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 10.5px; font-weight: 700; background: rgba(47, 216, 255, .14); color: var(--accent-cyan); }
+.pkd-st.cur { background: rgba(60, 207, 142, .16); color: var(--success); }
+.pkd-st.low { background: rgba(255, 255, 255, .08); color: var(--muted); }
+.pkd-price { display: block; margin-top: 10px; font-size: 28px; font-weight: 800; }
+.pkd-price small { font-size: 13px; font-weight: 500; color: var(--muted); margin-left: 4px; }
+.pkd-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 12px; }
+.pkd-stats span { padding: 8px 4px; border-radius: 10px; background: rgba(0, 0, 0, .3); text-align: center; }
+.pkd-stats b { display: block; font-size: 17px; }
+.pkd-stats small { font-size: 10.5px; color: var(--muted); }
+.pkd-bar { flex: none; padding: 10px 12px 16px; background: #0b0b10; border-top: 1px solid #22202c; }
+.pkd-bar .btn { width: 100%; margin: 0; }
+
+.pkd-bar .btn:disabled { opacity: 1; background: #1c1a26; color: var(--muted); box-shadow: none; border: 1px solid #2c2838; }
+
+/* ===== Package detail v2: sticky category tabs + language filter, summary bar with Proceed to Pay ===== */
+.pkd-filters { position: sticky; top: var(--pkd-top, 62px); z-index: 14; padding: 6px 0 8px; background: #070708; border-bottom: 1px solid #1d1b26; }
+.pkd-filters .searchbar { margin: 4px 12px 8px; }
+.pkd-lbl { margin: 4px 16px 6px; font-size: 11px; font-weight: 600; letter-spacing: .4px; text-transform: uppercase; color: var(--muted); }
+.pkd-tabs, .pkd-langs { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding: 0 12px; }
+.pkd-tabs::-webkit-scrollbar, .pkd-langs::-webkit-scrollbar { display: none; }
+.pkd-tab { flex: none; height: 34px; padding: 0 12px; border-radius: 10px; font-size: 12.5px; font-weight: 600; background: #16151c; border: 1px solid #2c2838; color: #d8d6e2; white-space: nowrap; }
+.pkd-tab i { font-style: normal; margin-left: 4px; padding: 1px 6px; border-radius: 6px; font-size: 10.5px; background: rgba(255, 255, 255, .08); color: var(--muted); }
+.pkd-tab.on { background: var(--grad); border-color: transparent; color: #fff; }
+.pkd-tab.on i { background: rgba(0, 0, 0, .25); color: #fff; }
+.pkd-langs { align-items: center; margin-top: 8px; }
+.pkd-langs > span { flex: none; font-size: 11px; color: var(--muted); margin-right: 2px; }
+.pkd-lang { flex: none; height: 28px; padding: 0 12px; border-radius: 999px; font-size: 11.5px; border: 1px solid #2c2838; color: #c9c7d4; }
+.pkd-lang.on { border-color: var(--accent); color: #fff; background: rgba(155, 92, 255, .18); }
+.pkd .lts-grid { padding-top: 6px; }
+.pkd-bar { display: flex; align-items: center; gap: 12px; }
+.pkd-sum { flex: 1; min-width: 0; }
+.pkd-sum b { display: block; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pkd-sum small { display: block; font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pkd-bar .btn { flex: none; width: auto; padding: 0 20px; height: 46px; }

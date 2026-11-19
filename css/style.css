@@ -1838,3 +1838,506 @@ button.lco-card:active { background: #1c1c22; }
 .chp-card.cur { outline: 2px solid var(--success); outline-offset: -1px; }
 .chp-card .osub-go:disabled { opacity: .55; cursor: default; }
 .chp-card.cur .osub-go:disabled { opacity: 1; background: rgba(60, 207, 142, .18); color: var(--success); }
+
+/* ===== Recently Watched & Popular Channels rails ===== */
+.sec-recent .sec-head h4 .sec-ic { color: var(--accent-cyan); }
+.sec-pop .sec-head h4 .sec-ic { color: #ff5722; }
+
+.pop-rail {
+  display: flex;
+  gap: 13px;
+  overflow-x: auto;
+  padding: 4px 18px 12px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.pop-rail::-webkit-scrollbar { display: none; }
+
+.pop-ch {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  flex-shrink: 0;
+  width: 78px;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  text-align: center;
+  outline: none;
+}
+.pop-tile {
+  width: 74px;
+  height: 74px;
+  border-radius: 20px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, .45), inset 0 1px 1px rgba(255, 255, 255, .2);
+  border: 1.5px solid rgba(255, 255, 255, .14);
+  transition: transform .18s var(--ease), border-color .18s ease, box-shadow .18s ease;
+  will-change: transform;
+}
+.pop-ch:hover .pop-tile,
+.pop-ch:focus-visible .pop-tile {
+  transform: translateY(-2px) scale(1.04);
+  border-color: var(--accent);
+  box-shadow: 0 8px 22px rgba(176, 92, 255, .3);
+}
+.pop-ch:active .pop-tile {
+  transform: scale(0.95);
+}
+
+.pop-tile-inner {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  padding: 6px;
+  background: rgba(14, 13, 20, 0.45);
+  backdrop-filter: blur(2px);
+}
+
+.pop-lock {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 20px;
+  height: 20px;
+  border-radius: 10px;
+  background: rgba(14, 13, 20, 0.9);
+  border: 1px solid #c79a5a;
+  color: #ffd700;
+  display: grid;
+  place-items: center;
+  z-index: 2;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, .6);
+}
+.pop-lock svg { width: 11px; height: 11px; }
+
+.pop-live-dot {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #ff3b30;
+  box-shadow: 0 0 6px #ff3b30;
+  z-index: 2;
+  animation: popPulse 2s ease-in-out infinite;
+}
+@keyframes popPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.55; transform: scale(0.85); }
+}
+
+.pop-name {
+  font-size: 11px;
+  font-weight: 500;
+  color: #e4e2f0;
+  max-width: 76px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+/* Channel logos inside rounded square tiles */
+.ch-logo-dd {
+  width: 38px;
+  height: 38px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, .5));
+}
+.logo-dd {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+.dd-lbl {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  line-height: 1;
+}
+.dd-lbl small {
+  font-size: 7.5px;
+  font-weight: 900;
+  color: #ff9933;
+  letter-spacing: 0.5px;
+}
+.dd-lbl b {
+  font-size: 7px;
+  font-weight: 800;
+  color: #2fd8ff;
+  letter-spacing: 0.3px;
+}
+
+.logo-star-sports, .logo-star {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+.star-ic {
+  width: 24px;
+  height: 24px;
+  filter: drop-shadow(0 2px 6px rgba(255, 204, 0, .5));
+}
+.logo-star .star-ic {
+  filter: drop-shadow(0 2px 6px rgba(255, 42, 109, .6));
+}
+.l-txt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1;
+}
+.l-txt b {
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  color: #ffffff;
+}
+.l-txt small {
+  font-size: 7px;
+  font-weight: 800;
+  color: #ffd700;
+  letter-spacing: 0.3px;
+}
+
+.logo-zee {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.zee-circle {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #1e3c72;
+  border: 1.5px solid #7b4397;
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  font-weight: 900;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(123, 67, 151, .5);
+}
+.logo-zee small {
+  font-size: 7.5px;
+  font-weight: 800;
+  color: #2fd8ff;
+  letter-spacing: 0.5px;
+  line-height: 1;
+}
+
+.logo-colors {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+.colors-petals {
+  display: flex;
+  gap: 2.5px;
+}
+.colors-petals i {
+  width: 6px;
+  height: 10px;
+  border-radius: 3px;
+  display: inline-block;
+}
+.colors-txt {
+  font-size: 10.5px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: 0.5px;
+  line-height: 1;
+}
+.colors-sub {
+  font-size: 6.5px;
+  font-weight: 700;
+  color: #ffd700;
+  line-height: 1;
+}
+
+.logo-aajtak {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #e50914;
+  box-shadow: 0 3px 10px rgba(229, 9, 20, .55);
+}
+.logo-aajtak b {
+  font-size: 13px;
+  font-weight: 900;
+  color: #fff;
+  line-height: 1;
+  font-family: sans-serif;
+}
+.logo-aajtak i {
+  font-size: 10px;
+  font-weight: 800;
+  color: #ffd700;
+  font-style: normal;
+  line-height: 1;
+}
+
+.logo-sony {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.logo-sony b {
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  color: #fff;
+  line-height: 1;
+}
+.logo-sony small {
+  font-size: 7.5px;
+  font-weight: 800;
+  color: #ffeb3b;
+  letter-spacing: 0.5px;
+  line-height: 1;
+}
+
+.logo-ndtv {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.logo-ndtv b {
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  color: #ff4d4d;
+  line-height: 1;
+}
+.logo-ndtv small {
+  font-size: 7px;
+  font-weight: 800;
+  color: #fff;
+  background: #2c3e50;
+  padding: 1px 4px;
+  border-radius: 3px;
+  line-height: 1;
+}
+
+.logo-cn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+.cn-blocks {
+  display: flex;
+  gap: 2px;
+}
+.cn-blocks span {
+  width: 15px;
+  height: 15px;
+  border-radius: 3px;
+  display: grid;
+  place-items: center;
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 1;
+}
+.cn-blocks span:first-child { background: #fff; color: #000; }
+.cn-blocks span:last-child { background: #000; color: #fff; border: 1px solid #fff; }
+.logo-cn small {
+  font-size: 6px;
+  font-weight: 800;
+  color: #bbb;
+  letter-spacing: 0.4px;
+  line-height: 1;
+}
+
+.logo-mtv {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+.mtv-m {
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1;
+  color: #ffe600;
+  text-shadow: 2px 2px 0 #ff0066;
+  position: relative;
+}
+.mtv-m small {
+  font-size: 8px;
+  font-weight: 900;
+  color: #ff0066;
+  text-shadow: none;
+  position: absolute;
+  right: -8px;
+  bottom: 0;
+}
+.mtv-beats {
+  font-size: 7px;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: 1px;
+  line-height: 1;
+}
+
+.logo-discovery {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.disc-ic {
+  width: 22px;
+  height: 22px;
+}
+.logo-discovery small {
+  font-size: 7.5px;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1;
+}
+
+.logo-natgeo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+.ng-border {
+  width: 20px;
+  height: 16px;
+  border: 2.5px solid #ffcc00;
+  border-radius: 2px;
+}
+.logo-natgeo small {
+  font-size: 7px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: 0.4px;
+  line-height: 1;
+}
+
+.logo-pogo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pogo-txt {
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  color: #ffeb3b;
+  text-shadow: 1px 1px 0 #e91e63, 2px 2px 0 #2196f3;
+}
+
+.logo-9xm {
+  display: flex;
+  align-items: baseline;
+  gap: 1px;
+}
+.logo-9xm b {
+  font-size: 15px;
+  font-weight: 900;
+  color: #ff2a6d;
+}
+.logo-9xm i {
+  font-size: 12px;
+  font-weight: 900;
+  font-style: normal;
+  color: #00e5ff;
+}
+
+.logo-devo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.devo-ic {
+  width: 20px;
+  height: 20px;
+  color: #ff9800;
+}
+.logo-devo small {
+  font-size: 7.5px;
+  font-weight: 700;
+  color: #ffe0b2;
+  line-height: 1;
+}
+
+.logo-generic {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.logo-generic b {
+  font-size: 13px;
+  font-weight: 900;
+  color: #fff;
+  line-height: 1;
+}
+.logo-generic small {
+  font-size: 7px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, .8);
+  line-height: 1;
+}
+
+/* ===== Home: alternating rails (portrait "vertical" cards ↔ landscape), OTT logo tiles, LTS grid ===== */
+.ch-card.tall { width: 112px; }
+.ch-card.tall .thumb { aspect-ratio: 2 / 3; border-radius: 12px; padding: 8px; }
+.ch-card.tall .thumb .prog { font-size: 13px; -webkit-line-clamp: 4; }
+.ch-card.tall .ch-name { font-size: 13px; }
+.ch-card.tall .ch-meta .lang { display: none; }
+.otth-wide { flex: none; width: 200px; aspect-ratio: 16 / 9; border-radius: 12px; display: flex; flex-direction: column; justify-content: flex-end; padding: 10px; text-align: left; position: relative; overflow: hidden; }
+.otth-wide::before { content: ""; position: absolute; inset: 0; background: linear-gradient(transparent 45%, rgba(0, 0, 0, .55)); }
+.otth-wide b, .otth-wide small { position: relative; }
+.otth-wide b { font-size: 14px; line-height: 1.2; text-shadow: 0 1px 3px rgba(0, 0, 0, .5); }
+.otth-wide small { font-size: 10.5px; color: rgba(255, 255, 255, .85); }
+.otth .rail-tall .otth-po { width: 112px; height: 168px; }
+.ott-logo { display: flex; flex-direction: column; align-items: center; gap: 2px; line-height: 1; text-align: center; padding: 4px; }
+.ott-logo b { font-size: 22px; font-weight: 800; letter-spacing: -.5px; text-shadow: 0 2px 6px rgba(0, 0, 0, .35); }
+.ott-logo small { font-size: 7.5px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; color: rgba(255, 255, 255, .9); }
+.lts .tv-scroll { padding-bottom: 40px; }
+.lts-head .lts-t { flex: 1; min-width: 0; }
+.lts-head h2 { font-size: 18px; font-weight: 600; }
+.lts-head small { display: block; font-size: 11.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lts .searchbar { margin: 8px 12px 0; }
+.lts-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px 8px; padding: 10px 12px 4px; }
+.lts-grid .pop-ch { width: auto; min-width: 0; }
+.lts-grid .pop-tile { width: 100%; height: auto; aspect-ratio: 1; }
+.lts-grid .pop-name { max-width: 100%; }
+
+/* ===== Bigger square tiles (Popular Channels, Popular OTT, LTS) ===== */
+.pop-rail { gap: 14px; padding: 6px 12px 12px; }
+.pop-ch { width: 124px; gap: 8px; }
+.pop-tile { width: 124px; height: 124px; border-radius: 26px; }
+.pop-tile-inner > * { transform: scale(1.6); }
+.pop-name { font-size: 13px; max-width: 122px; }
+.pop-lock { top: 8px; right: 8px; width: 24px; height: 24px; border-radius: 12px; }
+.pop-lock svg { width: 13px; height: 13px; }
+.pop-live-dot { top: 10px; right: 10px; width: 9px; height: 9px; }
+.ott-logo b { font-size: 36px; }
+.ott-logo small { font-size: 10px; }
+.lts-grid { grid-template-columns: repeat(3, 1fr); gap: 16px 12px; }
+.lts-grid .pop-tile { border-radius: 24px; }

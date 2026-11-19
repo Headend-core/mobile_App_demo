@@ -42,6 +42,7 @@
     clock: s('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'),
     chev: s('<path d="M9 6l6 6-6 6"/>'),
     close: s('<path d="M6 6l12 12M18 6L6 18"/>'),
+    fire: s('<path d="M12 2c-1.5 3-4 5.5-4 9.5a6 6 0 0 0 12 0c0-3.5-2.5-6.5-4-9.5z"/><path d="M12 12c-.8 1.5-2 2.5-2 4a3 3 0 0 0 6 0c0-1.5-1.2-2.5-2-4z"/>'),
     play: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15l13-7.5z"/></svg>',
     pause: '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4.5" width="4" height="15" rx="1"/><rect x="14" y="4.5" width="4" height="15" rx="1"/></svg>',
     full: s('<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>'),
@@ -621,6 +622,8 @@
   }
   const canWatch = (c) => { const a = allowedCh(); return !a || a.has(c.id); };
   const myChannels = () => CHANNELS.filter(canWatch);
+  // Cable TV viewers (customer with Cable TV, or LCO with Cable TV → Watch OTT) get the TV Guide button and LTS
+  const hasCableTv = () => { const s = state.session || {}; return s.type === "cable" || (s.type === "lco" && s.service !== "broadband"); };
 
   const grad = (g, deg = 135) => `linear-gradient(${deg}deg, ${g.join(", ")})`;
 
@@ -659,6 +662,7 @@
     bbSel: null,            // Broadband LCO → Customer: id selected with ⚙ (shows Recharge / Invoice bar)
     bbNew: null,           // Broadband LCO: id of a just-created customer (highlighted once in the list)
     ottSel: null,          // LCO → OTT Customer: id of the selected card (shows Recharge / Invoice bar)
+    recent: null,          // ids of recently watched channels
   };
 
   /* ---------- DOM helpers ---------- */
@@ -2563,6 +2567,7 @@
     // fromLco: opened via LCO "Watch OTT" → shows a "Go Back to LCO" button (normal Home is unchanged)
     home({ fromLco = false } = {}) {
       const f = state.filter;
+      const cable = hasCableTv();   // TV Guide button + LTS: Cable TV customer / Cable TV LCO only
       const root = el(`
         <section class="screen-fixed tv${fromLco ? " from-lco" : " tvx"}" data-screen="home">
           <div class="tv-scroll" id="tvScroll">
@@ -2583,7 +2588,7 @@
             <div class="filters" id="filters"></div>
             <div id="sections"></div>
           </div>
-          <button class="fab" data-act="fab" aria-label="TV Guide">${I.tv}</button>
+          ${cable ? `<button class="fab" data-act="fab" aria-label="TV Guide">${I.tv}</button>` : ""}
           ${fromLco ? `<button class="lco-back-pill" data-act="to-lco">${I.back}Go Back to LCO</button>${ctvNavHTML("live")}` : ""}
           <!-- Left slide-in menu (hamburger). Same buttons/data-act as before, so every option works the same. -->
           <div class="drawer" id="drawer" aria-hidden="true">
@@ -2601,7 +2606,7 @@
               ${fromLco ? `<button class="gp dr-item${f.q ? " on" : ""}" data-act="search">${I.search}<span>Search</span></button>` : ""}
               <button class="gp dr-item" data-act="profile">${I.userFill}<span>Profile</span></button>
               <i class="dr-sep"></i>
-              <button class="gp dr-item" data-act="lts">${I.router}<span>LTS</span></button>
+              ${cable ? `<button class="gp dr-item" data-act="lts">${I.router}<span>LTS</span></button>` : ""}
               <button class="gp dr-item${f.genre || f.genres ? " on" : ""}" data-act="genre">${I.masks}<span>${genreLabel()}</span></button>
               <button class="gp dr-item${f.lang || f.langs ? " on" : ""}" data-act="lang">${I.lang}<span>${langLabel()}</span></button>
             </nav>
@@ -2637,15 +2642,8 @@
         <div class="ott-grid">${OTT.map(([n, c]) => `<button class="ott" style="background:${grad(c)}" data-ott="${n}">${n}</button>`).join("")}</div>`, (sh) => {
         $$("[data-ott]", sh).forEach((b) => b.addEventListener("click", () => { closeSheet(); toast(`Opening ${b.dataset.ott} (demo)`); }));
       }));
-      $('[data-act="lts"]', root).addEventListener("click", () => openSheet(`
-        <h3>LTS</h3>
-        <p>Live TV services linked to your connection.</p>
-        <div class="opt-list">
-          ${[["My Packs", "View active channel packs"], ["Recharge", "Renew your Cable TV subscription"], ["Set-top Box", "VSC & device details"], ["Support", "Raise a service request"]]
-            .map(([t, d]) => `<button class="opt" data-lts="${t}"><span><b>${t}</b><small>${d}</small></span>${I.chev}</button>`).join("")}
-        </div>`, (sh) => {
-        $$("[data-lts]", sh).forEach((b) => b.addEventListener("click", () => { closeSheet(); toast(`${b.dataset.lts}: available in the full app`); }));
-      }));
+      // ☰ → LTS (Cable TV only): every channel in the Cable TV package as square logo tiles
+      if (cable) $('[data-act="lts"]', root).addEventListener("click", () => go("ltsHome"));
       // The old app's "Choose your Genre / Language" chip sheets (multi-select) — same for LCO, customer and guest
       $('[data-act="genre"]', root).addEventListener("click", () => openChipSheet("genre", () => refreshHome(root, draw)));
       $('[data-act="lang"]', root).addEventListener("click", () => openChipSheet("lang", () => refreshHome(root, draw)));
@@ -2660,7 +2658,7 @@
         $('[data-act="search"]', root).classList.remove("on"); draw();
       });
       $('[data-act="profile"]', root).addEventListener("click", () => go(fromLco ? "tvProfile" : "custProfile"));
-      $('[data-act="fab"]', root).addEventListener("click", () => go("tvGuide"));
+      if (cable) $('[data-act="fab"]', root).addEventListener("click", () => go("tvGuide"));
       if (fromLco) bindCtvNav(root, "live");
       draw();
       return root;
@@ -2740,7 +2738,7 @@
       const list = epgFor(c);
       const live = list.find((p) => p.live);
       const upcoming = list.filter((p) => p.start >= live.end).slice(0, 5);
-      state.recent = [c.id, ...(state.recent || []).filter((x) => x !== c.id)].slice(0, 8);   // OTT home → Recent Watched
+      recordRecent(c.id);
       const root = el(`
         <section class="tv tvc" data-screen="tv-channel">
           <header class="tvc-head">
@@ -3428,27 +3426,35 @@
       // Genre / Language (same preferences as the TV): titles map Kids → kids, Documentary → infotainment, others → movies / entertainment
       const tGenres = (t) => (t[2] === "Kids" ? ["kids"] : t[2] === "Documentary" ? ["infotainment"] : ["movies", "entertainment"]);
       const titleOn = (t) => (!f.langs || f.langs.includes(t[1])) && (!f.genres || tGenres(t).some((g) => f.genres.includes(g)));
-      const chOn = (c) => canWatch(c) && (!f.langs || f.langs.includes(c.lang)) && (!f.genres || f.genres.includes(c.genre));
+      // OTT content only (no live TV channels). Rails alternate square / landscape / portrait like the TV Home.
       const poster = (t, j) => `<button class="otth-po" data-title="${j}" style="background:${grad(t[3], 160)}"><b>${esc(t[0])}</b><small>${t[1]} · ${t[2]}</small></button>`;
-      const chCard = (c) => `<button class="otth-ch" data-ch="${c.id}" style="background:${grad(c.colors)}"><span class="live-badge"><i></i>LIVE</span><b>${esc(c.name)}</b></button>`;
-      const rail = (title, body, all) => `
-        <div class="sec"><div class="sec-head"><h4>${title}</h4>${all ? `<button class="see-all" data-genre="${all}">See All ${I.chev}</button>` : ""}</div>
-          <div class="rail">${body}</div></div>`;
+      const wide = (t, j) => `<button class="otth-wide" data-title="${j}" style="background:${grad(t[3], 120)}"><b>${esc(t[0])}</b><small>${t[1]} · ${t[2]}</small></button>`;
+      const inPlan = (j) => !!CUST.ottPlan && j < CUST.ottPlan.plan.apps;
+      const appTile = ([n, c], j) => `
+        <button class="pop-ch" data-app="${j}" aria-label="${esc(n)}">
+          <span class="pop-tile" style="background:${grad(c)}"><span class="ott-logo"><b>${esc(n.split(" ").map((w) => w[0]).join(""))}</b><small>${esc(n)}</small></span>
+            ${inPlan(j) ? "" : `<span class="pop-lock" title="Subscribe to watch">${I.lock}</span>`}</span>
+          <span class="pop-name">${esc(n)}</span>
+        </button>`;
+      const rail = (title, body, cls = "") => `
+        <div class="sec"><div class="sec-head"><h4>${title}</h4></div>
+          <div class="rail${cls}">${body}</div></div>`;
       const bodyHTML = () => {
-        const news = CHANNELS.filter((c) => c.genre === "news" && chOn(c));
-        const recent = (state.recent || []).map((id) => CHANNELS[id]).filter((c) => c && chOn(c));
+        const recent = (state.recentOtt || []).filter((j) => titleOn(OTT_TITLES[j])).map((j) => [OTT_TITLES[j], j]);
         const titles = OTT_TITLES.map((t, j) => [t, j]).filter(([t]) => titleOn(t));
         const bengali = titles.filter(([t]) => t[1] === "Bengali");
+        const others = titles.filter(([t]) => t[1] !== "Bengali");
         const html = [
-          rail("Recent Watched", recent.length ? recent.map(chCard).join("") : `<p class="otth-none">Channels you watch will show here.</p>`),
-          news.length ? rail("Live News", news.map(chCard).join(""), "news") : "",
-          bengali.length ? rail("Bengali Hits", bengali.map(([t, j]) => poster(t, j)).join("")) : "",
-          titles.length ? rail("Trending Now", titles.map(([t, j]) => poster(t, j)).reverse().join("")) : "",
+          rail(`<span class="sec-ic">${I.fire}</span>Popular OTT`, OTT_APPS.map(appTile).join(""), " pop-rail"),
+          recent.length ? rail("Continue Watching", recent.map(([t, j]) => wide(t, j)).join("")) : "",
+          bengali.length ? rail("Bengali Hits", bengali.map(([t, j]) => poster(t, j)).join(""), " rail-tall") : "",
+          others.length ? rail("New Releases", others.map(([t, j]) => wide(t, j)).join("")) : "",
+          titles.length ? rail("Trending Now", titles.map(([t, j]) => poster(t, j)).reverse().join(""), " rail-tall") : "",
         ].join("");
         const chips = [f.genres && ["genres", f.genres.length === 1 ? GENRES.find((g) => g.key === f.genres[0]).name : `${f.genres.length} genres`],
           f.langs && ["langs", f.langs.length === 1 ? f.langs[0] : `${f.langs.length} languages`]].filter(Boolean);
         return (chips.length ? `<div class="filters">${chips.map(([k, v]) => `<button class="fchip" data-clear="${k}">${v}${I.close}</button>`).join("")}</div>` : "") +
-          (titles.length || news.length ? html : html + `<div class="empty">${I.search}<b>Nothing for this selection</b><p>Try another genre or language.</p></div>`);
+          (titles.length ? html : html + `<div class="empty">${I.search}<b>Nothing for this selection</b><p>Try another genre or language.</p></div>`);
       };
       const root = el(`
         <section class="screen-fixed tv otth" data-screen="ott-home">
@@ -3456,9 +3462,9 @@
             <header class="tv-head otth-head">
               <button class="menu-btn" data-act="menu" aria-label="Open menu" aria-expanded="false">${I.menu}</button>
               <div class="brand"><img src="${MARK}" alt="VIBE" /><small>&amp; OTT Partners</small></div>
-              <button class="menu-btn head-search" data-act="osearch" aria-label="Search movies, shows or channels">${I.search}</button>
+              <button class="menu-btn head-search" data-act="osearch" aria-label="Search movies, shows or apps">${I.search}</button>
             </header>
-            <div class="searchbar" id="osb" hidden>${I.search}<input id="oq" type="search" placeholder="Search movies, shows or channels" aria-label="Search OTT" /></div>
+            <div class="searchbar" id="osb" hidden>${I.search}<input id="oq" type="search" placeholder="Search movies, shows or apps" aria-label="Search OTT" /></div>
             <div id="ores"></div>
             <div class="otth-ban" id="ban">
               ${slides.map((t, j) => `<button class="otth-slide${j ? "" : " on"}" data-title="${j}" style="background:${grad(t[3], 120)}"><small>${esc(OTT_APPS[j][0])} Original</small><b>${esc(t[0])}</b><span>${t[1]} · ${t[2]}</span></button>`).join("")}
@@ -3492,7 +3498,25 @@
           <button class="btn" id="tPlay">${I.play} ${CUST.ottPlan ? "Play" : "Subscribe to watch"}</button>
           <button class="btn ghost" id="tX">Close</button>`, (sh) => {
           $("#tX", sh).addEventListener("click", closeSheet);
-          $("#tPlay", sh).addEventListener("click", () => { if (CUST.ottPlan) { closeSheet(); toast(`Playing ${t[0]} (demo)`); } else go("ottSubscribe"); });
+          $("#tPlay", sh).addEventListener("click", () => {
+            if (!CUST.ottPlan) { go("ottSubscribe"); return; }
+            closeSheet(); toast(`Playing ${t[0]} (demo)`);
+            state.recentOtt = [j, ...(state.recentOtt || []).filter((x) => x !== j)].slice(0, 8);   // → Continue Watching
+            draw();
+          });
+        });
+      };
+      // Popular OTT tile: opens the app when it's in the OTT pack, else offers the OTT subscription
+      const openApp = (j) => {
+        const n = OTT_APPS[j][0];
+        if (inPlan(j)) { toast(`Opening ${n} (demo)`); return; }
+        openSheet(`
+          <h3>${esc(n)}</h3>
+          <p>${CUST.ottPlan ? `${esc(n)} isn't in your ${esc(CUST.ottPlan.plan.name)} pack.` : "Subscribe to an OTT pack to watch this app."}</p>
+          <button class="btn" id="oaSub">See OTT packs</button>
+          <button class="btn ghost" id="oaX">Close</button>`, (sh) => {
+          $("#oaX", sh).addEventListener("click", closeSheet);
+          $("#oaSub", sh).addEventListener("click", () => go("ottSubscribe"));
         });
       };
       const bindTitles = (box) => $$("[data-title]", box).forEach((b) => b.addEventListener("click", () => openTitle(+b.dataset.title)));
@@ -3500,8 +3524,7 @@
         const box = $("#obody", root);
         box.innerHTML = bodyHTML();
         bindTitles(box);
-        bindCards(box);
-        $$("[data-genre]", box).forEach((b) => b.addEventListener("click", () => go("genre", { key: b.dataset.genre })));
+        $$("[data-app]", box).forEach((b) => b.addEventListener("click", () => openApp(+b.dataset.app)));
         $$("[data-clear]", box).forEach((b) => b.addEventListener("click", () => { f[b.dataset.clear] = null; draw(); }));
         $('[data-act="genre"] span', root).textContent = genreLabel();
         $('[data-act="genre"]', root).classList.toggle("on", !!f.genres);
@@ -3541,13 +3564,97 @@
         $("#ban", root).hidden = !!q;
         if (!q) { res.innerHTML = ""; return; }
         const ts = OTT_TITLES.map((t, j) => [t, j]).filter(([t]) => (t[0] + " " + t[1] + " " + t[2]).toLowerCase().includes(q));
-        const cs = myChannels().filter((c) => (c.name + " " + c.show).toLowerCase().includes(q)).slice(0, 12);
-        res.innerHTML = ts.length || cs.length
-          ? (ts.length ? rail("Movies &amp; Shows", ts.map(([t, j]) => poster(t, j)).join("")) : "") + (cs.length ? rail("Live Channels", cs.map(chCard).join("")) : "")
-          : `<div class="empty">${I.search}<b>Nothing found</b><p>Try another title or channel.</p></div>`;
+        const as = OTT_APPS.map((a, j) => [a, j]).filter(([a]) => a[0].toLowerCase().includes(q));
+        res.innerHTML = ts.length || as.length
+          ? (as.length ? rail("OTT Apps", as.map(([a, j]) => appTile(a, j)).join(""), " pop-rail") : "") + (ts.length ? rail("Movies &amp; Shows", ts.map(([t, j]) => poster(t, j)).join(""), " rail-tall") : "")
+          : `<div class="empty">${I.search}<b>Nothing found</b><p>Try another movie, show or app.</p></div>`;
         bindTitles(res);
-        bindCards(res);
+        $$("[data-app]", res).forEach((b) => b.addEventListener("click", () => openApp(+b.dataset.app)));
       });
+      return root;
+    },
+
+    // ☰ → LTS (Cable TV customer / Cable TV LCO): every channel in the Cable TV package as square logo tiles; tap → playback
+    ltsHome() {
+      const p = Plans.get();
+      const pack = allowedCh() && p.pack !== null ? CABLE_PACKS[p.pack].name : "All channels";
+      let q = "";
+      const tile = (c) => `
+        <button class="pop-ch lts-ch" data-ch="${c.id}" aria-label="${esc(c.name)}">
+          <span class="pop-tile" style="background:${grad(c.colors)}"><span class="pop-tile-inner">${channelLogoHTML(c)}</span><span class="pop-live-dot" title="Live"></span></span>
+          <span class="pop-name">${esc(c.name)}</span>
+        </button>`;
+      const bodyHTML = () => {
+        const mine = myChannels().filter((c) => !q || (c.name + " " + c.show).toLowerCase().includes(q));
+        const html = GENRES.map((g) => {
+          const list = mine.filter((c) => c.genre === g.key);
+          return list.length ? `
+            <div class="sec"><div class="sec-head"><h4><span class="sec-ic">${g.icon}</span>${g.name} (${list.length})</h4></div>
+              <div class="lts-grid">${list.map(tile).join("")}</div></div>` : "";
+        }).join("");
+        return html || `<div class="empty">${I.search}<b>No channels found</b><p>Try another channel name.</p></div>`;
+      };
+      const root = el(`
+        <section class="screen-fixed tv lts" data-screen="lts-home">
+          <div class="tv-scroll">
+            <header class="sub-head lts-head">
+              <button class="back-btn static" data-act="back" aria-label="Back">${I.back}</button>
+              <div class="lts-t"><h2>LTS</h2><small>${esc(pack)} · ${myChannels().length} channels</small></div>
+              <button class="menu-btn head-search" data-act="lsearch" aria-label="Search channels">${I.search}</button>
+            </header>
+            <div class="searchbar" id="lsb" hidden>${I.search}<input id="lq" type="search" placeholder="Search channels in your pack" aria-label="Search channels" /></div>
+            <div id="lbody"></div>
+          </div>
+        </section>`);
+      const draw = () => { const box = $("#lbody", root); box.innerHTML = bodyHTML(); bindCards(box); };
+      bindCommon(root);
+      $('[data-act="lsearch"]', root).addEventListener("click", (e) => {
+        const bar = $("#lsb", root);
+        bar.hidden = !bar.hidden;
+        e.currentTarget.classList.toggle("on", !bar.hidden);
+        if (!bar.hidden) $("#lq", root).focus(); else { $("#lq", root).value = ""; q = ""; draw(); }
+      });
+      $("#lq", root).addEventListener("input", (e) => { q = e.target.value.trim().toLowerCase(); draw(); });
+      draw();
+      return root;
+    },
+
+    // Home → Popular Channels → See All: every channel as square logo tiles (channels outside the plan show a lock → upgrade)
+    popularAll() {
+      let q = "";
+      const bodyHTML = () => {
+        const all = CHANNELS.filter((c) => !q || (c.name + " " + c.show).toLowerCase().includes(q));
+        const html = GENRES.map((g) => {
+          const list = all.filter((c) => c.genre === g.key).sort((a, b) => canWatch(b) - canWatch(a));
+          return list.length ? `
+            <div class="sec"><div class="sec-head"><h4><span class="sec-ic">${g.icon}</span>${g.name} (${list.length})</h4></div>
+              <div class="lts-grid">${list.map(popCardHTML).join("")}</div></div>` : "";
+        }).join("");
+        return html || `<div class="empty">${I.search}<b>No channels found</b><p>Try another channel name.</p></div>`;
+      };
+      const mine = myChannels().length;
+      const root = el(`
+        <section class="screen-fixed tv lts" data-screen="popular-all">
+          <div class="tv-scroll">
+            <header class="sub-head lts-head">
+              <button class="back-btn static" data-act="back" aria-label="Back">${I.back}</button>
+              <div class="lts-t"><h2>Popular Channels</h2><small>${CHANNELS.length} channels${mine < CHANNELS.length ? ` · ${mine} in your plan` : ""}</small></div>
+              <button class="menu-btn head-search" data-act="psearch" aria-label="Search channels">${I.search}</button>
+            </header>
+            <div class="searchbar" id="psb" hidden>${I.search}<input id="pq" type="search" placeholder="Search all channels" aria-label="Search channels" /></div>
+            <div id="pbody"></div>
+          </div>
+        </section>`);
+      const draw = () => { const box = $("#pbody", root); box.innerHTML = bodyHTML(); bindCards(box); };
+      bindCommon(root);
+      $('[data-act="psearch"]', root).addEventListener("click", (e) => {
+        const bar = $("#psb", root);
+        bar.hidden = !bar.hidden;
+        e.currentTarget.classList.toggle("on", !bar.hidden);
+        if (!bar.hidden) $("#pq", root).focus(); else { $("#pq", root).value = ""; q = ""; draw(); }
+      });
+      $("#pq", root).addEventListener("input", (e) => { q = e.target.value.trim().toLowerCase(); draw(); });
+      draw();
       return root;
     },
 
@@ -4386,10 +4493,197 @@
   const genreLabel = () => { const f = state.filter; return f.genre ? GENRES.find((g) => g.key === f.genre).name : f.genres ? `Genre (${f.genres.length} selected)` : `Genre (${GENRES.length})`; };
   const langLabel = () => { const f = state.filter; return f.lang || (f.langs ? `Language (${f.langs.length} selected)` : `Language (${LANGUAGES.length})`); };
 
-  function cardHTML(c, grid = false) {
+  function recordRecent(id) {
+    state.recent = [id, ...(state.recent || []).filter((x) => x !== id)].slice(0, 10);
+    try { localStorage.setItem("vibe.recentChannels", JSON.stringify(state.recent)); } catch (e) {}
+  }
+
+  function getRecentChannels() {
+    if (!state.recent) {
+      try {
+        const stored = JSON.parse(localStorage.getItem("vibe.recentChannels") || "null");
+        if (Array.isArray(stored) && stored.length) state.recent = stored;
+      } catch (e) {}
+    }
+    if (!state.recent || !state.recent.length) {
+      state.recent = [12, 5, 26, 13, 6, 7].filter((id) => CHANNELS[id] && canWatch(CHANNELS[id])).slice(0, 4);
+      if (!state.recent.length) state.recent = [12, 5, 26, 13];
+    }
+    return state.recent.map((id) => CHANNELS[id]).filter(Boolean);
+  }
+
+  const POPULAR_CH_IDS = [6, 0, 21, 12, 8, 7, 5, 16, 26, 9, 28, 32, 13, 38, 22];
+
+  function channelLogoHTML(c) {
+    const n = c.name;
+    if (n.startsWith("DD ")) {
+      const sub = n.slice(3).toUpperCase();
+      return `
+        <div class="logo-dd">
+          <svg viewBox="0 0 44 44" class="ch-logo-dd">
+            <circle cx="22" cy="22" r="4.5" fill="#ffffff" />
+            <path d="M8 22c0-6.5 6-12.5 14-12.5 5.5 0 9.5 2.8 11.8 7-2.8-1.7-6-2.3-9.2-1.1-4.6 1.6-7.8 6-7.8 11 0 2 .5 4.1 1.6 5.7C13 30 8 26.2 8 22z" fill="#ff7a18" />
+            <path d="M36 22c0 6.5-6 12.5-14 12.5-5.5 0-9.5-2.8-11.8-7 2.8 1.7 6 2.3 9.2 1.1 4.6-1.6 7.8-6 7.8-11 0-2-.5-4.1-1.6-5.7C31 14 36 17.8 36 22z" fill="#2fd8ff" />
+          </svg>
+          <span class="dd-lbl"><small>DD</small><b>${esc(sub)}</b></span>
+        </div>`;
+    }
+    if (n.startsWith("Star Sports")) {
+      const num = n.replace("Star Sports", "").trim() || "1";
+      return `
+        <div class="logo-star-sports">
+          <svg viewBox="0 0 24 24" class="star-ic"><path d="M12 2l2.6 7 7.4.3-5.8 4.7 2 7-6.2-4.3L5.8 21l2-7L2 9.3l7.4-.3z" fill="#ffd700"/></svg>
+          <div class="l-txt"><b>STAR</b><small>SPORTS ${esc(num)}</small></div>
+        </div>`;
+    }
+    if (n === "Star Plus") {
+      return `
+        <div class="logo-star">
+          <svg viewBox="0 0 24 24" class="star-ic"><path d="M12 2l2.6 7 7.4.3-5.8 4.7 2 7-6.2-4.3L5.8 21l2-7L2 9.3l7.4-.3z" fill="#ff2a6d"/></svg>
+          <div class="l-txt"><b>STAR</b><small>PLUS</small></div>
+        </div>`;
+    }
+    if (n === "Star Gold" || n === "Star Movies" || n === "Star Maa") {
+      const sub = n.replace("Star", "").trim().toUpperCase();
+      return `
+        <div class="logo-star">
+          <svg viewBox="0 0 24 24" class="star-ic"><path d="M12 2l2.6 7 7.4.3-5.8 4.7 2 7-6.2-4.3L5.8 21l2-7L2 9.3l7.4-.3z" fill="#ffd700"/></svg>
+          <div class="l-txt"><b>STAR</b><small>${esc(sub)}</small></div>
+        </div>`;
+    }
+    if (n.startsWith("Zee")) {
+      const sub = n.replace("Zee", "").trim().toUpperCase() || "TV";
+      return `
+        <div class="logo-zee">
+          <span class="zee-circle">Z</span>
+          <small>ZEE ${esc(sub)}</small>
+        </div>`;
+    }
+    if (n.startsWith("Colors")) {
+      const sub = n.replace("Colors", "").trim() || "";
+      return `
+        <div class="logo-colors">
+          <div class="colors-petals">
+            <i style="background:#e1245e"></i>
+            <i style="background:#f7971e"></i>
+            <i style="background:#00b4db"></i>
+            <i style="background:#3ccf8e"></i>
+          </div>
+          <b class="colors-txt">colors</b>
+          ${sub ? `<small class="colors-sub">${esc(sub)}</small>` : ""}
+        </div>`;
+    }
+    if (n === "Aaj Tak") {
+      return `
+        <div class="logo-aajtak">
+          <b>आज</b>
+          <i>तक</i>
+        </div>`;
+    }
+    if (n.startsWith("Sony")) {
+      const sub = n.replace("Sony", "").trim().toUpperCase() || "TV";
+      return `
+        <div class="logo-sony">
+          <b>SONY</b>
+          <small>${esc(sub)}</small>
+        </div>`;
+    }
+    if (n === "NDTV India") {
+      return `
+        <div class="logo-ndtv">
+          <b>NDTV</b>
+          <small>INDIA</small>
+        </div>`;
+    }
+    if (n === "Cartoon Network") {
+      return `
+        <div class="logo-cn">
+          <div class="cn-blocks"><span>C</span><span>N</span></div>
+          <small>CARTOON</small>
+        </div>`;
+    }
+    if (n === "MTV Beats") {
+      return `
+        <div class="logo-mtv">
+          <div class="mtv-m">M<small>tv</small></div>
+          <span class="mtv-beats">BEATS</span>
+        </div>`;
+    }
+    if (n === "Discovery") {
+      return `
+        <div class="logo-discovery">
+          <svg viewBox="0 0 24 24" class="disc-ic"><circle cx="12" cy="12" r="9" fill="none" stroke="#2fd8ff" stroke-width="1.8"/><ellipse cx="12" cy="12" rx="4" ry="9" fill="none" stroke="#2fd8ff" stroke-width="1.3"/><path d="M3 12h18" stroke="#2fd8ff" stroke-width="1.3"/></svg>
+          <small>Discovery</small>
+        </div>`;
+    }
+    if (n === "Nat Geo") {
+      return `
+        <div class="logo-natgeo">
+          <span class="ng-border"></span>
+          <small>NAT GEO</small>
+        </div>`;
+    }
+    if (n === "Pogo") {
+      return `
+        <div class="logo-pogo">
+          <span class="pogo-txt">POGO</span>
+        </div>`;
+    }
+    if (n === "9XM") {
+      return `
+        <div class="logo-9xm">
+          <b>9X</b><i>M</i>
+        </div>`;
+    }
+    if (n === "Aastha" || n === "Sanskar" || n === "SVBC") {
+      return `
+        <div class="logo-devo">
+          <svg viewBox="0 0 24 24" class="devo-ic"><path d="M12 3c-1.5 2-2.5 3.3-2.5 4.8a2.5 2.5 0 0 0 5 0C14.5 6.3 13.5 5 12 3z"/><path d="M5 14h14l-2 4H7z"/><path d="M12 10.5V14M9 21h6"/></svg>
+          <small>${esc(n)}</small>
+        </div>`;
+    }
+    return `
+      <div class="logo-generic">
+        <b>${chInitials(c)}</b>
+        <small>${esc(c.name.split(" ")[0])}</small>
+      </div>`;
+  }
+
+  function popCardHTML(c) {
+    const allowed = canWatch(c);
+    return `
+      <button class="pop-ch" data-ch="${c.id}" aria-label="${esc(c.name)}">
+        <div class="pop-tile" style="background:${grad(c.colors)}">
+          <div class="pop-tile-inner">
+            ${channelLogoHTML(c)}
+          </div>
+          ${allowed ? `<span class="pop-live-dot" title="Live"></span>` : `<span class="pop-lock" title="Plan required">${I.lock}</span>`}
+        </div>
+        <span class="pop-name">${esc(c.name)}</span>
+      </button>`;
+  }
+
+  function getPopularChannels() {
+    const f = state.filter;
+    const ql = (f.q || "").toLowerCase();
+    let list = POPULAR_CH_IDS.map((id) => CHANNELS[id]).filter(Boolean);
+
+    if (f.genre) list = list.filter((c) => c.genre === f.genre);
+    if (f.genres) list = list.filter((c) => f.genres.includes(c.genre));
+    if (f.lang) list = list.filter((c) => c.lang === f.lang);
+    if (f.langs) list = list.filter((c) => f.langs.includes(c.lang));
+    if (ql) list = list.filter((c) => c.name.toLowerCase().includes(ql) || c.show.toLowerCase().includes(ql));
+
+    // Sort channels the viewer can watch first, then locked ones
+    list.sort((a, b) => (canWatch(b) ? 1 : 0) - (canWatch(a) ? 1 : 0));
+    return list;
+  }
+
+  // tall = portrait ("vertical") card, used by every other genre rail on Home
+  function cardHTML(c, grid = false, tall = false) {
     const sl = slot(c.id);
     return `
-      <button class="ch-card${grid ? " in-grid" : ""}" data-ch="${c.id}">
+      <button class="ch-card${grid ? " in-grid" : ""}${tall ? " tall" : ""}" data-ch="${c.id}">
         <div class="thumb" style="background:${grad(c.colors)}">
           <span class="live-badge"><i></i>LIVE</span>
           <b class="prog">${esc(c.show)}</b>
@@ -4401,19 +4695,53 @@
   }
 
   function guideHTML() {
-    const html = GENRES.filter(genreOn).map((g) => {
+    const recentList = getRecentChannels().filter((c) => {
+      const ql = (state.filter.q || "").toLowerCase();
+      if (state.filter.genre && c.genre !== state.filter.genre) return false;
+      if (state.filter.genres && !state.filter.genres.includes(c.genre)) return false;
+      if (state.filter.lang && c.lang !== state.filter.lang) return false;
+      if (state.filter.langs && !state.filter.langs.includes(c.lang)) return false;
+      if (ql && !c.name.toLowerCase().includes(ql) && !c.show.toLowerCase().includes(ql)) return false;
+      return true;
+    });
+
+    const popList = getPopularChannels();
+
+    const recentHTML = recentList.length ? `
+      <div class="sec sec-recent">
+        <div class="sec-head">
+          <h4><span class="sec-ic">${I.history}</span>Recently Watched</h4>
+        </div>
+        <div class="rail">${recentList.map((c) => cardHTML(c)).join("")}</div>
+      </div>` : "";
+
+    const popHTML = popList.length ? `
+      <div class="sec sec-pop">
+        <div class="sec-head">
+          <h4><span class="sec-ic">${I.fire}</span>Popular Channels</h4>
+          <button class="see-all" data-act="pop-all">See All ${I.chev}</button>
+        </div>
+        <div class="rail pop-rail">${popList.map((c) => popCardHTML(c)).join("")}</div>
+      </div>` : "";
+
+    // Genre rails alternate: portrait (vertical) cards, then landscape (horizontal), and so on
+    let n = 0;
+    const genreHTML = GENRES.filter(genreOn).map((g) => {
       const list = filtered(g);
       if (!list.length) return "";
+      const tall = n++ % 2 === 0;
       return `
         <div class="sec">
           <div class="sec-head">
             <h4><span class="sec-ic">${g.icon}</span>${g.name} (${allowedCh() ? list.length : g.count})</h4>
             <button class="see-all" data-genre="${g.key}">See All ${I.chev}</button>
           </div>
-          <div class="rail">${list.map((c) => cardHTML(c)).join("")}</div>
+          <div class="rail${tall ? " rail-tall" : ""}">${list.map((c) => cardHTML(c, false, tall)).join("")}</div>
         </div>`;
     }).join("");
-    return html || `<div class="empty">${I.search}<b>No channels found</b><p>Try another genre, language or search term.</p><button class="pill" data-act="reset-filters">Clear filters</button></div>`;
+
+    const out = recentHTML + popHTML + genreHTML;
+    return out || `<div class="empty">${I.search}<b>No channels found</b><p>Try another genre, language or search term.</p><button class="pill" data-act="reset-filters">Clear filters</button></div>`;
   }
 
   function filterChips() {
@@ -4439,6 +4767,7 @@
   function bindGuide(root) {
     bindCards(root);
     $$("[data-genre]", root).forEach((b) => b.addEventListener("click", () => go("genre", { key: b.dataset.genre })));
+    $$('[data-act="pop-all"]', root).forEach((b) => b.addEventListener("click", () => go("popularAll")));
     const draw = () => { $("#sections", root).innerHTML = guideHTML(); $("#filters", root).innerHTML = filterChips(); bindGuide(root); };
     $$("[data-clear]", root).forEach((b) => b.addEventListener("click", () => {
       const k = b.dataset.clear;
@@ -4457,7 +4786,7 @@
   function bindCards(root, replace = false) {
     // Live TV Home (LCO Watch OTT, customer and guest) and the OTT home open the old app's channel page; elsewhere the normal player
     $$("[data-ch]", root).forEach((b) => b.addEventListener("click", () => {
-      if (b.closest(".from-lco, .tvx, .otth")) watchTv(+b.dataset.ch);
+      if (b.closest(".from-lco, .tvx, .otth, .lts")) watchTv(+b.dataset.ch);
       else playChannel(+b.dataset.ch, replace);
     }));
   }
@@ -4496,11 +4825,13 @@
   // Live TV channel page (same for LCO, customer and guest; only channels in the viewer's plan play)
   function watchTv(id) {
     if (planGate(CHANNELS[id])) return;
+    recordRecent(id);
     go("tvChannel", { id });
   }
 
   function playChannel(id, replace = false) {
     if (planGate(CHANNELS[id])) return;
+    recordRecent(id);
     openPlayer(id, replace);
   }
   function openPlayer(id, replace) {

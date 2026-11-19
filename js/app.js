@@ -97,7 +97,7 @@
     lco: { title: "LCO", desc: "Continue as a Partner/LCO", icon: I.store },
     broadband: { title: "Broadband", desc: "Continue with your broadband connection", icon: I.wifi },
     cable: { title: "Cable TV", desc: "Continue with your Cable TV service provider", icon: I.tv },
-    guest: { title: "Guest", desc: "Explore available content without a subscription", icon: I.guest },
+    guest: { title: "Other Users", desc: "Explore free channels without a subscription", icon: I.guest },
   };
 
   // Extra (non-mobile) fields used by some login types
@@ -193,14 +193,14 @@
     guest: {
       // Guests register and log in with the mobile number only (no VSC / User ID)
       sub: "Explore content without a subscription – sign in with your mobile number & OTP",
-      label: "Join as Guest",
+      label: "Join as Other User",
       btn: "Continue",
       track: true,
       otpLogin: true, otpAlways: true,   // OTP (DEMO_OTP) on every sign-in, first time included
       otpSubLogin: "Enter the 6-digit OTP sent to your mobile number",
       done: "Welcome back!",
-      doneMsg: "You are logged in as a guest.",
-      doneReg: "Guest registration successful",
+      doneMsg: "You are logged in as an other user.",
+      doneReg: "Registration successful",
       doneRegMsg: "You can now explore available content. Next time, just log in with your mobile number.",
     },
   };
@@ -497,38 +497,80 @@
 
   /* ---------- Channel guide demo data ---------- */
   // [channel, programme, language, gradient colours]
+  // Channel line-up. Items: [channel, programme on now, language, gradient?]. Gradient is optional (falls back to CH_PAL).
+  // DD channels are kept LAST in every genre, so they always show at the end of a rail.
   const GENRES = [
     { key: "sports", name: "Sports", icon: I.trophy, count: 29, items: [
-      ["Star Sports 1", "T20 Highlights", "Hindi", ["#c8a96a", "#1f6b3a"]],
+      ["Star Sports 1", "T20 Highlights", "English", ["#c8a96a", "#1f6b3a"]],
+      ["Star Sports 1 Hindi", "Cricket Live", "Hindi", ["#1f6b3a", "#0b3d2e"]],
       ["Star Sports 2", "Champions Trophy Highlights", "English", ["#2b1055", "#d76d1f"]],
-      ["Star Sports 3", "Pro Kabaddi Live", "Tamil", ["#0f2027", "#2c5364"]],
+      ["Star Sports 3", "Pro Kabaddi Live", "Hindi", ["#0f2027", "#2c5364"]],
+      ["Star Sports Select 1", "Premier Football", "English", ["#141e30", "#243b55"]],
+      ["Star Sports Select 2", "Tennis Masters", "English", ["#3a6073", "#16222a"]],
+      ["Star Sports 1 Tamil", "Cricket Live", "Tamil"],
       ["Sony Ten 1", "Football Matchday", "English", ["#134e5e", "#71b280"]],
+      ["Sony Ten 2", "WWE Raw", "English"],
+      ["Sony Ten 3", "Cricket Live", "Hindi"],
+      ["Sony Ten 5", "Football Classics", "English"],
+      ["Sony Sports Bangla", "Football Live", "Bengali"],
       ["Sports18", "Tennis Open Final", "Hindi", ["#1d2b64", "#6f86d6"]],
+      ["Sports18 Khel", "Kho Kho League", "Hindi"],
+      ["Eurosport", "Cycling Tour", "English"],
       ["DD Sports", "Hockey League", "Hindi", ["#3a1c71", "#d76d77"]],
     ] },
     { key: "entertainment", name: "Entertainment", icon: I.monitor, count: 97, items: [
       ["Star Plus", "Sayoni", "Hindi", ["#f6d6a8", "#b31217"]],
-      ["Zee TV", "Ganga Mai Ki Betiyan", "Hindi", ["#1e3c72", "#7b4397"]],
-      ["Colors", "Dhruv Tara", "Hindi", ["#00b4db", "#e1245e"]],
-      ["Sony TV", "Family Hour", "Hindi", ["#ff512f", "#3a1c71"]],
-      ["Sun TV", "Evening Serial", "Tamil", ["#f7971e", "#7a1f1f"]],
+      ["Star Bharat", "Family Saga", "Hindi"],
+      ["Star Jalsha", "Anurager Chhowa", "Bengali"],
+      ["Star Pravah", "Evening Drama", "Marathi"],
+      ["Star Vijay", "Super Singer", "Tamil"],
       ["Star Maa", "Prime Drama", "Telugu", ["#8e2de2", "#f7797d"]],
+      ["Zee TV", "Ganga Mai Ki Betiyan", "Hindi", ["#1e3c72", "#7b4397"]],
+      ["&TV", "Comedy Nights", "Hindi"],
+      ["Zee Bangla", "Jagaddhatri", "Bengali"],
+      ["Zee Marathi", "Prime Serial", "Marathi"],
+      ["Zee Anmol", "Classic Serials", "Hindi"],
+      ["Colors", "Dhruv Tara", "Hindi", ["#00b4db", "#e1245e"]],
+      ["Colors Bangla", "Evening Story", "Bengali"],
+      ["Sony TV", "Family Hour", "Hindi", ["#ff512f", "#3a1c71"]],
+      ["Sony SAB", "Comedy Special", "Hindi"],
+      ["Sony Pal", "Daily Drama", "Hindi"],
+      ["Sony Aath", "Bengali Cartoon Hour", "Bengali"],
+      ["Sun TV", "Evening Serial", "Tamil", ["#f7971e", "#7a1f1f"]],
       ["DD National", "Rangoli", "Hindi", ["#1f4037", "#99f2c8"]],
       ["DD Bangla", "Sandhya Bela", "Bengali", ["#614385", "#516395"]],
     ] },
     { key: "movies", name: "Movies", icon: I.clap, count: 49, items: [
       ["Star Gold", "Ravan Vadh", "Hindi", ["#e53935", "#7b1010"]],
-      ["Zee Cinema", "2.0", "Hindi", ["#0f2027", "#3a7bd5"]],
-      ["Sony Max", "Weekend Blockbuster", "Hindi", ["#355c7d", "#c06c84"]],
-      ["&pictures", "Action Special", "Hindi", ["#232526", "#c0392b"]],
-      ["Colors Cineplex", "Superhit Sunday", "Hindi", ["#41295a", "#2f0743"]],
+      ["Star Gold 2", "Action Double Bill", "Hindi"],
+      ["Star Gold Select", "Classic Cinema", "Hindi"],
       ["Star Movies", "Hollywood Night", "English", ["#000428", "#004e92"]],
+      ["Star Movies Select", "Award Winners", "English"],
+      ["Zee Cinema", "2.0", "Hindi", ["#0f2027", "#3a7bd5"]],
+      ["Zee Bollywood", "Retro Hits", "Hindi"],
+      ["Zee Action", "Dubbed Blockbuster", "Hindi"],
+      ["Zee Bangla Cinema", "Bengali Superhit", "Bengali"],
+      ["&pictures", "Action Special", "Hindi", ["#232526", "#c0392b"]],
+      ["&flix", "Hollywood Prime", "English"],
+      ["Sony Max", "Weekend Blockbuster", "Hindi", ["#355c7d", "#c06c84"]],
+      ["Sony Max 2", "Evergreen Movies", "Hindi"],
+      ["Sony Wah", "Family Movie", "Hindi"],
+      ["Sony Pix", "Sci-Fi Night", "English"],
+      ["Colors Cineplex", "Superhit Sunday", "Hindi", ["#41295a", "#2f0743"]],
+      ["Jalsha Movies", "Bengali Classic", "Bengali"],
+      ["Movies Now", "Blockbuster Night", "English"],
     ] },
     { key: "news", name: "News", icon: I.news, count: 125, items: [
       ["R. Bharat", "Live & Breaking", "Hindi", ["#d31027", "#1c3faa"]],
       ["Aaj Tak", "Aaj Ka Agenda", "Hindi", ["#ff416c", "#8e0e00"]],
       ["NDTV India", "Prime Time", "Hindi", ["#cb2d3e", "#2c3e50"]],
+      ["Zee News", "DNA", "Hindi"],
+      ["ABP News", "Master Stroke", "Hindi"],
+      ["ABP Ananda", "Ghanta Khanek Sange", "Bengali"],
+      ["Zee 24 Ghanta", "Khabar Live", "Bengali"],
+      ["India Today", "News Today", "English"],
       ["Times Now", "The Newshour", "English", ["#1a2980", "#c33764"]],
+      ["CNBC Awaaz", "Market Live", "Hindi"],
       ["Puthiya Thalaimurai", "Seithigal", "Tamil", ["#e65c00", "#b31217"]],
       ["TV9 Kannada", "Top Stories", "Kannada", ["#ee0979", "#141e30"]],
       ["DD News", "Desh Videsh", "Hindi", ["#0f3443", "#34e89e"]],
@@ -537,23 +579,33 @@
       ["Pogo", "Cartoon Marathon", "Hindi", ["#11998e", "#38ef7d"]],
       ["Cartoon Network", "Morning Toons", "English", ["#f7971e", "#ffd200"]],
       ["Nick", "Fun Time", "Hindi", ["#f12711", "#f5af19"]],
+      ["Sony Yay", "Toon Party", "Hindi"],
       ["Disney Junior", "Little Stories", "English", ["#00c6ff", "#0072ff"]],
+      ["Discovery Kids", "Little Explorers", "Hindi"],
+      ["Hungama", "Cartoon Hour", "Hindi"],
     ] },
     { key: "music", name: "Music", icon: I.music, count: 22, items: [
       ["9XM", "Bollywood Top 20", "Hindi", ["#8e2de2", "#4a00e0"]],
       ["MTV Beats", "Chill Hits", "Hindi", ["#fc466b", "#3f5efb"]],
       ["Zing", "Retro Rewind", "Hindi", ["#f953c6", "#b91d73"]],
+      ["Zee ETC Bollywood", "Party Mix", "Hindi"],
+      ["B4U Music", "Romantic Hits", "Hindi"],
+      ["Sangeet Bangla", "Adhunik Gaan", "Bengali"],
       ["Sun Music", "Melody Time", "Tamil", ["#ff9966", "#ff5e62"]],
     ] },
     { key: "devotional", name: "Devotional", icon: I.lamp, count: 16, items: [
       ["Aastha", "Morning Aarti", "Hindi", ["#f7971e", "#c0392b"]],
       ["Sanskar", "Bhajan Sandhya", "Hindi", ["#ff8008", "#ffc837"]],
       ["SVBC", "Suprabhatam", "Telugu", ["#b24592", "#f15f79"]],
+      ["Zee Jagran", "Satsang", "Hindi"],
     ] },
     { key: "infotainment", name: "Infotainment", icon: I.globe, count: 14, items: [
       ["Discovery", "Planet Wild", "English", ["#134e5e", "#71b280"]],
       ["Nat Geo", "Mega Structures", "English", ["#f2c94c", "#232526"]],
+      ["Animal Planet", "Wild Rescue", "English"],
+      ["Sony BBC Earth", "Ocean Life", "English"],
       ["History TV18", "Ancient Secrets", "Hindi", ["#3e5151", "#decba4"]],
+      ["TLC", "Food Trails", "English"],
       ["DD Kisan", "Krishi Darshan", "Hindi", ["#56ab2f", "#a8e063"]],
     ] },
   ];
@@ -580,11 +632,21 @@
     return { time: `${fmt(start)} - ${fmt(end)}`, pct };
   }
   // Flat channel list with ids
+  const CH_PAL = [["#2b5876", "#4e4376"], ["#ff512f", "#dd2476"], ["#1d976c", "#2c3e50"], ["#c94b4b", "#4b134f"], ["#0f0c29", "#302b63"],
+    ["#ee9ca7", "#7b4397"], ["#f46b45", "#7a1f1f"], ["#134e5e", "#2f80ed"], ["#3c1053", "#ad5389"], ["#16a085", "#1a2980"]];
+  // TVE (TV Everywhere) channels: stream in the app for every Cable TV subscriber, on top of the free-to-all (FTA) ones
+  const TVE = new Set(["Star Sports 1", "Star Sports 1 Hindi", "Star Sports 2", "Star Sports 3", "Star Sports Select 1", "Sony Ten 1", "Sony Ten 2",
+    "Sony Ten 3", "Sony Sports Bangla", "Sports18", "Star Plus", "Star Bharat", "Star Jalsha", "Star Maa", "Zee TV", "&TV", "Zee Bangla",
+    "Colors", "Colors Bangla", "Sony TV", "Sony SAB", "Sun TV", "Star Gold", "Star Movies", "Zee Cinema", "Zee Bangla Cinema", "&pictures",
+    "Sony Max", "Sony Pix", "Colors Cineplex", "Jalsha Movies", "R. Bharat", "Aaj Tak", "NDTV India", "Zee News", "ABP Ananda", "India Today",
+    "Times Now", "Pogo", "Cartoon Network", "Sony Yay", "Discovery Kids", "9XM", "MTV Beats", "Sangeet Bangla", "Discovery", "Nat Geo", "Sony BBC Earth"]);
   const CHANNELS = [];
   GENRES.forEach((g) => g.items.forEach(([name, show, lang, colors]) => {
     const id = CHANNELS.length;
-    CHANNELS.push({ id, name, show, lang, colors, genre: g.key });
+    CHANNELS.push({ id, name, show, lang, colors: colors || CH_PAL[id % CH_PAL.length], genre: g.key, tve: TVE.has(name) });
   }));
+  const isDD = (c) => c.name.startsWith("DD ");
+  const chByName = (names) => names.map((n) => CHANNELS.find((c) => c.name === n)).filter(Boolean);
 
   /* ---------- Channel plans for customers & guests ----------
      Guest: Welcome Free Plan only (DD + a few free-to-air). Cable / Broadband customer: starts with a package.
@@ -614,16 +676,22 @@
     set(pack) { const o = Plans.all(); o[Plans.key()] = { pack, at: Date.now() }; Plans.save(o); },
   };
   // null = no restriction (LCO Watch OTT / not signed in as customer or guest)
-  function allowedCh() {
+  // linear = the Cable TV package only (LTS). Otherwise Cable TV customers can also play every TVE channel in the app.
+  function allowedCh(linear = false) {
     const t = (state.session || {}).type;
     if (t !== "guest" && t !== "cable" && t !== "broadband") return null;
     const p = Plans.get(), g = p.pack === null ? [] : PACK_GENRES[p.pack];
-    return new Set(CHANNELS.filter((c) => FREE_CH.has(c.id) || g.includes(c.genre)).map((c) => c.id));
+    const tve = t === "cable" && !linear;
+    return new Set(CHANNELS.filter((c) => FREE_CH.has(c.id) || g.includes(c.genre) || (tve && c.tve)).map((c) => c.id));
   }
   const canWatch = (c) => { const a = allowedCh(); return !a || a.has(c.id); };
   const myChannels = () => CHANNELS.filter(canWatch);
-  // Cable TV viewers (customer with Cable TV, or LCO with Cable TV → Watch OTT) get the TV Guide button and LTS
+  // Cable TV viewers (customer with Cable TV, or LCO with Cable TV → Watch OTT) get LTS and the VC number / address card
   const hasCableTv = () => { const s = state.session || {}; return s.type === "cable" || (s.type === "lco" && s.service !== "broadband"); };
+  // LTS: the linear channels of the Cable TV package (Cable LCO: all channels)
+  const linearChannels = () => { const a = allowedCh(true); return CHANNELS.filter((c) => !a || a.has(c.id)); };
+  // Live TV Home: Cable TV users see free-to-all (FTA) + TVE channels; everyone else sees what their plan allows
+  const homeCh = (c) => (hasCableTv() ? FREE_CH.has(c.id) || c.tve : canWatch(c));
 
   const grad = (g, deg = 135) => `linear-gradient(${deg}deg, ${g.join(", ")})`;
 
@@ -985,7 +1053,7 @@
         else if (cfg.track) {
           // Guest: mobile only – first time registers, after that logs in
           const known = Registry.get(type, mob.value);
-          hint.textContent = known ? "✓ Registered guest – login with your mobile number" : "✓ New number – you'll be registered as a guest";
+          hint.textContent = known ? "✓ Registered user – login with your mobile number" : "✓ New number – you'll be registered as an other user";
           hint.className = "hint ok";
           $(".lbl", btn).textContent = known ? "Login" : "Register";
           return;
@@ -1183,7 +1251,6 @@
             <div class="choices" role="radiogroup" aria-label="User type">
               ${choiceHTML("customer", state.role === "customer")}
               ${choiceHTML("lco", state.role === "lco")}
-              ${choiceHTML("guest", state.role === "guest")}
             </div>
             <button class="btn" id="cont"><span class="lbl">Continue</span>${ARROW}</button>
             <div class="features">
@@ -1201,15 +1268,15 @@
       bindCommon(root);
       bindChoices(root, (k) => (state.role = k));
       $("#cont", root).addEventListener("click", () => {
-        // LCO and Customer both pick Broadband / Cable TV next; Guest goes straight to login
-        if (state.role === "guest") go("login", { type: "guest" });
-        else go("service");
+        // Customer → Broadband / Cable TV / Other Users; LCO → Broadband / Cable TV
+        go("service");
       });
       return root;
     },
 
     /* ---- Broadband / Cable TV / Guest ---- */
     service() {
+      if (state.role === "lco" && state.service === "guest") state.service = "cable";   // Other Users is a customer option only
       const root = el(`
         <section data-screen="service">
           <div class="auth">
@@ -1219,6 +1286,7 @@
             <div class="choices" role="radiogroup" aria-label="Connection type">
               ${choiceHTML("broadband", state.service === "broadband")}
               ${choiceHTML("cable", state.service === "cable")}
+              ${state.role === "lco" ? "" : choiceHTML("guest", state.service === "guest")}
             </div>
             <button class="btn" id="cont"><span class="lbl">Login</span>${ARROW}</button>
             ${state.role === "lco" ? "" : `<button class="link signup" id="signup">Sign up?</button>`}
@@ -1235,7 +1303,7 @@
         else go("login", { type: state.service });
       });
       if (!isLco) $("#signup", root).addEventListener("click", () => {
-        go("login", { type: state.service, signup: true });
+        go("login", state.service === "guest" ? { type: "guest" } : { type: state.service, signup: true });
       });
       return root;
     },
@@ -1262,7 +1330,7 @@
             </header>
             <div class="lco-pills">
               <button class="lco-pill" data-act="watch-ott">Watch OTT</button>
-              <button class="lco-pill" data-toast="Switch Partner (demo)">Switch Partner</button>
+              <button class="lco-pill" data-act="switch-partner">Switch Partner</button>
             </div>
             <div class="lco-partner">
               <div class="lco-pname">
@@ -1468,7 +1536,7 @@
             </header>
             <div class="lco-pills">
               <button class="lco-pill" data-act="watch-ott">Watch OTT</button>
-              <button class="lco-pill" data-toast="Switch Partner (demo)">Switch Partner</button>
+              <button class="lco-pill" data-act="switch-partner">Switch Partner</button>
             </div>
             <div class="lco-card lco-pcard">
               <div class="lco-pav">${P.name[0]}</div>
@@ -1601,6 +1669,7 @@
             <div class="lco-pills">
               <button class="lco-pill" data-go="topup">${I.wallet}₹ ${P.wallet}</button>
               <button class="lco-pill" data-act="watch-ott">Watch OTT</button>
+              <button class="lco-pill" data-act="switch-partner">Switch Partner</button>
             </div>
             <button class="lco-search bb-search" data-go="search">${I.search}<span>Search 'Username'</span></button>
             <div class="bb-stats">
@@ -2567,9 +2636,11 @@
     // fromLco: opened via LCO "Watch OTT" → shows a "Go Back to LCO" button (normal Home is unchanged)
     home({ fromLco = false } = {}) {
       const f = state.filter;
-      const cable = hasCableTv();   // TV Guide button + LTS: Cable TV customer / Cable TV LCO only
+      const cable = hasCableTv();   // LTS + no bottom bar: Cable TV customer / Cable TV LCO
+      // Bottom bar (Dashboard · BB Recharge · Live TV · Support · Profile): Broadband LCO and Broadband customer only
+      const bar = !cable && (fromLco || (state.session || {}).type === "broadband");
       const root = el(`
-        <section class="screen-fixed tv${fromLco ? " from-lco" : " tvx"}" data-screen="home">
+        <section class="screen-fixed tv${fromLco ? " from-lco" : " tvx"}${bar ? " has-bar" : ""}" data-screen="home">
           <div class="tv-scroll" id="tvScroll">
             <header class="tv-head">
               <!-- ☰ sits at the top-left, before the logo (the drawer slides in from the left) -->
@@ -2588,8 +2659,7 @@
             <div class="filters" id="filters"></div>
             <div id="sections"></div>
           </div>
-          ${cable ? `<button class="fab" data-act="fab" aria-label="TV Guide">${I.tv}</button>` : ""}
-          ${fromLco ? `<button class="lco-back-pill" data-act="to-lco">${I.back}Go Back to LCO</button>${ctvNavHTML("live")}` : ""}
+          ${fromLco ? `<button class="lco-back-pill" data-act="to-lco">${I.back}Go Back to LCO</button>` : ""}${bar ? ctvNavHTML("live") : ""}
           <!-- Left slide-in menu (hamburger). Same buttons/data-act as before, so every option works the same. -->
           <div class="drawer" id="drawer" aria-hidden="true">
             <div class="drawer-backdrop" data-close-menu></div>
@@ -2602,13 +2672,13 @@
                 <button class="drawer-x" data-close-menu aria-label="Close menu">${I.close}</button>
               </div>
               <button class="gp dr-item" data-act="ott">${I.monitor}<span>OTT</span></button>
-              <button class="gp dr-item" data-act="partners">${I.grid}<span>Partner Apps</span></button>
               ${fromLco ? `<button class="gp dr-item${f.q ? " on" : ""}" data-act="search">${I.search}<span>Search</span></button>` : ""}
               <button class="gp dr-item" data-act="profile">${I.userFill}<span>Profile</span></button>
               <i class="dr-sep"></i>
               ${cable ? `<button class="gp dr-item" data-act="lts">${I.router}<span>LTS</span></button>` : ""}
               <button class="gp dr-item${f.genre || f.genres ? " on" : ""}" data-act="genre">${I.masks}<span>${genreLabel()}</span></button>
               <button class="gp dr-item${f.lang || f.langs ? " on" : ""}" data-act="lang">${I.lang}<span>${langLabel()}</span></button>
+              ${drawerExtrasHTML()}
             </nav>
           </div>
         </section>`);
@@ -2632,8 +2702,8 @@
       $$("[data-close-menu]", root).forEach((b) => b.addEventListener("click", closeDrawer));
       $$(".dr-item", root).forEach((b) => b.addEventListener("click", closeDrawer));
 
-      // ☰ → Partner Apps: tiles that would open the partner's app (demo: toast only)
-      $('[data-act="partners"]', root).addEventListener("click", openPartnerApps);
+      // ☰ → FAQ + Partner apps tiles (bottom of the menu)
+      bindDrawerExtras(root);
       // Customer / guest: OTT → the OTT home. LCO Watch OTT keeps the OTT Partners sheet.
       $('[data-act="ott"]', root).addEventListener("click", () => fromLco ? null : go("ottHome"));
       if (fromLco) $('[data-act="ott"]', root).addEventListener("click", () => openSheet(`
@@ -2658,8 +2728,7 @@
         $('[data-act="search"]', root).classList.remove("on"); draw();
       });
       $('[data-act="profile"]', root).addEventListener("click", () => go(fromLco ? "tvProfile" : "custProfile"));
-      if (cable) $('[data-act="fab"]', root).addEventListener("click", () => go("tvGuide"));
-      if (fromLco) bindCtvNav(root, "live");
+      if (bar) bindCtvNav(root, "live");
       draw();
       return root;
     },
@@ -2794,6 +2863,7 @@
             <h2>Profile</h2>
           </header>
           <div class="tvpf-user"><span class="tvpf-av">${esc(u.id[0])}</span><span><small>${esc(u.id)}</small><b>${esc(u.id)}</b></span></div>
+          ${vcCardHTML()}
           <h4 class="tvpf-h">Profiles</h4>
           <div class="tvpf-profiles">
             <button class="tvpf-prof on" data-toast="${esc(u.id)} is active">${`<span class="tvpf-av sm">${esc(u.id[0])}</span>`}<small>${esc(u.id)}</small></button>
@@ -3139,18 +3209,25 @@
     },
 
     /* ---- Watch OTT self-care: FAQ ---- */
-    ctvFaq() {
-      const QS = [
+    // app: true → the general VIBE FAQ opened from the Home / OTT ☰ menu (customer, guest, LCO Watch OTT)
+    ctvFaq({ app = false } = {}) {
+      const QS = app ? [
+        ["How do I watch a channel?", "Tap any channel card or tile on Home. Channels outside your plan show a lock; tap it to see channel packages."],
+        ["How do I upgrade my channel plan?", "Open ☰ → Profile → Live Channels → Upgrade Plan, pick a package and pay (demo payment)."],
+        ["How do I subscribe to OTT apps?", "Open ☰ → OTT, tap a locked app or Upgrade Now in Profile, choose an OTT pack and pay."],
+        ["How do I filter by genre or language?", "Open ☰ → Genre or Language, pick one or more and tap Apply. Tap a filter chip to remove it."],
+        ["Is this the real app?", "No. This is a demo: no real OTP, payment or streaming happens."],
+      ] : [
         ["How do I recharge my broadband?", "Open BB Recharge from the bottom bar, pick a plan and tap Buy Now."],
         ["How do I raise a complaint?", "Go to Support and tap the + button to create a ticket. You can follow it under Support and Notification."],
         ["Where can I see my data usage?", "Open My Usage from the menu or Quick Action. It shows last week's usage, totals and a table view."],
         ["How do I change my password?", "Open Profile → Change Password, enter the new password twice and tap Submit."],
         ["What is VAS?", "Value-added services such as a static IP or extra data, bought for 30–360 days."],
       ];
-      const root = ctvShell("ctv-faq", "Faq", { sub: true, body: `
+      const root = ctvShell(app ? "app-faq" : "ctv-faq", "Faq", { sub: true, body: `
         <p class="ctv-cap">FAQ</p>
-        <button class="lco-card ctv-ask" id="ask" aria-expanded="false">Have any questions?</button>
-        <div class="ctv-faqs" id="faqs" hidden>
+        <button class="lco-card ctv-ask" id="ask" aria-expanded="${app}">Have any questions?</button>
+        <div class="ctv-faqs" id="faqs" ${app ? "" : "hidden"}>
           ${QS.map(([q, a]) => `<details class="lco-card ctv-q"><summary>${q}${I.chev}</summary><p>${a}</p></details>`).join("")}
         </div>` });
       $("#ask", root).addEventListener("click", (e) => {
@@ -3321,7 +3398,7 @@
         <section class="tv" data-screen="genre-${key}">
           <header class="sub-head">
             <button class="back-btn static" data-act="back" aria-label="Back">${I.back}</button>
-            <h2><span class="sec-ic">${g.icon}</span>${g.name} (${allowedCh() ? list.length : g.count})</h2>
+            <h2><span class="sec-ic">${g.icon}</span>${g.name} (${allowedCh() || hasCableTv() ? list.length : g.count})</h2>
           </header>
           <div class="ch-grid">${list.map((c) => cardHTML(c, true)).join("")}</div>
           <p class="more-note">Showing ${list.length} of ${g.count} channels in this demo</p>
@@ -3379,7 +3456,7 @@
     profile() {
       const sess = state.session || {};
       const type = sess.type || "guest";
-      const label = { guest: "Guest User", cable: "Cable TV User", broadband: "Broadband User", lco: "LCO Partner" }[type];
+      const label = { guest: "Other User", cable: "Cable TV User", broadband: "Broadband User", lco: "LCO Partner" }[type];
       const root = el(`
         <section class="tv" data-screen="profile">
           <header class="sub-head">
@@ -3482,10 +3559,10 @@
               </div>
               <button class="gp dr-item" data-act="live">${I.tv}<span>Live TV</span></button>
               <button class="gp dr-item" data-act="oprofile">${I.userFill}<span>Profile</span></button>
-              <button class="gp dr-item" data-act="partners">${I.grid}<span>Partner Apps</span></button>
               <i class="dr-sep"></i>
               <button class="gp dr-item" data-act="genre">${I.masks}<span></span></button>
               <button class="gp dr-item" data-act="lang">${I.lang}<span></span></button>
+              ${drawerExtrasHTML()}
             </nav>
           </div>
         </section>`);
@@ -3548,7 +3625,7 @@
       $$(".dr-item", root).forEach((b) => b.addEventListener("click", closeDrawer));
       $('[data-act="live"]', root).addEventListener("click", () => setTimeout(back, 200));
       $('[data-act="oprofile"]', root).addEventListener("click", () => go("custProfile"));
-      $('[data-act="partners"]', root).addEventListener("click", openPartnerApps);
+      bindDrawerExtras(root);
       $('[data-act="genre"]', root).addEventListener("click", () => openChipSheet("genre", draw));
       $('[data-act="lang"]', root).addEventListener("click", () => openChipSheet("lang", draw));
       $('[data-act="osearch"]', root).addEventListener("click", (e) => {
@@ -3585,7 +3662,7 @@
           <span class="pop-name">${esc(c.name)}</span>
         </button>`;
       const bodyHTML = () => {
-        const mine = myChannels().filter((c) => !q || (c.name + " " + c.show).toLowerCase().includes(q));
+        const mine = linearChannels().filter((c) => !q || (c.name + " " + c.show).toLowerCase().includes(q));
         const html = GENRES.map((g) => {
           const list = mine.filter((c) => c.genre === g.key);
           return list.length ? `
@@ -3599,7 +3676,7 @@
           <div class="tv-scroll">
             <header class="sub-head lts-head">
               <button class="back-btn static" data-act="back" aria-label="Back">${I.back}</button>
-              <div class="lts-t"><h2>LTS</h2><small>${esc(pack)} · ${myChannels().length} channels</small></div>
+              <div class="lts-t"><h2>LTS</h2><small>${esc(pack)} · ${linearChannels().length} channels</small></div>
               <button class="menu-btn head-search" data-act="lsearch" aria-label="Search channels">${I.search}</button>
             </header>
             <div class="searchbar" id="lsb" hidden>${I.search}<input id="lq" type="search" placeholder="Search channels in your pack" aria-label="Search channels" /></div>
@@ -3625,7 +3702,7 @@
       const bodyHTML = () => {
         const all = CHANNELS.filter((c) => !q || (c.name + " " + c.show).toLowerCase().includes(q));
         const html = GENRES.map((g) => {
-          const list = all.filter((c) => c.genre === g.key).sort((a, b) => canWatch(b) - canWatch(a));
+          const list = all.filter((c) => c.genre === g.key).sort((a, b) => isDD(a) - isDD(b) || canWatch(b) - canWatch(a));
           return list.length ? `
             <div class="sec"><div class="sec-head"><h4><span class="sec-ic">${g.icon}</span>${g.name} (${list.length})</h4></div>
               <div class="lts-grid">${list.map(popCardHTML).join("")}</div></div>` : "";
@@ -3661,7 +3738,7 @@
     custProfile() {
       const sess = state.session || {};
       const guest = (sess.type || "guest") === "guest";
-      const label = { guest: "Guest Customer", cable: "Cable TV Customer", broadband: "Broadband Customer" }[sess.type] || "Customer";
+      const label = { guest: "Other User", cable: "Cable TV Customer", broadband: "Broadband Customer" }[sess.type] || "Customer";
       const mob = sess.mobile || DEMO_MOBILE;
       const f = state.filter;
       const prefText = (arr, all) => (arr && arr.length ? arr.slice(0, 3).join(", ") + (arr.length > 3 ? ", …" : "") : all);
@@ -3675,10 +3752,11 @@
             <button class="back-btn static" data-act="back" aria-label="Back">${I.back}</button>
             <h2>Profile</h2>
           </header>
-          <div class="tvpf-user"><span class="tvpf-av">${guest ? "G" : label[0]}</span><span><small>${label}</small><b>${mob}</b></span></div>
+          <div class="tvpf-user"><span class="tvpf-av">${label[0]}</span><span><small>${label}</small><b>${mob}</b></span></div>
+          ${vcCardHTML()}
           <h4 class="tvpf-h">Profiles</h4>
           <div class="tvpf-profiles">
-            <button class="tvpf-prof on" data-toast="This profile is active"><span class="tvpf-av sm">${guest ? "G" : label[0]}</span><small>${guest ? "Guest" : "Me"}</small></button>
+            <button class="tvpf-prof on" data-toast="This profile is active"><span class="tvpf-av sm">${label[0]}</span><small>Me</small></button>
             <button class="tvpf-prof add" data-toast="Add Profile (demo)"><span class="tvpf-plus">${I.plus}</span><small>Add Profile</small></button>
           </div>
           <div class="tvpf-upg">
@@ -4472,6 +4550,26 @@
   function lcoHomeName() {
     return state.session && state.session.service === "broadband" ? "bbDash" : "lcoDash";
   }
+  // Every LCO (Cable TV and Broadband): "Switch Partner" → pick the other dashboard; the same LCO ID stays signed in
+  function switchPartner() {
+    const cur = (state.session && state.session.service) === "broadband" ? "broadband" : "cable";
+    openSheet(`
+      <h3>Switch Partner</h3>
+      <p>Choose which dashboard to open with LCO ID ${esc((state.session && state.session.lcoid) || "")}.</p>
+      <div class="opt-list">
+        ${[["cable", I.tv, "Cable TV", "Cable TV LCO dashboard"], ["broadband", I.wifi, "Broadband", "Broadband LCO dashboard"]].map(([k, ic, t, d]) => `
+          <button class="opt${k === cur ? " on" : ""}" data-sp="${k}"><span><b>${t}${k === cur ? " · current" : ""}</b><small>${d}</small></span>${k === cur ? I.check : I.chev}</button>`).join("")}
+      </div>`, (sh) => {
+      $$("[data-sp]", sh).forEach((b) => b.addEventListener("click", () => {
+        closeSheet();
+        if (b.dataset.sp === cur) return;
+        state.session.service = b.dataset.sp;
+        reset(lcoHomeName(), {}, "fwd");
+        toast(`Switched to ${b.dataset.sp === "broadband" ? "Broadband" : "Cable TV"} partner (demo)`, "success");
+      }));
+    });
+  }
+  document.addEventListener("click", (e) => { if (e.target.closest && e.target.closest('[data-act="switch-partner"]')) switchPartner(); });
 
   // After login the home screen becomes the root, so Back does not return to the login form
   function enterHome() {
@@ -4485,7 +4583,7 @@
   function filtered(g) {
     const { lang, q, langs } = state.filter;
     const ql = q.toLowerCase();
-    return CHANNELS.filter((c) => c.genre === g.key && canWatch(c) && (!lang || c.lang === lang) && (!langs || langs.includes(c.lang)) &&
+    return CHANNELS.filter((c) => c.genre === g.key && homeCh(c) && (!lang || c.lang === lang) && (!langs || langs.includes(c.lang)) &&
       (!ql || c.name.toLowerCase().includes(ql) || c.show.toLowerCase().includes(ql)));
   }
   // Genres to show (single Genre pick on the customer Home, multi-select chips on the LCO TV)
@@ -4495,24 +4593,27 @@
 
   function recordRecent(id) {
     state.recent = [id, ...(state.recent || []).filter((x) => x !== id)].slice(0, 10);
-    try { localStorage.setItem("vibe.recentChannels", JSON.stringify(state.recent)); } catch (e) {}
+    try { localStorage.setItem("vibe.recentChannels.v2", JSON.stringify(state.recent)); } catch (e) {}
   }
 
   function getRecentChannels() {
     if (!state.recent) {
       try {
-        const stored = JSON.parse(localStorage.getItem("vibe.recentChannels") || "null");
+        const stored = JSON.parse(localStorage.getItem("vibe.recentChannels.v2") || "null");
         if (Array.isArray(stored) && stored.length) state.recent = stored;
       } catch (e) {}
     }
     if (!state.recent || !state.recent.length) {
-      state.recent = [12, 5, 26, 13, 6, 7].filter((id) => CHANNELS[id] && canWatch(CHANNELS[id])).slice(0, 4);
-      if (!state.recent.length) state.recent = [12, 5, 26, 13];
+      // Demo seed: big channels first; guests (free plan only) fall back to the free-to-all ones
+      state.recent = chByName(["Star Plus", "Star Sports 1", "Aaj Tak", "Sony Max", "Zee Bangla", "Aastha", "Sanskar", "DD National", "DD Sports"])
+        .filter(homeCh).slice(0, 4).map((c) => c.id);
     }
-    return state.recent.map((id) => CHANNELS[id]).filter(Boolean);
+    // DD channels always sit at the end of a rail
+    return state.recent.map((id) => CHANNELS[id]).filter(Boolean).sort((a, b) => isDD(a) - isDD(b));
   }
 
-  const POPULAR_CH_IDS = [6, 0, 21, 12, 8, 7, 5, 16, 26, 9, 28, 32, 13, 38, 22];
+  const POPULAR_CH = ["Star Plus", "Star Sports 1", "Sony Ten 1", "Zee TV", "Colors", "Aaj Tak", "Sony Max", "Star Gold", "Star Jalsha",
+    "Zee Bangla", "Sony SAB", "Star Sports 3", "Zee Cinema", "Sony Ten 3", "Cartoon Network", "Discovery", "9XM", "Aastha", "DD National", "DD Sports"];
 
   function channelLogoHTML(c) {
     const n = c.name;
@@ -4666,7 +4767,8 @@
   function getPopularChannels() {
     const f = state.filter;
     const ql = (f.q || "").toLowerCase();
-    let list = POPULAR_CH_IDS.map((id) => CHANNELS[id]).filter(Boolean);
+    // Cable TV users: only what plays on their Home (FTA + TVE); others also see locked channels to upgrade to
+    let list = chByName(POPULAR_CH).filter((c) => !hasCableTv() || homeCh(c));
 
     if (f.genre) list = list.filter((c) => c.genre === f.genre);
     if (f.genres) list = list.filter((c) => f.genres.includes(c.genre));
@@ -4674,8 +4776,8 @@
     if (f.langs) list = list.filter((c) => f.langs.includes(c.lang));
     if (ql) list = list.filter((c) => c.name.toLowerCase().includes(ql) || c.show.toLowerCase().includes(ql));
 
-    // Sort channels the viewer can watch first, then locked ones
-    list.sort((a, b) => (canWatch(b) ? 1 : 0) - (canWatch(a) ? 1 : 0));
+    // Watchable first, then locked ones; DD channels always last
+    list.sort((a, b) => isDD(a) - isDD(b) || canWatch(b) - canWatch(a));
     return list;
   }
 
@@ -4733,7 +4835,7 @@
       return `
         <div class="sec">
           <div class="sec-head">
-            <h4><span class="sec-ic">${g.icon}</span>${g.name} (${allowedCh() ? list.length : g.count})</h4>
+            <h4><span class="sec-ic">${g.icon}</span>${g.name} (${allowedCh() || hasCableTv() ? list.length : g.count})</h4>
             <button class="see-all" data-genre="${g.key}">See All ${I.chev}</button>
           </div>
           <div class="rail${tall ? " rail-tall" : ""}">${list.map((c) => cardHTML(c, false, tall)).join("")}</div>
@@ -4791,14 +4893,19 @@
     }));
   }
 
-  // ☰ → Partner Apps (Home and OTT menus): tiles that would open the partner's app (demo: toast only)
-  function openPartnerApps() {
-    openSheet(`
-      <h3 class="pa-h">Partner Apps</h3>
-      <div class="pa-grid">${PARTNER_APPS.map(([n, word, color]) => `
-        <button class="pa-app" data-pa="${n}"><span class="pa-tile"><b style="color:${color}">${word}</b></span><small>${n}</small></button>`).join("")}</div>`, (sh) => {
-      $$("[data-pa]", sh).forEach((b) => b.addEventListener("click", () => { closeSheet(); toast(`Opening ${b.dataset.pa} (demo)`); }));
-    });
+  // ☰ menu (Home and OTT): FAQ item + "Partner apps" tiles at the bottom (2 on top, 1 centred). Tap → "Opening VZY (demo)"
+  function drawerExtrasHTML() {
+    return `
+      <button class="gp dr-item" data-act="faq">${I.help}<span>FAQ</span></button>
+      <div class="dr-pa">
+        <b class="dr-pa-h">Partner apps</b>
+        <div class="dr-pa-grid">${PARTNER_APPS.map(([n, word, color]) => `
+          <button class="pa-app" data-pa="${n}" aria-label="${n}"><span class="pa-tile"><b style="color:${color}">${word}</b></span><small>${n}</small></button>`).join("")}</div>
+      </div>`;
+  }
+  function bindDrawerExtras(root) {
+    $('[data-act="faq"]', root).addEventListener("click", () => go("ctvFaq", { app: true }));
+    $$(".dr-pa [data-pa]", root).forEach((b) => b.addEventListener("click", () => { closeDrawer(); toast(`Opening ${b.dataset.pa} (demo)`); }));
   }
 
   // A channel outside the viewer's plan (normally hidden) → offer the upgrade instead of playing it
@@ -4933,8 +5040,26 @@
   }
 
   // Demo account shown on the old app's Profile / Dashboard (the logged-in LCO watching TV)
+  // Cable TV customer / Cable TV LCO only: subscriber name, VC number and installation address (all fictional)
+  function vcCardHTML() {
+    if (!hasCableTv()) return "";
+    const s = state.session || {};
+    const reg = s.type === "cable" && Registry.get("cable", s.mobile);
+    const vc = s.vsc || (reg && reg.id) || "00045217788";
+    return `
+      <div class="vc-card">
+        <b class="vc-name">MR A. DAS HOME</b>
+        <div class="vc-row"><span>VC No</span><b>${esc(vc)}</b></div>
+        <div class="vc-row"><span>Address</span><b>Flat 2B, 14 Lake View Road, Ballygunge, Kolkata 700029 (demo)</b></div>
+      </div>`;
+  }
   function tvUser() {
-    const id = ((state.session && state.session.lcoid) || "LCODEMO").toLowerCase();
+    const s = state.session || {};
+    if (s.type === "broadband") {   // Broadband customer (bottom bar → Dashboard / Recharge / Support / Profile)
+      const m = s.mobile || DEMO_MOBILE;
+      return { id: `${m}_bb`, name: "Broadband Customer", mobile: m, acc: `VIBEBB${String(m).slice(-6)}` };
+    }
+    const id =((state.session && state.session.lcoid) || "LCODEMO").toLowerCase();
     return { id: `${id}_demo`, name: `Partner ${id.toUpperCase()}`, mobile: DEMO_MOBILE, acc: `VIBE${id.toUpperCase()}${String(DEMO_MOBILE).slice(-4)}` };
   }
 
@@ -4951,7 +5076,7 @@
     $$("[data-cnav]", root).forEach((b) => b.addEventListener("click", () => {
       const t = b.dataset.cnav;
       if (t === tab) { const sc = $(".tv-scroll", root); if (sc) sc.scrollTo({ top: 0, behavior: "smooth" }); return; }
-      if (t === "live") swapRoute("home", { fromLco: true });   // tab switch: Back still returns to the LCO dashboard
+      if (t === "live") swapRoute("home", { fromLco: (state.session || {}).type === "lco" });   // tab switch: Back still returns to the LCO dashboard
       else if (t === "dash") swapRoute("ctvDash");
       else if (t === "profile") swapRoute("ctvProfile");
       else if (t === "recharge") swapRoute("ctvRecharge");

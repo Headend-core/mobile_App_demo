@@ -1153,8 +1153,8 @@ button.lco-card:active { background: #1c1c22; }
 /* ===== LCO (Cable) → Watch OTT: the old app's TV section ===== */
 /* Home in LCO mode: room for the bottom bar */
 .from-lco .tv-scroll { padding-bottom: 160px; }
-.from-lco .fab { bottom: 92px; width: 52px; height: 52px; }
-.from-lco .lco-back-pill { bottom: 95px; right: 80px; }
+.from-lco:not(.has-bar) .lco-back-pill { bottom: 24px; right: 16px; }
+.has-bar .lco-back-pill { bottom: 95px; right: 80px; }
 .ctv-nav {
   position: absolute; left: 0; right: 0; bottom: 0; z-index: 21;
   height: 66px; display: flex; align-items: center; justify-content: space-around; padding: 0 4px;
@@ -2341,3 +2341,19 @@ button.lco-card:active { background: #1c1c22; }
 .ott-logo small { font-size: 10px; }
 .lts-grid { grid-template-columns: repeat(3, 1fr); gap: 16px 12px; }
 .lts-grid .pop-tile { border-radius: 24px; }
+
+/* ===== ☰ menu: FAQ + "Partner apps" tiles at the bottom (2 on top, 1 centred) ===== */
+.dr-pa { margin-top: auto; flex: none; padding: 14px 12px 12px; border-radius: 16px; background: rgba(255, 255, 255, .03); border: 1px solid #2a2340; }
+.dr-pa-h { display: block; font-size: 14px; font-weight: 600; margin-bottom: 12px; }
+.dr-pa-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px 14px; }
+.dr-pa-grid .pa-app:nth-child(3) { grid-column: 1 / -1; justify-self: center; width: calc(50% - 7px); }
+.dr-pa .pa-tile b { font-size: 22px; }
+.dr-pa .pa-app small { font-size: 12px; }
+.tvx.has-bar .tv-scroll { padding-bottom: 90px; }
+
+/* ===== Profile: VC number + address card (Cable TV customer / Cable TV LCO only) ===== */
+.vc-card { margin: 4px 12px 10px; padding: 12px 14px; border-radius: 14px; background: #16161a; border: 1px solid #2c2c33; flex-shrink: 0; }
+.vc-name { display: block; font-size: 14px; font-weight: 700; letter-spacing: .3px; margin-bottom: 8px; }
+.vc-row { display: flex; gap: 10px; font-size: 12px; line-height: 1.45; padding: 3px 0; }
+.vc-row span { flex: none; width: 62px; color: #ffb300; font-weight: 600; }
+.vc-row b { font-weight: 500; color: var(--text); }

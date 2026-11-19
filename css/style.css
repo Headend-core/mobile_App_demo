@@ -2363,3 +2363,8 @@ button.lco-card:active { background: #1c1c22; }
 .ch-lock { position: absolute; top: 6px; right: 6px; z-index: 2; width: 24px; height: 24px; border-radius: 12px; display: grid; place-items: center; background: rgba(14, 13, 20, .9); border: 1px solid #c79a5a; color: #ffd700; }
 .ch-lock svg { width: 12px; height: 12px; }
 .ch-card.locked .ch-name { color: #c9c9cf; }
+
+/* ===== LCO dashboard pill row (wallet · Watch OTT · Switch Partner): one line each, equal widths ===== */
+.lco-pills .lco-pill { flex: 1 1 0; min-width: 0; height: 40px; padding: 0 10px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 12.5px; font-weight: 600; }
+.lco-pills .lco-pill svg { flex: none; width: 16px; height: 16px; color: var(--accent-cyan); }
+.bb .lco-pills .lco-pill:first-child { flex: 1.15 1 0; color: #fff; }

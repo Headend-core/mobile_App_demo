@@ -2612,3 +2612,19 @@ button.lco-card:active { background: #1c1c22; }
 .ctv-ci-cam svg { width: 15px; height: 15px; }
 .ctv-ci-cam input { position: absolute; width: 1px; height: 1px; opacity: 0; }
 .ctv-ci-cam:focus-within { outline: 2px solid #fff; }
+.ctv-ci-av i svg { width: 44px; height: 44px; color: #cdb8ff; }
+
+/* My Plan: Quick Renew (left) + More Packages (right); Quick Renew page */
+.ctv-plan-a { display: flex; justify-content: space-between; gap: 10px; margin-top: 12px; }
+.ctv-plan-a .ctv-more { margin-left: 0; }
+.ctv-more.ghost { background: transparent; border: 1px solid var(--accent); color: #fff; }
+.ctv-qr { margin: 12px 12px 0; }
+.ctv-qr .ctv-t { display: block; margin-bottom: 12px; }
+.ctv-qr .ctv-plan .w { grid-column: 1 / -1; }
+.ctv-qr .lco-inv { margin: 0; }
+.ctv-qr-go { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 14px; }
+.ctv-qr-go svg { width: 18px; height: 18px; }
+.ctv-qr .ctv-plan b { white-space: normal; overflow-wrap: anywhere; }
+.ctv-qr-tot { margin-top: 6px; padding-top: 10px; border-top: 1px solid #2a2340; font-size: 14px; }
+.ctv-qr-tot b { font-size: 16px; }
+.ctv-quick-renew .demo-tag, [data-screen="ctv-quick-renew"] .demo-tag { display: block; text-align: center; margin: 12px auto; }

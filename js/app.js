@@ -453,6 +453,12 @@
   const durFmt = (mins) => `${Math.floor(mins / 1440)}d ${Math.floor((mins % 1440) / 60)}h :${p2(mins % 60)}m`;
   const dFmt = (d) => `${p2(d.getDate())} ${MON[d.getMonth()]} ${d.getFullYear()}`;                       // 06 Nov 2026
   const hmFmt = (d) => `${p2(d.getHours() % 12 || 12)}:${p2(d.getMinutes())} ${d.getHours() < 12 ? "AM" : "PM"}`;
+  // Self-care My Plan (Dashboard card + Quick Renew). Quick Purchase adds 30 days each time (CTV.renewDays)
+  function bbPlanInfo() {
+    const from = new Date(Date.now() - 130 * 864e5), extra = CTV.renewDays || 0, total = 1828 + extra;
+    const to = new Date(from.getTime() + total * 864e5);
+    return { name: "VIBE_DEMO_OPEN_100", speed: "100 Mbps", data: "Unlimited", used: "150 GB", price: 699, renew: 30, from, to, total, left: Math.round((to - Date.now()) / 864e5) };
+  }
   const tFmt = (d) => `${dFmt(d)} ${d.getHours() % 12 || 12}:${p2(d.getMinutes())}:${p2(d.getSeconds())} ${d.getHours() < 12 ? "AM" : "PM"}`;
 
   // Broadband LCO ☰ → Profile ("Customer details"): editable contact details, filled on first open
@@ -2995,8 +3001,7 @@
       const u = tvUser();
       const h = new Date().getHours();
       const hi = h < 12 ? "Good Morning" : h < 17 ? "Good Afternoon" : "Good Evening";
-      const from = new Date(Date.now() - 130 * 864e5), to = new Date(from.getTime() + 1828 * 864e5);
-      const left = Math.round((to - Date.now()) / 864e5);
+      const pl = bbPlanInfo(), { from, to, left } = pl;
       const now = new Date(), use = ctvMonthTotals(now.getFullYear(), now.getMonth()), dv = ctvDev();
       const QA = [["faq", I.help, "FAQ"], ["broadband", I.wifi, "Broadband"], ["usage", I.pie, "My Usage"], ["vas", I.play, "Vas"], ["support", I.headset, "Support"], ["plan", I.news, "My Plan"]];
       const root = el(`
@@ -3028,11 +3033,12 @@
               <b class="ctv-t">My Plan</b>
               <div class="ctv-plan">
                 <span>${I.wifi}<small>Plan</small><b>VIBE_DEMO_OPEN_100</b></span>
-                <span>${I.clock}<small>Remaining Days</small><b>${left} Days/1828 Days</b></span>
+                <span>${I.clock}<small>Remaining Days</small><b>${left} Days/${pl.total} Days</b></span>
                 <span>${I.pie}<small>Used / Allocated</small><b>150 GB / Unlimited</b></span>
                 <span>${I.calendar}<small>Validity</small><b>${dmy(from)} – ${dmy(to)}</b></span>
               </div>
-              <button class="ctv-more ctv-renew" data-act="renew">Quick Renew ${ARROW}</button>
+              <div class="ctv-plan-a"><button class="ctv-more" data-act="renew">Quick Renew ${ARROW}</button>
+                <button class="ctv-more ghost" data-act="more-packs">More Packages ${ARROW}</button></div>
             </div>
             <div class="lco-card ctv-card">
               <b class="ctv-t">Quick Action</b>
@@ -3045,7 +3051,8 @@
       $$("[data-toast]", root).forEach((b) => b.addEventListener("click", () => toast(b.dataset.toast)));
       bindCtvMenu(root);
       $('[data-act="more"]', root).addEventListener("click", () => go("ctvSession"));
-      $('[data-act="renew"]', root).addEventListener("click", () => ctvGo("Broadband"));
+      $('[data-act="renew"]', root).addEventListener("click", () => go("ctvQuickRenew"));
+      $('[data-act="more-packs"]', root).addEventListener("click", () => ctvGo("Broadband"));
       $("#devSel", root).addEventListener("change", (e) => {
         state.ctvDev = +e.target.value;
         const d = ctvDev();
@@ -3057,6 +3064,51 @@
       });
       $('[data-act="dev-more"]', root).addEventListener("click", () => go("ctvUdm"));
       bindCtvNav(root, "dash");
+      return root;
+    },
+
+    /* ---- Self-care: Dashboard My Plan → Quick Renew (current plan + Quick Purchase → VIBE Pay) ---- */
+    ctvQuickRenew() {
+      const root = ctvShell("ctv-quick-renew", "Quick Renew", { sub: true });
+      const box = $("#cx", root);
+      const draw = () => {
+        const pl = bbPlanInfo(), nextTo = new Date(pl.to.getTime() + pl.renew * 864e5);
+        box.innerHTML = `
+          <div class="lco-card ctv-card ctv-qr">
+            <b class="ctv-t">My Plan</b>
+            <div class="ctv-plan">
+              <span>${I.wifi}<small>Plan</small><b>${pl.name}</b></span>
+              <span>${I.bolt}<small>Speed</small><b>${pl.speed}</b></span>
+              <span>${I.pie}<small>Used / Allocated</small><b>${pl.used} / ${pl.data}</b></span>
+              <span>${I.clock}<small>Remaining Days</small><b>${pl.left} Days/${pl.total} Days</b></span>
+              <span class="w">${I.calendar}<small>Validity</small><b>${dmy(pl.from)} – ${dmy(pl.to)}</b></span>
+            </div>
+          </div>
+          <div class="lco-card ctv-card ctv-qr">
+            <b class="ctv-t">Renew this plan</b>
+            <div class="ctv-kv"><span>Plan</span><b>${pl.name}</b></div>
+            <div class="ctv-kv"><span>Adds</span><b>${pl.renew} Days</b></div>
+            <div class="ctv-kv"><span>New validity till</span><b>${dmy(nextTo)}</b></div>
+            <div class="ctv-kv ctv-qr-tot"><span>Amount (Incl. Tax)</span><b>₹ ${pl.price}</b></div>
+            <button class="btn ctv-qr-go" data-act="qp">${I.card} Quick Purchase · ₹ ${pl.price}</button>
+          </div>
+          <span class="demo-tag">Demo • no real payment</span>`;
+        $('[data-act="qp"]', box).addEventListener("click", () => startPayment({ amount: pl.price, purpose: `Quick Renew · ${pl.name}` }, (pay) => {
+          CTV.renewDays = (CTV.renewDays || 0) + pl.renew;
+          const now = new Date();
+          CTV.payments.unshift({ ref: "PAY" + pay.txn.slice(-7), what: `Online payment (${pay.method})`, amount: pl.price, at: now, ok: true });
+          CTV.purchases.unshift({ ref: "PUR" + pay.txn.slice(-7), what: `${pl.name} · renew ${pl.renew} days`, amount: pl.price, at: now, ok: true });
+          draw();
+          openSheet(`
+            <div class="ok-badge">${I.checkBig}</div>
+            <h3>Plan renewed</h3>
+            <p class="ctv-sheetp">${pl.name} is valid till <b>${dmy(nextTo)}</b>.</p>
+            <span class="demo-tag">Demo • no real payment</span>
+            <button class="btn" id="qrDone">Done</button>`, (sh) => $("#qrDone", sh).addEventListener("click", () => { closeSheet(); back(); }));
+        }));
+      };
+      draw();
+      ctvBind(root, "", true);
       return root;
     },
 
@@ -3269,8 +3321,8 @@
           <div class="lco-card ctv-ci">
             <b class="ctv-ci-t">Customer Information</b>
             <div class="ctv-ci-box">
-              <span class="ctv-ci-av">${P.photo ? `<img src="${P.photo}" alt="Profile photo" />` : `<i>${esc(u.name[0])}</i>`}
-                <label class="ctv-ci-cam" aria-label="Change profile photo">${I.camera}<input type="file" id="ciPhoto" accept="image/*" /></label></span>
+              <span class="ctv-ci-av"><i>${I.userFill.replace("<svg ", '<svg width="40" height="40" ')}</i>
+                <button class="ctv-ci-cam" data-act="ci-cam" aria-label="Change profile photo">${I.camera.replace("<svg ", '<svg width="15" height="15" ')}</button></span>
               <span><b>${esc(u.name)}</b><small class="ctv-online"><i></i>Online</small></span>
             </div>
           </div>
@@ -3316,15 +3368,8 @@
               draw("info");
             });
           }));
-          // Camera: pick a photo from the phone; it stays in this page only (demo, nothing is uploaded)
-          $("#ciPhoto", box).addEventListener("change", (e) => {
-            const f = e.target.files && e.target.files[0];
-            if (!f) return;
-            if (!/^image\//.test(f.type)) { toast("Please choose an image", "error"); return; }
-            const r = new FileReader();
-            r.onload = () => { P.photo = r.result; draw("info"); toast("Profile photo updated (demo)", "success"); };
-            r.readAsDataURL(f);
-          });
+          // Profile icon instead of a photo (user's choice); the camera badge is shown like the old app
+          $('[data-act="ci-cam"]', box).addEventListener("click", () => toast("Profile photo upload is not available in the demo"));
           $("#bio", box).addEventListener("click", (e) => {
             P.bio = !P.bio;
             e.currentTarget.classList.toggle("on", P.bio);

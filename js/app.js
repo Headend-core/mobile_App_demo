@@ -69,6 +69,24 @@
     copy: s('<rect x="8.5" y="8.5" width="11" height="11" rx="2"/><path d="M15.5 8.5V6a1.5 1.5 0 0 0-1.5-1.5H6A1.5 1.5 0 0 0 4.5 6v8A1.5 1.5 0 0 0 6 15.5h2.5"/>'),
     rupee: s('<path d="M7 5h10M7 9h10M7 5h3a4 4 0 0 1 0 8H7l7 6"/>'),
     alert: s('<path d="M12 4l9 16H3z"/><path d="M12 10v4.5M12 17.2v.2"/>'),
+    headset: s('<path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="3.5" y="13.5" width="4" height="6" rx="1.5"/><rect x="16.5" y="13.5" width="4" height="6" rx="1.5"/>'),
+    crown: s('<path d="M3.5 8l4.5 4 4-6 4 6 4.5-4-1.8 10H5.3z"/><path d="M5.5 20.5h13"/>'),
+    device: s('<rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M10.5 18.5h3"/>'),
+    expand: s('<path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/>'),
+    pip: s('<rect x="3" y="5" width="18" height="14" rx="2"/><rect x="12" y="11.5" width="6.5" height="5" rx="1"/>'),
+    pie: s('<path d="M12 3v9h9"/><circle cx="12" cy="12" r="9"/>'),
+    help: s('<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.6M12 17v.2"/>'),
+    pin: s('<path d="M12 21s-6.5-6.2-6.5-11a6.5 6.5 0 0 1 13 0c0 4.8-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/>'),
+    up: s('<path d="M12 19V5M6 11l6-6 6 6"/>'),
+    down: s('<path d="M12 5v14M6 13l6 6 6-6"/>'),
+    swapv: s('<path d="M8 20V5M4 9l4-4 4 4M16 4v15M12 15l4 4 4-4"/>'),
+    history: s('<path d="M4 12a8 8 0 1 0 2.4-5.7L4 8.5"/><path d="M4 4v4.5h4.5M12 8v4.5l3 2"/>'),
+    bolt: s('<path d="M13 2.5L5 13.5h6l-1 8 8-11h-6z"/>'),
+    pencil: s('<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/>'),
+    hash: s('<path d="M9 4L7 20M17 4l-2 16M4.5 9h16M3.5 15h16"/>'),
+    idcard: s('<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M5.5 16c.6-1.6 1.9-2.4 3.5-2.4s2.9.8 3.5 2.4M14.5 10h4M14.5 13.5h3"/>'),
+    scan: s('<path d="M4 8V5.5A1.5 1.5 0 0 1 5.5 4H8M16 4h2.5A1.5 1.5 0 0 1 20 5.5V8M20 16v2.5a1.5 1.5 0 0 1-1.5 1.5H16M8 20H5.5A1.5 1.5 0 0 1 4 18.5V16"/><circle cx="12" cy="10.5" r="2.5"/><path d="M8 16.5c.8-1.7 2.2-2.6 4-2.6s3.2.9 4 2.6"/>'),
+    finger: s('<path d="M8 20c1.2-2 1.8-4.3 1.8-7a2.2 2.2 0 0 1 4.4 0c0 2.4-.3 4.6-1 6.6"/><path d="M5.3 17.5C6.2 15.9 6.6 14.4 6.6 13a5.4 5.4 0 0 1 10.8 0c0 1.6-.1 3.1-.4 4.6"/><path d="M4 10.5a8.5 8.5 0 0 1 16 0"/><path d="M12 13c0 3-.7 5.6-2.2 8"/>'),
     logout: s('<path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 17l-5-5 5-5"/><path d="M5 12h11"/>'),
   };
 
@@ -333,6 +351,59 @@
     };
   })();
 
+  /* ---------- LCO Watch OTT → customer self-care (Recharge, Support, Profile, Plan, Usage…). All data fictional ---------- */
+  const CTV = (() => {
+    const ago = (days, h = 10) => { const d = new Date(Date.now() - days * 864e5); d.setHours(h, 30, 51, 0); return d; };
+    const plan = (price, speed, extra = "") => ({ price, speed, data: "Unlimited", days: 30, extra,
+      name: `VIBE_${speed.replace(/\s/g, "").toUpperCase()}${extra ? "_" + extra.split(" ")[0].toUpperCase() : ""}` });
+    return {
+      plans: {
+        unlimited: [plan(699, "100 Mbps"), plan(580, "80 Mbps"), plan(409, "30 Mbps"), plan(1406, "200 Mbps")],
+        ott: [plan(799, "100 Mbps", "7 OTT apps"), plan(999, "150 Mbps", "10 OTT apps"), plan(1299, "200 Mbps", "15 OTT apps")],
+        bundle: [plan(899, "100 Mbps", "Digital TV 300 channels"), plan(1199, "200 Mbps", "Digital TV 400 channels")],
+      },
+      current: { name: "VIBE_DEMO_OPERATOR_02", activated: ago(600), expiry: new Date(Date.now() + 130 * 864e5), validity: 365, used: "1388.19 GB", unused: "1349.65 GB" },
+      history: [
+        { name: "VIBE_DEMO_OPERATOR_02", activated: ago(600), expiry: ago(235), validity: 365, used: "0 GB", unused: "UL GB" },
+        { name: "VIBE_80MBPS", activated: ago(700), expiry: ago(600), validity: 30, used: "212.40 GB", unused: "UL GB" },
+      ],
+      tickets: [
+        { id: "TKT4311978", title: "Ping issue", reason: "Network Issue", at: ago(70), status: "Closed", remarks: [] },
+        { id: "TKT4269956", title: "CPE Not Working - Wi-Fi Router", reason: "Technical_Problem_Category", at: ago(230, 11), status: "Closed", remarks: [] },
+        { id: "TKT4180843", title: "KYC update for Customer", reason: "Technical_Problem_Category", at: ago(560, 12), status: "Closed", remarks: [] },
+      ],
+      payments: [
+        { ref: "PAY" + "8820157", what: "Online payment (UPI)", amount: 699, at: ago(28), ok: true },
+        { ref: "PAY" + "8714402", what: "Online payment (Card)", amount: 699, at: ago(58), ok: true },
+        { ref: "PAY" + "8611239", what: "Online payment (UPI)", amount: 699, at: ago(88), ok: false },
+      ],
+      purchases: [
+        { ref: "PUR" + "5520011", what: "VIBE_100MBPS · 30 days", amount: 699, at: ago(28), ok: true },
+        { ref: "PUR" + "5410087", what: "Static IP (VAS) · 30 days", amount: 150, at: ago(45), ok: true },
+      ],
+      charges: [
+        { ref: "CHG" + "3310046", what: "Router rental", amount: 50, at: ago(30), ok: true },
+      ],
+      vas: {
+        30: [["Static IP", 150], ["Extra 100 GB data", 199], ["OTT add-on (3 apps)", 99]],
+        90: [["Static IP", 420], ["OTT add-on (7 apps)", 279]],
+        180: [],
+        360: [["Static IP", 1500]],
+      },
+      docs: [{ type: "ID Proof" }, { type: "Address Proof" }, { type: "Customer Passport-size Photo" }],
+      week: [[3.2, .4], [4.8, .6], [2.1, .3], [5.0, .7], [3.9, .5], [4.4, .6], [1.7, .2]],   // GB [download, upload] per day
+      notes: [
+        { at: ago(70, 10), kind: "closed", id: "TKT4311978", cat: "Network Issue" },
+        { at: ago(71, 16), kind: "created", id: "TKT4311978", cat: "Network Issue" },
+      ],
+      profile: { email: "demo.customer@example.com", gstin: "GSTIN Not Associated", mac: "No MAC Id associated",
+        address: "12, Demo Street, Salt Lake Sector V, Kolkata 700091, West Bengal, India", aadhaar: "XXXX XXXX 1234", ekyc: "Not Verified" },
+    };
+  })();
+
+  // Broadband LCO ☰ → Profile ("Customer details"): editable contact details, filled on first open
+  const BB_ACCOUNT = {};
+
   /* ---------- Broadband LCO demo data (Home / Case / Customer). All people, numbers and IDs are fictional ---------- */
   const BB_PLANS = [
     { name: "VIBE_FIBER_50", speed: "50 Mbps", price: 499, days: 30, ott: 3 },
@@ -466,12 +537,18 @@
 
   // Programme time slots generated around the current time so the guide always looks "live"
   const fmt = (d) => d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
-  function slot(i) {
+  // Start/end of the programme on air now on channel i (shared by the Home cards and the TV Guide)
+  function slotTimes(i) {
     const now = new Date();
     const start = new Date(now);
     start.setSeconds(0, 0);
     start.setMinutes(Math.floor(now.getMinutes() / 15) * 15 - (i % 3) * 15);
     const end = new Date(start.getTime() + [30, 60, 45, 90][i % 4] * 60000);
+    return { start, end };
+  }
+  function slot(i) {
+    const now = new Date();
+    const { start, end } = slotTimes(i);
     const pct = Math.min(95, Math.max(5, Math.round(((now - start) / (end - start)) * 100)));
     return { time: `${fmt(start)} - ${fmt(end)}`, pct };
   }
@@ -514,7 +591,8 @@
     role: "customer",       // customer | lco | guest   (first page)
     service: "cable",       // broadband | cable   (customer step 2)
     session: null,          // { type, mobile, vsc | bbid | lco }
-    filter: { genre: null, lang: null, q: "" },
+    // genres / langs: multi-select chip filters, used only by the LCO "Watch OTT" TV (null = all)
+    filter: { genre: null, lang: null, q: "", genres: null, langs: null },
     bbSel: null,            // Broadband LCO → Customer: id selected with ⚙ (shows Recharge / Invoice bar)
     bbNew: null,           // Broadband LCO: id of a just-created customer (highlighted once in the list)
     ottSel: null,          // LCO → OTT Customer: id of the selected card (shows Recharge / Invoice bar)
@@ -570,7 +648,7 @@
   // Small dot on the hamburger while a genre / language / search filter is active
   function syncMenuDot(root) {
     const f = state.filter;
-    $('[data-act="menu"]', root).classList.toggle("dot", !!(f.genre || f.lang || f.q));
+    $('[data-act="menu"]', root).classList.toggle("dot", !!(f.genre || f.lang || f.q || f.genres || f.langs));
   }
 
   /* =========================================================
@@ -1523,7 +1601,6 @@
             <div class="lco-list" id="list"></div>
           </div>
           <div class="bb-dial" id="dial" hidden>
-            <button data-dial="customer">${I.users}<span>Customer</span>${I.chev}</button>
             <button data-dial="case">${I.ticket}<span>New Case</span>${I.chev}</button>
           </div>
           <button class="bb-fab" id="fab" aria-label="More actions" aria-expanded="false">${I.plus}</button>
@@ -1560,14 +1637,172 @@
       };
       $$("[data-tab]", root).forEach((b) => b.addEventListener("click", () => setTab(b.dataset.tab)));
       $("#mine", root).addEventListener("change", (e) => { mine = e.target.checked; draw(); });
-      // FAB → speed dial (Customer / New Case)
+      // FAB → speed dial (New Case)
       const fab = $("#fab", root), dial = $("#dial", root);
       const toggleDial = (open) => { dial.hidden = !open; fab.classList.toggle("open", open); fab.setAttribute("aria-expanded", open); };
       fab.addEventListener("click", () => toggleDial(dial.hidden));
-      $('[data-dial="customer"]', root).addEventListener("click", () => { toggleDial(false); swapRoute("bbCustomers"); });
-      $('[data-dial="case"]', root).addEventListener("click", () => { toggleDial(false); openNewCase(() => setTab("unassigned")); });
+      $('[data-dial="case"]', root).addEventListener("click", () => { toggleDial(false); go("bbNewCase"); });
       bindBbNav(root, "case");
       draw();
+      return root;
+    },
+
+    /* ---- Broadband LCO: Case FAB → New Case → Create Case form (replaces the old New Case sheet) ---- */
+    bbNewCase() {
+      const users = [...BB_DATA.customers].sort((a, b) => a.user.localeCompare(b.user));
+      const REASONS = ["No Internet", "Slow Speed", "Router Issue", "Change Request", "Shifting Request", "Corporate Leased Line", "Billing", "Other"];
+      const opt = (a) => a.map((x) => `<option>${x}</option>`).join("");
+      const root = el(`
+        <section class="screen-fixed lco bb bbnc" data-screen="bb-new-case">
+          <header class="sub-head">
+            <button class="back-btn static" data-act="back" aria-label="Back">${I.back}</button>
+            <h2>Create Case</h2>
+          </header>
+          <div class="tv-scroll">
+            <div class="lco-card bbnc-sec">
+              <h5>Case Form</h5>
+              <label class="lco-fl" id="fFor"><small>Case For *</small>
+                <select id="cFor"><option value="">Select</option><option value="customer">Customer</option><option value="self">Self (LCO)</option></select></label>
+              <label class="lco-fl" id="fUser"><small>User Name *</small>
+                <select id="cUser" disabled><option value="">Select Case For first</option></select></label>
+              <label class="lco-fl" id="fMob"><small>Mobile Number</small><input id="cMob" type="tel" inputmode="numeric" maxlength="10" placeholder="10-digit mobile" /></label>
+              <label class="lco-fl" id="fMail"><small>Email ID</small><input id="cMail" type="email" maxlength="60" placeholder="name@example.com" /></label>
+              <label class="lco-fl"><small>Case Origin</small>
+                <select id="cOrg">${opt(["None", "Phone Call", "Walk-in", "Email", "Mobile App"])}</select></label>
+            </div>
+            <div class="lco-card bbnc-sec">
+              <h5>Select Type</h5>
+              <label class="lco-fl"><small>Type</small><select id="cType">${opt(["Feedback", "Complaint", "Request", "Query"])}</select></label>
+            </div>
+            <div class="lco-card bbnc-sec">
+              <h5>Select Case Reason</h5>
+              <label class="lco-fl" id="fRsn"><small>Reason / Category *</small>
+                <select id="cRsn"><option value="">Select Category</option>${opt(REASONS)}</select></label>
+            </div>
+            <p class="hint err bbnc-err" id="cErr"></p>
+            <button class="btn bbnc-go" id="cGo">Create</button>
+          </div>
+        </section>`);
+      bindCommon(root);
+      const V = (id) => $(id, root);
+      V("#cFor").addEventListener("change", () => {
+        const f = V("#cFor").value, u = V("#cUser");
+        u.disabled = !f;
+        if (f === "customer") u.innerHTML = `<option value="">Select User Name</option>${users.map((c) => `<option value="${c.id}">${esc(c.user)} — ${esc(c.name)}</option>`).join("")}`;
+        else if (f === "self") { const id = (state.session && state.session.lcoid) || "LCO"; u.innerHTML = `<option value="self">${esc(id)} (${esc(BB_DATA.partner.name)})</option>`; }
+        else u.innerHTML = `<option value="">Select Case For first</option>`;
+        V("#cMob").value = f === "self" ? DEMO_MOBILE : "";
+        V("#cMail").value = f === "self" ? BB_DATA.partner.email : "";
+      });
+      V("#cUser").addEventListener("change", () => {   // pick a customer → fill their contact details
+        const c = BB_DATA.customers.find((x) => x.id === +V("#cUser").value);
+        if (c) { V("#cMob").value = c.mobile; V("#cMail").value = c.email; }
+      });
+      V("#cMob").addEventListener("input", (e) => { e.target.value = e.target.value.replace(/\D/g, "").slice(0, 10); });
+      V("#cGo").addEventListener("click", async () => {
+        const err = V("#cErr");
+        const fail = (box, msg) => { shake(V(box)); err.textContent = msg; toast(msg, "error"); };
+        const f = V("#cFor").value, uv = V("#cUser").value, mob = V("#cMob").value, mail = V("#cMail").value.trim(), rsn = V("#cRsn").value;
+        if (!f) return fail("#fFor", "Select who the case is for");
+        if (!uv) return fail("#fUser", "Select a user name");
+        if (mob && !/^[6-9]\d{9}$/.test(mob)) return fail("#fMob", "Mobile must be 10 digits starting with 6–9");
+        if (mail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) return fail("#fMail", "Enter a valid email ID");
+        if (!rsn) return fail("#fRsn", "Select a case reason / category");
+        err.textContent = "";
+        const c = f === "customer" ? BB_DATA.customers.find((x) => x.id === +uv) : null;
+        const lco = (state.session && state.session.lcoid) || "LCO";
+        showLoader("Creating case…");
+        await wait(700);
+        hideLoader();
+        const id = "TKT45" + String(Date.now()).slice(-5);
+        BB_DATA.cases.unshift({ id, cust: c ? c.name : BB_DATA.partner.name, user: c ? c.user : lco, cat: rsn, status: "open", assigned: false, mine: false, to: "",
+          at: new Date(), type: V("#cType").value, origin: V("#cOrg").value, mobile: mob, email: mail });
+        if (stack.length > 1 && stack[stack.length - 2].name === "bbCases") stack[stack.length - 2].params = { tab: "unassigned" };   // show it on return
+        toast(`Case ${id} created (demo)`, "success");
+        back();
+      });
+      return root;
+    },
+
+    /* ---- Broadband LCO: ☰ menu → Settings → Profile → "Customer details" (account actions) ---- */
+    bbAccount() {
+      const u = tvUser();
+      const A = BB_ACCOUNT;
+      if (!A.mobile) Object.assign(A, { mobile: DEMO_MOBILE, email: BB_DATA.partner.email });
+      const G = [
+        ["Password", [["selfcare", I.key, "Reset Selfcare"], ["access", I.key, "Reset Access"], ["number", I.phone, "Change Number"], ["email", I.mail, "Change EmailId"], ["location", I.pin, "Update Location"]]],
+        ["Payment/Purchase", [["purchase", I.card, "Purchase"], ["payment", I.rupee, "Add Payment"], ["vas", I.bolt, "Add VasPlan"]]],
+        ["Others", [["mac", I.router, "Mac Reset"], ["docs", I.news, "Document"], ["item", I.plus, "Add Item"], ["device", I.device, "Device Details"]]],
+      ];
+      const root = el(`
+        <section class="screen-fixed lco bb bbacc" data-screen="bb-account">
+          <header class="sub-head">
+            <button class="back-btn static" data-act="back" aria-label="Back">${I.back}</button>
+            <h2>Customer details</h2>
+          </header>
+          <div class="tv-scroll">
+            <div class="bbacc-top">
+              <span class="tvpf-av">${esc(u.name[0])}</span>
+              <b>${esc(u.name)}</b>
+              <small class="ctv-online"><i></i>Online</small>
+              <span class="bbacc-id">${esc(u.id)}</span>
+              <small class="bbacc-c" id="accC">${A.mobile} · ${esc(A.email)}</small>
+            </div>
+            ${G.map(([h, items]) => `
+              <div class="lco-card bbacc-sec">
+                <h5>${h}</h5>
+                <div class="bbacc-grid">${items.map(([k, ic, l]) => `<button class="bb-mi" data-a="${k}"><span class="bb-mic">${ic}</span><span>${l}</span></button>`).join("")}</div>
+              </div>`).join("")}
+            <span class="demo-tag bbacc-tag">Demo • actions are simulated</span>
+          </div>
+        </section>`);
+      bindCommon(root);
+      const sync = () => { $("#accC", root).textContent = `${A.mobile} · ${A.email}`; };
+      const busy = async (msg, done) => { showLoader(msg); await wait(800); hideLoader(); toast(done, "success"); };
+      const confirm = (title, rows, okLabel, run) => openSheet(`
+        <h3>${title}</h3>
+        <div class="lco-inv">${rows.map(([k, v]) => `<span><small>${k}</small><b>${esc(v)}</b></span>`).join("")}</div>
+        <div class="lco-btn2"><button class="btn ghost" id="acX">Cancel</button><button class="btn" id="acOk">${okLabel}</button></div>
+        <span class="demo-tag">Demo</span>`, (sh) => {
+        $("#acX", sh).addEventListener("click", closeSheet);
+        $("#acOk", sh).addEventListener("click", () => { closeSheet(); run(); });
+      });
+      const ACT = {
+        selfcare: () => confirm("Reset Selfcare", [["User", u.id], ["Send new password to", maskMobile(A.mobile)]], "Reset", () => busy("Resetting…", "Selfcare password reset and sent by SMS (demo)")),
+        access: () => confirm("Reset Access", [["User", u.id], ["Send new password to", maskMobile(A.mobile)]], "Reset", () => busy("Resetting…", "Access (PPPoE) password reset (demo)")),
+        number: () => editSheet("Change Number", A.mobile, { type: "tel", max: 10, check: (v) => /^[6-9]\d{9}$/.test(v), err: "Enter a 10-digit mobile number starting with 6–9" },
+          (v) => { A.mobile = v; sync(); toast("Mobile number updated (demo)", "success"); }),
+        email: () => editSheet("Change EmailId", A.email, { type: "email", max: 60, check: (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), err: "Enter a valid email ID" },
+          (v) => { A.email = v; sync(); toast("Email ID updated (demo)", "success"); }),
+        location: () => editSheet("Update Location", A.location || "", { max: 80, check: (v) => v.length >= 5, err: "Enter at least 5 characters" },
+          (v) => { A.location = v; toast("Location updated (demo)", "success"); }),
+        purchase: () => pickSheet("Purchase Plan", BB_PLANS.map((p) => `${p.name} — ₹ ${p.price}`), "", (v) => {
+          const p = BB_PLANS.find((x) => v.startsWith(x.name + " "));
+          confirm("Confirm Purchase", [["Plan", p.name], ["Speed / Validity", `${p.speed} · ${p.days} days`], ["Amount", `₹ ${p.price}`]], `Pay ₹ ${p.price}`,
+            () => busy("Processing payment…", `${p.name} purchased (demo)`));
+        }),
+        payment: () => editSheet("Add Payment (₹)", "", { type: "number", max: 6, check: (v) => +v >= 1 && +v <= 50000, err: "Enter an amount between ₹1 and ₹50,000" },
+          (v) => busy("Recording payment…", `Payment of ₹ ${money(v)} added (demo)`)),
+        vas: () => pickSheet("Add VasPlan", CTV.vas[30].map(([n, pr]) => `${n} — ₹ ${pr}`), "", (v) => busy("Adding VAS…", `${v.split(" —")[0]} added for 30 days (demo)`)),
+        mac: () => confirm("Mac Reset", [["User", u.id], ["Current MAC", "Not bound"]], "Reset MAC", () => busy("Resetting MAC…", "MAC reset. Reconnect the router (demo)")),
+        docs: () => openSheet(`
+          <h3>Documents</h3>
+          <div class="lco-inv">${CTV.docs.map((d) => `<span><small>${esc(d.type)}</small><b>${d.at ? "Uploaded " + dmy(d.at) : "Verified"}</b></span>`).join("")}</div>
+          <span class="demo-tag">Demo documents</span>
+          <button class="btn ghost" id="dcX">Close</button>`, (sh) => $("#dcX", sh).addEventListener("click", closeSheet)),
+        item: () => pickSheet("Add Item", ["Wi-Fi Router (dual band)", "ONT device", "LAN cable (10 m)", "Power adapter"], "", (v) => busy("Adding item…", `${v} added to the account (demo)`)),
+        device: () => openSheet(`
+          <h3>Device Details</h3>
+          <div class="lco-inv">
+            <span><small>Device</small><b>ONT · VIBE-ONT-200 (demo)</b></span>
+            <span><small>Serial No</small><b>VBONT${String(A.mobile).slice(-6)}</b></span>
+            <span><small>MAC</small><b>Not bound</b></span>
+            <span><small>Status</small><b>Online</b></span>
+          </div>
+          <span class="demo-tag">Demo device</span>
+          <button class="btn ghost" id="dvX">Close</button>`, (sh) => $("#dvX", sh).addEventListener("click", closeSheet)),
+      };
+      $$("[data-a]", root).forEach((b) => b.addEventListener("click", () => ACT[b.dataset.a]()));
       return root;
     },
 
@@ -2256,7 +2491,7 @@
     home({ fromLco = false } = {}) {
       const f = state.filter;
       const root = el(`
-        <section class="screen-fixed tv" data-screen="home">
+        <section class="screen-fixed tv${fromLco ? " from-lco" : ""}" data-screen="home">
           <div class="tv-scroll" id="tvScroll">
             <header class="tv-head">
               <!-- ☰ sits at the top-left, before the logo (the drawer slides in from the left) -->
@@ -2274,8 +2509,8 @@
             <div class="filters" id="filters"></div>
             <div id="sections"></div>
           </div>
-          <button class="fab" data-act="fab" aria-label="Watch live TV">${I.tv}</button>
-          ${fromLco ? `<button class="lco-back-pill" data-act="to-lco">${I.back}Go Back to LCO</button>` : ""}
+          <button class="fab" data-act="fab" aria-label="${fromLco ? "TV Guide" : "Watch live TV"}">${I.tv}</button>
+          ${fromLco ? `<button class="lco-back-pill" data-act="to-lco">${I.back}Go Back to LCO</button>${ctvNavHTML("live")}` : ""}
           <!-- Left slide-in menu (hamburger). Same buttons/data-act as before, so every option works the same. -->
           <div class="drawer" id="drawer" aria-hidden="true">
             <div class="drawer-backdrop" data-close-menu></div>
@@ -2292,8 +2527,8 @@
               <button class="gp dr-item" data-act="profile">${I.userFill}<span>Profile</span></button>
               <i class="dr-sep"></i>
               <button class="gp dr-item" data-act="lts">${I.router}<span>LTS</span></button>
-              <button class="gp dr-item${f.genre ? " on" : ""}" data-act="genre">${I.masks}<span>${f.genre ? GENRES.find((g) => g.key === f.genre).name : `Genre (${GENRES.length})`}</span></button>
-              <button class="gp dr-item${f.lang ? " on" : ""}" data-act="lang">${I.lang}<span>${f.lang || `Language (${LANGUAGES.length})`}</span></button>
+              <button class="gp dr-item${f.genre || f.genres ? " on" : ""}" data-act="genre">${I.masks}<span>${genreLabel()}</span></button>
+              <button class="gp dr-item${f.lang || f.langs ? " on" : ""}" data-act="lang">${I.lang}<span>${langLabel()}</span></button>
             </nav>
           </div>
         </section>`);
@@ -2332,15 +2567,20 @@
         </div>`, (sh) => {
         $$("[data-lts]", sh).forEach((b) => b.addEventListener("click", () => { closeSheet(); toast(`${b.dataset.lts}: available in the full app`); }));
       }));
-      $('[data-act="genre"]', root).addEventListener("click", () => pickSheet("Genre", ["All", ...GENRES.map((g) => g.name)],
-        f.genre ? GENRES.find((g) => g.key === f.genre).name : "All", (v) => {
-          f.genre = v === "All" ? null : GENRES.find((g) => g.name === v).key;
+      // LCO "Watch OTT": the old app's "Choose your Genre / Language" chip sheets (multi-select). Customer Home: unchanged.
+      $('[data-act="genre"]', root).addEventListener("click", () => fromLco
+        ? openChipSheet("genre", () => refreshHome(root, draw))
+        : pickSheet("Genre", ["All", ...GENRES.map((g) => g.name)],
+          f.genre ? GENRES.find((g) => g.key === f.genre).name : "All", (v) => {
+            f.genre = v === "All" ? null : GENRES.find((g) => g.name === v).key;
+            refreshHome(root, draw);
+          }));
+      $('[data-act="lang"]', root).addEventListener("click", () => fromLco
+        ? openChipSheet("lang", () => refreshHome(root, draw))
+        : pickSheet("Language", ["All", ...LANGUAGES], f.lang || "All", (v) => {
+          f.lang = v === "All" ? null : v;
           refreshHome(root, draw);
         }));
-      $('[data-act="lang"]', root).addEventListener("click", () => pickSheet("Language", ["All", ...LANGUAGES], f.lang || "All", (v) => {
-        f.lang = v === "All" ? null : v;
-        refreshHome(root, draw);
-      }));
       $('[data-act="search"]', root).addEventListener("click", () => {
         const bar = $("#searchbar", root);
         bar.hidden = !bar.hidden;
@@ -2351,9 +2591,657 @@
         f.q = ""; $("#q", root).value = ""; $("#searchbar", root).hidden = true;
         $('[data-act="search"]', root).classList.remove("on"); draw();
       });
-      $('[data-act="profile"]', root).addEventListener("click", () => go("profile"));
-      $('[data-act="fab"]', root).addEventListener("click", () => playChannel(CHANNELS[0].id));
+      $('[data-act="profile"]', root).addEventListener("click", () => go(fromLco ? "tvProfile" : "profile"));
+      $('[data-act="fab"]', root).addEventListener("click", () => (fromLco ? go("tvGuide") : playChannel(CHANNELS[0].id)));
+      if (fromLco) bindCtvNav(root, "live");
       draw();
+      return root;
+    },
+
+    /* =====================================================================
+       LCO (Cable TV) → Watch OTT: the old app's TV section, rebuilt in VIBE colours.
+       Home (from-lco) ─ FAB ─► TV Guide ─ programme ─► pop-up ─ Watch Now ─► channel page
+       Bottom bar: Dashboard · BB Recharge · Live TV · Support · Profile
+       ===================================================================== */
+    tvGuide() {
+      const PX = 3.2, CHW = 92;                       // 1 minute = 3.2 px (30 min = 96 px); channel column width
+      const now = new Date();
+      const win = new Date(now); win.setSeconds(0, 0);
+      win.setMinutes(Math.floor(now.getMinutes() / 30) * 30 - 30);
+      const SPAN = 240;                               // 4 hours of guide
+      const xOf = (d) => Math.round(((d - win) / 60000) * PX);
+      const root = el(`
+        <section class="screen-fixed tv tvg" data-screen="tv-guide">
+          <header class="sub-head">
+            <button class="back-btn static" data-act="back" aria-label="Back">${I.back}</button>
+            <h2>TV Guide</h2>
+            <button class="tvg-live" data-act="now" aria-label="Jump to now">LIVE</button>
+          </header>
+          <div class="tvg-pills">
+            <button class="gp" data-act="genre">${I.masks}<span></span></button>
+            <button class="gp" data-act="lang">${I.lang}<span></span></button>
+          </div>
+          <div class="epg" id="epg"></div>
+        </section>`);
+      bindCommon(root);
+      const epg = $("#epg", root);
+      const draw = () => {
+        const f = state.filter;
+        $('[data-act="genre"] span', root).textContent = genreLabel();
+        $('[data-act="lang"] span', root).textContent = langLabel();
+        $('[data-act="genre"]', root).classList.toggle("on", !!(f.genre || f.genres));
+        $('[data-act="lang"]', root).classList.toggle("on", !!(f.lang || f.langs));
+        const chans = GENRES.filter(genreOn).flatMap((g) => filtered(g));
+        const times = Array.from({ length: SPAN / 30 }, (_, k) => new Date(win.getTime() + k * 30 * 60000));
+        const rows = chans.map((c) => {
+          const blocks = epgFor(c).filter((p) => p.end > win && p.start < new Date(win.getTime() + SPAN * 60000)).map((p) => {
+            const l = Math.max(0, xOf(p.start)), r = Math.min(SPAN * PX, xOf(p.end));
+            const state_ = p.end <= now ? " past" : p.start <= now ? " live" : "";
+            return `<button class="epg-p${state_}" style="left:${l}px;width:${r - l - 6}px" data-pc="${c.id}" data-ps="${p.start.getTime()}">
+                <b>${esc(p.title)}</b><small>${fmt(p.start)} - ${fmt(p.end)}</small></button>`;
+          }).join("");
+          return `<div class="epg-row">
+              <button class="epg-ch" data-chan="${c.id}" aria-label="${esc(c.name)}"><span class="epg-logo" style="background:${grad(c.colors)}">${chInitials(c)}</span><small>${esc(c.name)}</small></button>
+              <div class="epg-track">${blocks}</div>
+            </div>`;
+        }).join("");
+        epg.innerHTML = chans.length ? `
+          <div class="epg-in" style="width:${CHW + SPAN * PX}px">
+            <div class="epg-times"><span class="epg-corner">Time</span>${times.map((t) => `<span style="left:${CHW + xOf(t)}px">${fmt(t)}</span>`).join("")}</div>
+            ${rows}
+            <i class="epg-now" style="left:${CHW + xOf(now)}px"><b>● LIVE</b></i>
+          </div>`
+          : `<div class="empty">${I.tv}<b>No channels</b><p>Change the Genre or Language selection.</p></div>`;
+        $$("[data-pc]", epg).forEach((b) => b.addEventListener("click", () => {
+          const c = CHANNELS[+b.dataset.pc];
+          openProgPopup(c, epgFor(c).find((p) => p.start.getTime() === +b.dataset.ps));
+        }));
+        $$("[data-chan]", epg).forEach((b) => b.addEventListener("click", () => go("tvChannel", { id: +b.dataset.chan })));
+      };
+      $('[data-act="genre"]', root).addEventListener("click", () => openChipSheet("genre", draw));
+      $('[data-act="lang"]', root).addEventListener("click", () => openChipSheet("lang", draw));
+      $('[data-act="now"]', root).addEventListener("click", () => epg.scrollTo({ left: Math.max(0, xOf(now) - 40), behavior: "smooth" }));
+      draw();
+      return root;
+    },
+
+    /* ---- LCO Watch OTT: channel page (player + now playing + Upcoming Shows) ---- */
+    tvChannel({ id = 0 }) {
+      const c = CHANNELS[id] || CHANNELS[0];
+      const g = GENRES.find((x) => x.key === c.genre);
+      const list = epgFor(c);
+      const live = list.find((p) => p.live);
+      const upcoming = list.filter((p) => p.start >= live.end).slice(0, 5);
+      const root = el(`
+        <section class="tv tvc" data-screen="tv-channel">
+          <header class="tvc-head">
+            <button class="back-btn static" data-act="back" aria-label="Back">${I.back}</button>
+            <span class="tvc-t"><b>${esc(c.name)}</b><small>${chNo(c)} | ${g.name} | ${c.lang}</small></span>
+            <button class="lco-ic" data-toast="Full screen (demo)" aria-label="Full screen">${I.expand}</button>
+            <button class="lco-ic" data-toast="Picture-in-picture (demo)" aria-label="Picture in picture">${I.pip}</button>
+          </header>
+          <div class="tvc-player" style="background:${grad(c.colors)}">
+            <span class="tvc-live"><i></i>LIVE</span>
+            <button class="tvc-arr" data-step="-1" aria-label="Previous channel">${I.back}</button>
+            <div class="tvc-now"><b>${esc(c.show)}</b><span class="tvc-eq" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span></div>
+            <button class="tvc-arr r" data-step="1" aria-label="Next channel">${I.back}</button>
+            <img class="tvc-wm" src="${MARK}" alt="" />
+          </div>
+          <div class="tvc-info">
+            <h3>${esc(live.title)}</h3>
+            <small>${fmt(live.start)} - ${fmt(live.end)} • ${c.lang}</small>
+            <small>${g.name} | ${esc(c.name)} | Live</small>
+            <p>${GENRE_DESC[c.genre]}</p>
+          </div>
+          <h3 class="tvc-up">Upcoming Shows</h3>
+          <div class="tvc-list">
+            ${upcoming.map((p) => `
+              <button class="tvc-item" data-remind="${esc(p.title)} at ${fmt(p.start)}">
+                <span class="tvc-thumb" style="background:${grad(c.colors)}"><b>${esc(p.title)}</b></span>
+                <span><b>${esc(p.title)}</b><small>${fmt(p.start)} - ${fmt(p.end)} | ${c.lang}</small></span>
+              </button>`).join("")}
+          </div>
+          <p class="more-note">Demo • Simulated live stream</p>
+        </section>`);
+      bindCommon(root);
+      $$("[data-toast]", root).forEach((b) => b.addEventListener("click", () => toast(b.dataset.toast)));
+      $$("[data-remind]", root).forEach((b) => b.addEventListener("click", () => toast(`Reminder set: ${b.dataset.remind} (demo)`, "success")));
+      // ‹ › switch channel in place (no extra Back steps)
+      $$("[data-step]", root).forEach((b) => b.addEventListener("click", () => {
+        const n = (c.id + +b.dataset.step + CHANNELS.length) % CHANNELS.length;
+        swapRoute("tvChannel", { id: n });
+      }));
+      return root;
+    },
+
+    /* ---- LCO Watch OTT: Profile (old app layout) ---- */
+    tvProfile() {
+      const u = tvUser();
+      const f = state.filter;
+      const prefText = (arr, all) => (arr && arr.length ? arr.slice(0, 3).join(", ") + (arr.length > 3 ? ", …" : "") : all);
+      const root = el(`
+        <section class="tv tvpf" data-screen="tv-profile">
+          <header class="sub-head">
+            <button class="back-btn static" data-act="back" aria-label="Back">${I.back}</button>
+            <h2>Profile</h2>
+          </header>
+          <div class="tvpf-user"><span class="tvpf-av">${esc(u.id[0])}</span><span><small>${esc(u.id)}</small><b>${esc(u.id)}</b></span></div>
+          <h4 class="tvpf-h">Profiles</h4>
+          <div class="tvpf-profiles">
+            <button class="tvpf-prof on" data-toast="${esc(u.id)} is active">${`<span class="tvpf-av sm">${esc(u.id[0])}</span>`}<small>${esc(u.id)}</small></button>
+            <button class="tvpf-prof add" data-toast="Add Profile (demo)"><span class="tvpf-plus">${I.plus}</span><small>Add Profile</small></button>
+          </div>
+          <div class="tvpf-upg">
+            <div><b>${I.crown}Upgrade to OTT Package</b><small>Unlock more channels &amp; exclusive benefits</small>
+              <button class="lco-pill" data-act="upgrade">Upgrade Now</button></div>
+            <span class="tvpf-crown">${I.crown}</span>
+          </div>
+          <h4 class="tvpf-h">Other Services</h4>
+          <div class="tvpf-svcs">
+            ${[["bb", u.id, "Broadband"], ["cable", `${u.mobile}_Cable`, "Cable Customer"]].map(([k, n, t], j) => `
+              <button class="tvpf-svc${j === 0 ? " on" : ""}" data-svc="${k}" aria-pressed="${j === 0}">
+                <span class="tvpf-svc-ic">${I.userFill}</span><span><b>${esc(n)}</b><small>${t}</small></span><i class="tvpf-radio">${I.check}</i>
+              </button>`).join("")}
+          </div>
+          <div class="tvpf-row"><h4 class="tvpf-h">Live Channels</h4><button class="lco-pill" data-toast="Modify Channels (demo)">Modify Channels</button></div>
+          <div class="tvpf-plan"><b>Welcome Plan</b><small>(300) Channels Available</small></div>
+          <h4 class="tvpf-h">Settings</h4>
+          <div class="tvpf-set">
+            <button data-act="devices"><span class="tvpf-si">${I.device}</span><span><b>Manage Device</b><small>View devices connected to your account</small></span>${I.chev}</button>
+            <button data-act="lang-pref"><span class="tvpf-si">${I.lang}</span><span><b>Language Preference</b><small id="lp">${prefText(f.langs, "All languages")}</small></span>${I.chev}</button>
+            <button data-act="genre-pref"><span class="tvpf-si">${I.masks}</span><span><b>Genre Preference</b><small id="gp">${prefText(f.genres && f.genres.map((k) => GENRES.find((g) => g.key === k).name), "All genres")}</small></span>${I.chev}</button>
+          </div>
+          <button class="btn tvpf-out" data-act="logout">${I.logout} Log Out</button>
+          <button class="btn ghost tvpf-del" data-act="delete">Delete Account</button>
+          <p class="more-note">v1.0 demo</p>
+        </section>`);
+      bindCommon(root);
+      $$("[data-toast]", root).forEach((b) => b.addEventListener("click", () => toast(b.dataset.toast)));
+      $$("[data-svc]", root).forEach((b) => b.addEventListener("click", () => {
+        $$("[data-svc]", root).forEach((x) => { const on = x === b; x.classList.toggle("on", on); x.setAttribute("aria-pressed", on); });
+        toast(`Switched to ${b.querySelector("small").textContent} (demo)`);
+      }));
+      $('[data-act="upgrade"]', root).addEventListener("click", () => pickSheet("Upgrade to OTT Package", OTT_PLANS.map((p) => `${p.name} — ₹ ${p.price}`), "", (v) => toast(`${v.split(" —")[0]}: upgrade request sent (demo)`, "success")));
+      $('[data-act="devices"]', root).addEventListener("click", () => openSheet(`
+        <h3>Manage Device</h3>
+        <div class="lco-inv">
+          <span><small>This phone</small><b>Active now</b></span>
+          <span><small>Living-room TV (STB)</small><b>Last seen today</b></span>
+        </div>
+        <span class="demo-tag">Demo devices</span>
+        <button class="btn ghost" id="devX">Close</button>`, (sh) => $("#devX", sh).addEventListener("click", closeSheet)));
+      $('[data-act="lang-pref"]', root).addEventListener("click", () => openChipSheet("lang", () => { $("#lp", root).textContent = prefText(state.filter.langs, "All languages"); }));
+      $('[data-act="genre-pref"]', root).addEventListener("click", () => openChipSheet("genre", () => {
+        const gs = state.filter.genres;
+        $("#gp", root).textContent = prefText(gs && gs.map((k) => GENRES.find((g) => g.key === k).name), "All genres");
+      }));
+      $('[data-act="logout"]', root).addEventListener("click", lcoLogout);
+      $('[data-act="delete"]', root).addEventListener("click", () => toast("Delete Account is disabled in the demo"));
+      return root;
+    },
+
+    /* ---- LCO Watch OTT: bottom bar → Dashboard (customer account overview + left menu) ---- */
+    ctvDash() {
+      const u = tvUser();
+      const h = new Date().getHours();
+      const hi = h < 12 ? "Good Morning" : h < 17 ? "Good Afternoon" : "Good Evening";
+      const from = new Date(Date.now() - 130 * 864e5), to = new Date(from.getTime() + 1828 * 864e5);
+      const left = Math.round((to - Date.now()) / 864e5);
+      const QA = [["faq", I.help, "FAQ"], ["broadband", I.wifi, "Broadband"], ["usage", I.pie, "My Usage"], ["vas", I.play, "Vas"], ["support", I.headset, "Support"], ["plan", I.news, "My Plan"]];
+      const root = el(`
+        <section class="screen-fixed tv ctv" data-screen="ctv-dashboard">
+          <div class="tv-scroll">
+            <header class="ctv-head">
+              <button class="lco-ic" data-act="menu" aria-label="Open menu" aria-expanded="false">${I.menu}</button>
+              <h2>Dashboard</h2>
+              <button class="lco-ic" data-act="logout" aria-label="Logout">${I.logout}</button>
+            </header>
+            <p class="ctv-hi">${hi}, <b>${esc(u.name)}</b></p>
+            <div class="lco-card ctv-card">
+              <div class="ctv-row"><b>My Account</b><span class="ctv-online">Online<i></i></span></div>
+              <div class="ctv-row">${I.pin}<span>Status</span><b class="ok">Active</b></div>
+              <div class="ctv-row">${I.news}<span>Open Service Request</span><b>0</b></div>
+              <button class="ctv-support" data-qa="Support">${I.headset}Support</button>
+              <hr />
+              <div class="ctv-row">${I.pie}<span>Current Usage</span></div>
+              <div class="ctv-usage"><span>${I.up}14.99 GB</span><span>${I.down}135.16 GB</span><span>${I.swapv}150.15 GB</span></div>
+              <button class="ctv-more" data-act="more">More Details ${ARROW}</button>
+            </div>
+            <div class="lco-card ctv-card">
+              <b class="ctv-t">My Plan</b>
+              <div class="ctv-plan">
+                <span>${I.wifi}<small>Plan</small><b>VIBE_DEMO_OPEN_100</b></span>
+                <span>${I.clock}<small>Remaining Days</small><b>${left} Days/1828 Days</b></span>
+                <span>${I.pie}<small>Used / Allocated</small><b>150 GB / Unlimited</b></span>
+                <span>${I.calendar}<small>Validity</small><b>${dmy(from)} – ${dmy(to)}</b></span>
+              </div>
+            </div>
+            <div class="lco-card ctv-card">
+              <b class="ctv-t">Quick Action</b>
+              <div class="ctv-qa">${QA.map(([k, ic, l]) => `<button data-qa="${l}">${ic}<span>${l}</span></button>`).join("")}</div>
+            </div>
+          </div>
+          ${ctvDrawerHTML()}
+          ${ctvNavHTML("dash")}
+        </section>`);
+      $$("[data-toast]", root).forEach((b) => b.addEventListener("click", () => toast(b.dataset.toast)));
+      bindCtvMenu(root);
+      $('[data-act="more"]', root).addEventListener("click", () => openSheet(`
+        <h3>Usage details</h3>
+        <div class="lco-inv">
+          <span><small>Upload</small><b>14.99 GB</b></span>
+          <span><small>Download</small><b>135.16 GB</b></span>
+          <span class="tot"><small>Total this cycle</small><b>150.15 GB</b></span>
+        </div>
+        <span class="demo-tag">Demo usage</span>
+        <button class="btn ghost" id="usX">Close</button>`, (sh) => $("#usX", sh).addEventListener("click", closeSheet)));
+      bindCtvNav(root, "dash");
+      return root;
+    },
+
+    /* ---- Watch OTT self-care: BB Recharge (bottom bar) / Broadband (menu, pushed) ---- */
+    ctvRecharge({ sub } = {}) {
+      const TABS = [["unlimited", "Unlimited"], ["ott", "Unlimited + OTT"], ["bundle", "Unlimited + Digital TV"]];
+      const root = ctvShell("ctv-recharge", "Recharge", { sub, tabs: TABS, tab: "unlimited", nav: "recharge" });
+      const box = $("#cx", root);
+      let cur = "unlimited";
+      const draw = (k) => {
+        cur = k;
+        const label = TABS.find((t) => t[0] === k)[1];
+        box.innerHTML = `
+          <div class="ctv-sec"><button class="ctv-sec-h" id="secT" aria-expanded="true"><b>${label}</b>${I.chev}</button>
+            <div class="ctv-plans">${CTV.plans[k].map((p, j) => `
+              <div class="ctv-pc">
+                <div class="ctv-pc-g">
+                  <span><small>Price</small><b class="pr">₹ ${p.price}<br />(Incl. Tax)</b></span>
+                  <span><small>Speed</small><b>${p.speed}</b></span>
+                  <span><small>Data</small><b>${p.data}</b></span>
+                  <span><small>Validity</small><b>${p.days} Days</b></span>
+                </div>
+                <div class="ctv-pc-a"><button class="ctv-ben" data-ben="${j}">Benefits</button><button class="ctv-buy" data-buy="${j}">${I.card} Buy Now</button></div>
+              </div>`).join("")}</div>
+          </div>`;
+        $("#secT", box).addEventListener("click", (e) => {
+          const s = e.currentTarget.closest(".ctv-sec");
+          const shut = s.classList.toggle("shut");
+          e.currentTarget.setAttribute("aria-expanded", !shut);
+        });
+        $$("[data-ben]", box).forEach((b) => b.addEventListener("click", () => {
+          const p = CTV.plans[cur][+b.dataset.ben];
+          openSheet(`
+            <h3>${esc(p.name)}</h3>
+            <div class="lco-inv">
+              <span><small>Speed</small><b>${p.speed}</b></span>
+              <span><small>Data</small><b>${p.data} (FUP-free)</b></span>
+              ${p.extra ? `<span><small>Includes</small><b>${esc(p.extra)}</b></span>` : ""}
+              <span><small>Validity</small><b>${p.days} Days</b></span>
+              <span class="tot"><small>Price (incl. tax)</small><b>₹ ${p.price}</b></span>
+            </div>
+            <span class="demo-tag">Demo plan</span>
+            <button class="btn ghost" id="bnX">Close</button>`, (sh) => $("#bnX", sh).addEventListener("click", closeSheet));
+        }));
+        $$("[data-buy]", box).forEach((b) => b.addEventListener("click", () => {
+          const p = CTV.plans[cur][+b.dataset.buy];
+          openSheet(`
+            <h3>Confirm Recharge</h3>
+            <div class="lco-inv">
+              <span><small>Plan</small><b>${esc(p.name)}</b></span>
+              <span><small>Speed / Validity</small><b>${p.speed} · ${p.days} Days</b></span>
+              <span class="tot"><small>Amount payable</small><b>₹ ${p.price}</b></span>
+            </div>
+            <div class="lco-btn2"><button class="btn ghost" id="byX">Cancel</button><button class="btn" id="byOk">Pay ₹ ${p.price}</button></div>
+            <span class="demo-tag">Demo • no real payment</span>`, (sh) => {
+            $("#byX", sh).addEventListener("click", closeSheet);
+            $("#byOk", sh).addEventListener("click", async () => {
+              closeSheet();
+              showLoader("Processing payment…");
+              await wait(900);
+              hideLoader();
+              const now = new Date(), n = String(Math.floor(Math.random() * 9e6) + 1e6);
+              CTV.history.unshift({ ...CTV.current, expiry: now });
+              CTV.current = { name: p.name, activated: now, expiry: new Date(now.getTime() + p.days * 864e5), validity: p.days, used: "0 GB", unused: "UL GB" };
+              CTV.payments.unshift({ ref: "PAY" + n, what: "Online payment (demo)", amount: p.price, at: now, ok: true });
+              CTV.purchases.unshift({ ref: "PUR" + n, what: `${p.name} · ${p.days} days`, amount: p.price, at: now, ok: true });
+              openSheet(`
+                <div class="ok-badge">${I.checkBig}</div>
+                <h3>Recharge successful</h3>
+                <p class="ctv-sheetp"><b>${esc(p.name)}</b> is active till ${dmy(CTV.current.expiry)}.</p>
+                <span class="demo-tag">Demo • no real payment</span>
+                <button class="btn" id="byDone">Done</button>`, (s2) => $("#byDone", s2).addEventListener("click", closeSheet));
+            });
+          });
+        }));
+      };
+      bindCtvTabs(root, draw);
+      draw(cur);
+      ctvBind(root, "recharge", sub);
+      return root;
+    },
+
+    /* ---- Watch OTT self-care: Support (bottom bar, or pushed from the menu) ---- */
+    ctvSupport({ sub } = {}) {
+      const root = ctvShell("ctv-support", "Support", { sub, nav: "support",
+        extra: `<button class="bb-fab ctv-fab" data-act="new-ticket" aria-label="Create ticket">${I.plus}</button>` });
+      const box = $("#cx", root);
+      const draw = () => {
+        box.innerHTML = `
+          <div class="lco-card ctv-contact">
+            <b>Contact Us</b>
+            <div>${I.mail}<span>support@vibe-demo.example</span></div>
+            <div>${I.phone}<span>1800 000 0000 (demo)</span></div>
+          </div>
+          ${CTV.tickets.map((t, j) => `
+            <div class="lco-card ctv-tk">
+              <div class="ctv-tk-h"><b>${esc(t.id)}</b><span class="ctv-st ${t.status === "Closed" ? "closed" : "open"}">${esc(t.status)}</span></div>
+              <dl>
+                <dt>Ticket Title</dt><dd>${esc(t.title)}</dd>
+                <dt>Ticket Reason</dt><dd>${esc(t.reason)}</dd>
+                <dt>Last Modified Date</dt><dd>${stamp(t.at)}</dd>
+              </dl>
+              <div class="ctv-tk-a"><button class="ctv-remark" data-rem="${j}">Add Remark</button>
+                <button class="lco-ic" data-view="${j}" aria-label="View ${esc(t.id)}">${I.eye}</button></div>
+            </div>`).join("")}`;
+        $$("[data-view]", box).forEach((b) => b.addEventListener("click", () => openTicket(CTV.tickets[+b.dataset.view])));
+        $$("[data-rem]", box).forEach((b) => b.addEventListener("click", () => {
+          const t = CTV.tickets[+b.dataset.rem];
+          editSheet(`Add Remark · ${t.id}`, "", { max: 120, check: (v) => v.length >= 3, err: "Remark must be at least 3 characters" }, (v) => {
+            t.remarks.push(v);
+            t.at = new Date();
+            toast("Remark added (demo)", "success");
+            draw();
+          });
+        }));
+      };
+      draw();
+      $('[data-act="new-ticket"]', root).addEventListener("click", () => openNewTicket(draw));
+      ctvBind(root, "support", sub);
+      return root;
+    },
+
+    /* ---- Watch OTT self-care: Profile (bottom bar) — Profile / Documents / Change Password ---- */
+    ctvProfile() {
+      const u = tvUser();
+      const P = CTV.profile;
+      if (!P.mobile) P.mobile = u.mobile;
+      const root = ctvShell("ctv-profile", "Profile", { tabs: [["info", "Profile"], ["docs", "Documents"], ["pwd", "Change Password"]], tab: "info", nav: "profile" });
+      const box = $("#cx", root);
+      const row = (ic, label, val, edit) => `
+        <div class="ctv-pr">${ic}<span><small>${label}</small><b>${esc(val)}</b></span>${edit ? `<button class="lco-ic sm" data-edit="${edit}" aria-label="Edit ${label}">${I.pencil}</button>` : ""}</div>`;
+      const EDIT = {
+        email: ["Email", "email", { type: "email", max: 60, check: (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), err: "Enter a valid email address" }],
+        mobile: ["Mobile", "mobile", { type: "tel", max: 10, check: (v) => /^[6-9]\d{9}$/.test(v), err: "Enter a 10-digit mobile number starting with 6–9" }],
+        gstin: ["GSTIN", "gstin", { max: 15, check: (v) => /^[0-9A-Z]{15}$/i.test(v), err: "GSTIN must be 15 letters/numbers" }],
+      };
+      const views = {
+        info: () => `
+          <p class="ctv-cap">Customer Information</p>
+          <div class="ctv-pcard"><span class="tvpf-av">${esc(u.name[0])}</span><span><b>${esc(u.name)}</b><small class="ctv-online"><i></i>Online</small></span></div>
+          <div class="lco-card ctv-prl">
+            ${row(I.user, "Name", u.name)}
+            ${row(I.mail, "Email", P.email, "email")}
+            ${row(I.phone, "Mobile", P.mobile, "mobile")}
+            ${row(I.hash, "GSTIN", P.gstin, "gstin")}
+            ${row(I.router, "MAC Address", P.mac)}
+            ${row(I.home, "Address", P.address)}
+            ${row(I.idcard, "Aadhaar Number", P.aadhaar)}
+            ${row(I.scan, "eKYC Status", P.ekyc)}
+            <div class="ctv-pr">${I.finger}<span><b>Biometric Authorization</b></span>
+              <button class="ctv-sw${P.bio ? " on" : ""}" id="bio" role="switch" aria-checked="${!!P.bio}" aria-label="Biometric Authorization"><i></i></button></div>
+          </div>`,
+        docs: () => `
+          <div class="lco-card ctv-docf">
+            <label class="lco-fl"><small>Document Type</small>
+              <select id="dType">${["ID Proof", "Address Proof", "Customer Passport-size Photo", "GST Certificate", "Other"].map((d) => `<option>${d}</option>`).join("")}</select></label>
+            <button class="btn" id="dAdd">${I.plus} Add Document</button>
+          </div>
+          <p class="ctv-cap">Uploaded Documents</p>
+          ${CTV.docs.length ? CTV.docs.map((d, j) => `
+            <div class="lco-card ctv-doc">${I.news}<span><b>${esc(d.type)}</b><small>${d.at ? "Uploaded " + dmy(d.at) : "Verified"}</small></span>
+              <button class="lco-ic" data-doc="${j}" aria-label="View ${esc(d.type)}">${I.eye}</button></div>`).join("") : ctvEmpty("No documents uploaded")}`,
+        pwd: () => `
+          <div class="lco-card lco-form ctv-pwd">
+            <label class="lco-fl" id="pw1W"><small>New Password</small><input id="pw1" type="password" maxlength="20" placeholder="At least 8 characters" autocomplete="new-password" /></label>
+            <label class="lco-fl" id="pw2W"><small>Confirm Password</small><input id="pw2" type="password" maxlength="20" placeholder="Re-enter password" autocomplete="new-password" /></label>
+            <p class="hint" id="pwH">Use 8+ characters with letters and numbers</p>
+            <button class="btn" id="pwOk">Submit</button>
+          </div>`,
+      };
+      const draw = (k) => {
+        box.innerHTML = views[k]();
+        box.scrollTop = 0;
+        if (k === "info") {
+          $$("[data-edit]", box).forEach((b) => b.addEventListener("click", () => {
+            const [title, key, rule] = EDIT[b.dataset.edit];
+            editSheet(title, key === "gstin" && !/^[0-9A-Z]{15}$/i.test(P.gstin) ? "" : P[key], rule, (v) => {
+              P[key] = key === "gstin" ? v.toUpperCase() : v;
+              toast(`${title} updated (demo)`, "success");
+              draw("info");
+            });
+          }));
+          $("#bio", box).addEventListener("click", (e) => {
+            P.bio = !P.bio;
+            e.currentTarget.classList.toggle("on", P.bio);
+            e.currentTarget.setAttribute("aria-checked", P.bio);
+            toast(`Biometric authorization ${P.bio ? "enabled" : "disabled"} (demo)`);
+          });
+        } else if (k === "docs") {
+          $("#dAdd", box).addEventListener("click", async () => {
+            showLoader("Uploading…");
+            await wait(700);
+            hideLoader();
+            CTV.docs.unshift({ type: $("#dType", box).value, at: new Date() });
+            toast("Document uploaded (demo)", "success");
+            draw("docs");
+          });
+          $$("[data-doc]", box).forEach((b) => b.addEventListener("click", () => toast(`${CTV.docs[+b.dataset.doc].type}: preview (demo)`)));
+        } else {
+          $("#pwOk", box).addEventListener("click", () => {
+            const a = $("#pw1", box).value, c = $("#pw2", box).value, h = $("#pwH", box);
+            h.classList.add("err");
+            if (!(a.length >= 8 && /[A-Za-z]/.test(a) && /\d/.test(a))) { h.textContent = "Password must be 8+ characters with letters and numbers"; shake($("#pw1W", box)); return; }
+            if (a !== c) { h.textContent = "Passwords do not match"; shake($("#pw2W", box)); return; }
+            h.classList.remove("err");
+            h.textContent = "Use 8+ characters with letters and numbers";
+            $("#pw1", box).value = $("#pw2", box).value = "";
+            toast("Password changed (demo)", "success");
+          });
+        }
+      };
+      bindCtvTabs(root, draw);
+      draw("info");
+      ctvBind(root, "profile");
+      return root;
+    },
+
+    /* ---- Watch OTT self-care: Notification ---- */
+    ctvNotify() {
+      const root = ctvShell("ctv-notify", "Notification", { sub: true, body: CTV.notes.map((n) => `
+        <div class="lco-card ctv-note">
+          <span class="ctv-note-ic">${I.mail}</span>
+          <div>
+            <p>Dear User,</p>
+            <p>A trouble ticket has been ${n.kind} in the system with the following details:</p>
+            <p>Ticket Number: ${esc(n.id)}<br />Ticket Priority: Medium<br />Problem Category: ${esc(n.cat)}${n.kind === "closed" ? "<br />Solution: Issue resolved, checked and confirmed" : ""}</p>
+            <p>Thank You,<br />VIBE Broadband (demo)</p>
+            <small>${stamp(n.at)}</small>
+          </div>
+        </div>`).join("") || ctvEmpty("No notifications") });
+      ctvBind(root, "", true);
+      return root;
+    },
+
+    /* ---- Watch OTT self-care: FAQ ---- */
+    ctvFaq() {
+      const QS = [
+        ["How do I recharge my broadband?", "Open BB Recharge from the bottom bar, pick a plan and tap Buy Now."],
+        ["How do I raise a complaint?", "Go to Support and tap the + button to create a ticket. You can follow it under Support and Notification."],
+        ["Where can I see my data usage?", "Open My Usage from the menu or Quick Action. It shows last week's usage, totals and a table view."],
+        ["How do I change my password?", "Open Profile → Change Password, enter the new password twice and tap Submit."],
+        ["What is VAS?", "Value-added services such as a static IP or extra data, bought for 30–360 days."],
+      ];
+      const root = ctvShell("ctv-faq", "Faq", { sub: true, body: `
+        <p class="ctv-cap">FAQ</p>
+        <button class="lco-card ctv-ask" id="ask" aria-expanded="false">Have any questions?</button>
+        <div class="ctv-faqs" id="faqs" hidden>
+          ${QS.map(([q, a]) => `<details class="lco-card ctv-q"><summary>${q}${I.chev}</summary><p>${a}</p></details>`).join("")}
+        </div>` });
+      $("#ask", root).addEventListener("click", (e) => {
+        const f = $("#faqs", root);
+        f.hidden = !f.hidden;
+        e.currentTarget.setAttribute("aria-expanded", !f.hidden);
+      });
+      ctvBind(root, "", true);
+      return root;
+    },
+
+    /* ---- Watch OTT self-care: Self Help (troubleshoot tiles) ---- */
+    ctvSelfHelp() {
+      const T = { ticket: [I.headset, "Create Ticket"], renew: [I.history, "Renew Now"], cpe: [I.lock, "Change CPE Password"],
+        disc: [I.help, "Session Disconnect"], mac: [I.help, "Reset Mac"], usage: [I.pie, "Check Usage"] };
+      const ISSUES = [
+        ["Facing Issue in Connecting To Internet ?", "UserId does not exist or account is not active", ["ticket", "renew", "cpe", "disc", "mac"]],
+        ["Slow browsing speed ?", "Data usage limit or too many connected devices", ["usage", "disc", "ticket"]],
+        ["Wi-Fi router not working ?", "Router powered off or MAC changed", ["mac", "cpe", "ticket"]],
+      ];
+      const root = ctvShell("ctv-selfhelp", "Self Help", { sub: true, body: ISSUES.map(([q, why, tiles]) => `
+        <div class="ctv-sh">
+          <b>${q}</b>
+          <small>Possible Reason : ${why}</small>
+          <p class="ctv-cap">Troubleshoot Using</p>
+          <div class="ctv-tiles">${tiles.map((k) => `<button data-fix="${k}" data-cat="${esc(q)}">${T[k][0]}<span>${T[k][1]}</span></button>`).join("")}</div>
+        </div>`).join("") });
+      $$("[data-fix]", root).forEach((b) => b.addEventListener("click", async () => {
+        const k = b.dataset.fix;
+        if (k === "ticket") openNewTicket(null, b.dataset.cat.startsWith("Slow") ? "Slow Speed" : b.dataset.cat.startsWith("Wi-Fi") ? "CPE Not Working - Wi-Fi Router" : "Network Issue");
+        else if (k === "renew") go("ctvRecharge", { sub: true });
+        else if (k === "usage") go("ctvSession");
+        else if (k === "cpe") editSheet("New CPE Password", "", { type: "password", max: 20, check: (v) => v.length >= 8, err: "Password must be at least 8 characters" }, () => toast("CPE password changed (demo)", "success"));
+        else {
+          showLoader(k === "mac" ? "Resetting MAC…" : "Disconnecting session…");
+          await wait(800);
+          hideLoader();
+          toast(`${k === "mac" ? "MAC reset" : "Session disconnected"}. Please reconnect your router (demo)`, "success");
+        }
+      }));
+      ctvBind(root, "", true);
+      return root;
+    },
+
+    /* ---- Watch OTT self-care: My Plan → Plan Details ---- */
+    ctvPlan() {
+      const root = ctvShell("ctv-plan", "Plan Details", { sub: true, tabs: [["cur", "Current Plan"], ["hist", "Plan History"]], tab: "cur" });
+      const box = $("#cx", root);
+      const card = (p, now) => `
+        <div class="lco-card ctv-pl">
+          <div class="ctv-pl-h"><b>${esc(p.name)}</b>${now ? `<span class="ctv-st open">Active</span>` : `<span class="ctv-st closed">Expired</span>`}</div>
+          <dl>
+            <dt>Activation Date</dt><dd>${dmy(p.activated)}</dd>
+            <dt>Expiry Date</dt><dd>${dmy(p.expiry)}</dd>
+            <dt>Validity</dt><dd>${p.validity} Days</dd>
+            <dt>Data Used</dt><dd>${p.used}</dd>
+            <dt>Data Unused</dt><dd>${p.unused}</dd>
+          </dl>
+        </div>`;
+      const draw = (k) => { box.innerHTML = k === "cur" ? card(CTV.current, true) : CTV.history.map((p) => card(p)).join("") || ctvEmpty("No plan history"); };
+      bindCtvTabs(root, draw);
+      draw("cur");
+      ctvBind(root, "", true);
+      return root;
+    },
+
+    /* ---- Watch OTT self-care: Transaction → Payment / Purchase / Charge ---- */
+    ctvTxn() {
+      const root = ctvShell("ctv-txn", "Purchase", { sub: true, tabs: [["payments", "Payment"], ["purchases", "Purchase"], ["charges", "Charge"]], tab: "payments" });
+      const box = $("#cx", root);
+      const draw = (k) => {
+        const L = CTV[k];
+        box.innerHTML = L.length ? L.map((t) => `
+          <div class="lco-card ctv-tx">
+            <div class="ctv-pl-h"><b>${esc(t.ref)}</b><span class="ctv-st ${t.ok ? "open" : "fail"}">${t.ok ? "Success" : "Failed"}</span></div>
+            <div class="ctv-tx-r"><span>${esc(t.what)}<small>${stamp(t.at)}</small></span><b>₹ ${money(t.amount)}</b></div>
+          </div>`).join("") : ctvEmpty("No records found");
+      };
+      bindCtvTabs(root, draw);
+      draw("payments");
+      ctvBind(root, "", true);
+      return root;
+    },
+
+    /* ---- Watch OTT self-care: Vas Plans ---- */
+    ctvVas() {
+      const root = ctvShell("ctv-vas", "Vas Plans", { sub: true, tabs: [["30", "30 Days"], ["90", "90 Days"], ["180", "180 Days"], ["360", "360 Days"]], tab: "30" });
+      const box = $("#cx", root);
+      const draw = (k) => {
+        const L = CTV.vas[k];
+        box.innerHTML = L.length ? L.map(([n, pr], j) => `
+          <div class="lco-card ctv-vp">${I.bolt}<span><b>${esc(n)}</b><small>${k} Days</small></span>
+            <button class="ctv-buy" data-vas="${j}">₹ ${pr}</button></div>`).join("") : ctvEmpty("No Vas plans available for this validity");
+        $$("[data-vas]", box).forEach((b) => b.addEventListener("click", () => {
+          const [n, pr] = L[+b.dataset.vas];
+          openSheet(`
+            <h3>Buy ${esc(n)}</h3>
+            <div class="lco-inv"><span><small>Validity</small><b>${k} Days</b></span><span class="tot"><small>Amount</small><b>₹ ${pr}</b></span></div>
+            <div class="lco-btn2"><button class="btn ghost" id="vX">Cancel</button><button class="btn" id="vOk">Pay ₹ ${pr}</button></div>
+            <span class="demo-tag">Demo • no real payment</span>`, (sh) => {
+            $("#vX", sh).addEventListener("click", closeSheet);
+            $("#vOk", sh).addEventListener("click", async () => {
+              closeSheet();
+              showLoader("Processing payment…");
+              await wait(800);
+              hideLoader();
+              CTV.purchases.unshift({ ref: "PUR" + (Math.floor(Math.random() * 9e6) + 1e6), what: `${n} (VAS) · ${k} days`, amount: pr, at: new Date(), ok: true });
+              toast(`${n} activated for ${k} days (demo)`, "success");
+            });
+          });
+        }));
+      };
+      bindCtvTabs(root, draw);
+      draw("30");
+      ctvBind(root, "", true);
+      return root;
+    },
+
+    /* ---- Watch OTT self-care: My Usage → Session ---- */
+    ctvSession() {
+      const root = ctvShell("ctv-session", "Session", { sub: true, tabs: [["week", "Last Week Usage"], ["total", "Total Data Usage"], ["table", "Table View"]], tab: "week" });
+      const box = $("#cx", root);
+      const days = CTV.week.map((v, j) => ({ d: new Date(Date.now() - (6 - j) * 864e5), dn: v[0], up: v[1] }));
+      const sum = (k) => days.reduce((a, x) => a + x[k], 0);
+      const gb = (n) => `${n.toFixed(2)} GB`;
+      const totals = (up, dn) => `
+        <div class="ctv-tot"><span><b>${gb(up)}</b><small>Total Upload</small></span><span><b>${gb(dn)}</b><small>Total Download</small></span>
+          <span class="w"><b>${gb(up + dn)}</b><small>Total Data Usage</small></span></div>`;
+      const chart = () => {
+        const W = 320, H = 190, L = 30, B = 24, max = 6, cw = (W - L - 6) / days.length;
+        const y = (v) => H - B - (v / max) * (H - B - 8);
+        return `
+          <figure class="lco-card ctv-chart">
+            <figcaption>${MON[days[6].d.getMonth()]} '${days[6].d.getFullYear()}</figcaption>
+            <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Daily download and upload for the last 7 days, in GB">
+              ${[0, 2, 4, 6].map((v) => `<line x1="${L}" x2="${W - 4}" y1="${y(v)}" y2="${y(v)}" class="gl"/><text x="${L - 6}" y="${y(v) + 3}" class="ax" text-anchor="end">${v}</text>`).join("")}
+              ${days.map((x, j) => {
+                const cx = L + j * cw + cw / 2;
+                return `<rect x="${cx - 11}" y="${y(x.dn)}" width="10" height="${y(0) - y(x.dn)}" rx="2" class="dn"><title>${dmy(x.d)} download ${gb(x.dn)}</title></rect>
+                  <rect x="${cx + 1}" y="${y(x.up)}" width="10" height="${y(0) - y(x.up)}" rx="2" class="up"><title>${dmy(x.d)} upload ${gb(x.up)}</title></rect>
+                  <text x="${cx}" y="${H - 8}" class="ax" text-anchor="middle">${p2(x.d.getDate())}</text>`;
+              }).join("")}
+            </svg>
+            <div class="ctv-leg"><span><i class="dn"></i>Download</span><span><i class="up"></i>Upload</span><span class="u">Data in GB · Date</span></div>
+          </figure>`;
+      };
+      const views = {
+        week: () => chart() + totals(sum("up"), sum("dn")),
+        total: () => `<p class="ctv-cap">Current billing cycle</p>${totals(14.99, 135.16)}`,
+        table: () => `
+          <div class="lco-card ctv-tbl"><table>
+            <thead><tr><th>Date</th><th>Download</th><th>Upload</th><th>Total</th></tr></thead>
+            <tbody>${days.slice().reverse().map((x) => `<tr><td>${dmy(x.d)}</td><td>${gb(x.dn)}</td><td>${gb(x.up)}</td><td>${gb(x.dn + x.up)}</td></tr>`).join("")}</tbody>
+          </table></div>`,
+      };
+      const draw = (k) => { box.innerHTML = views[k](); };
+      bindCtvTabs(root, draw);
+      draw("week");
+      ctvBind(root, "", true);
       return root;
     },
 
@@ -2461,7 +3349,7 @@
         await wait(700);
         hideLoader();
         state.session = null;
-        Object.assign(state.filter, { genre: null, lang: null, q: "" });
+        Object.assign(state.filter, { genre: null, lang: null, q: "", genres: null, langs: null });
         reset("role", { first: true });
         toast("Signed out", "success");
       });
@@ -2854,7 +3742,7 @@
         const m = b.dataset.m;
         if (m === "topup" || m === "txns") go("lcoTopUp", { wallet: "bb" });
         else if (m === "plans") go("bbPlans");
-        else if (m === "profile") go("bbProfile");
+        else if (m === "profile") go("bbAccount");
         else if (["active", "inactive", "expired", "online", "renewal"].includes(m)) go("bbCustomers", { view: m });
         else { closeSheet(); toast(`${b.textContent.trim()} (demo)`); }
       }));
@@ -2885,32 +3773,6 @@
       if (a) a.addEventListener("click", () => { Object.assign(c, { assigned: true, mine: true, to: `You (${(state.session && state.session.lcoid) || "LCO"})` }); done("Case assigned to you (demo)"); });
       if (w) w.addEventListener("click", () => { c.status = "wip"; done("Case is Work In Progress (demo)"); });
       if (d) d.addEventListener("click", () => { c.status = "done"; done("Case completed (demo)"); });
-    });
-  }
-
-  // Case FAB → New Case
-  function openNewCase(after) {
-    const CATS = ["No Internet", "Slow Speed", "Router Issue", "Change Request", "Shifting Request", "Corporate Leased Line"];
-    const users = [...BB_DATA.customers].sort((a, b) => a.user.localeCompare(b.user));
-    openSheet(`
-      <h3>New Case</h3>
-      <label class="lco-fl"><small>Customer (User Name)</small>
-        <select id="ncU"><option value="">Select customer</option>${users.map((c) => `<option value="${c.id}">${esc(c.user)}</option>`).join("")}</select></label>
-      <label class="lco-fl"><small>Category</small>
-        <select id="ncC">${CATS.map((c) => `<option>${c}</option>`).join("")}</select></label>
-      <p class="hint" id="ncE"></p>
-      <button class="btn" id="ncS">Create Case</button>
-      <button class="btn ghost" id="ncX">Cancel</button>`, (sh) => {
-      $("#ncX", sh).addEventListener("click", closeSheet);
-      $("#ncS", sh).addEventListener("click", () => {
-        const u = BB_DATA.customers.find((c) => c.id === +$("#ncU", sh).value);
-        if (!u) { shake($("#ncU", sh).closest(".lco-fl")); $("#ncE", sh).textContent = "Select a customer"; $("#ncE", sh).className = "hint err"; return; }
-        const id = "TKT45" + String(Date.now()).slice(-5);
-        BB_DATA.cases.unshift({ id, cust: u.name, user: u.user, cat: $("#ncC", sh).value, status: "open", assigned: false, mine: false, to: "", at: new Date() });
-        closeSheet();
-        after();
-        toast(`Case ${id} created (demo)`, "success");
-      });
     });
   }
 
@@ -2946,6 +3808,7 @@
     await wait(700);
     hideLoader();
     state.session = null;
+    Object.assign(state.filter, { genre: null, lang: null, q: "", genres: null, langs: null });   // Watch OTT TV filters
     reset("role", { first: true });
     toast("Signed out", "success");
   }
@@ -2970,11 +3833,15 @@
      Live TV guide helpers
      ========================================================= */
   function filtered(g) {
-    const { lang, q } = state.filter;
+    const { lang, q, langs } = state.filter;
     const ql = q.toLowerCase();
-    return CHANNELS.filter((c) => c.genre === g.key && (!lang || c.lang === lang) &&
+    return CHANNELS.filter((c) => c.genre === g.key && (!lang || c.lang === lang) && (!langs || langs.includes(c.lang)) &&
       (!ql || c.name.toLowerCase().includes(ql) || c.show.toLowerCase().includes(ql)));
   }
+  // Genres to show (single Genre pick on the customer Home, multi-select chips on the LCO TV)
+  const genreOn = (g) => (!state.filter.genre || g.key === state.filter.genre) && (!state.filter.genres || state.filter.genres.includes(g.key));
+  const genreLabel = () => { const f = state.filter; return f.genre ? GENRES.find((g) => g.key === f.genre).name : f.genres ? `Genre (${f.genres.length} selected)` : `Genre (${GENRES.length})`; };
+  const langLabel = () => { const f = state.filter; return f.lang || (f.langs ? `Language (${f.langs.length} selected)` : `Language (${LANGUAGES.length})`); };
 
   function cardHTML(c, grid = false) {
     const sl = slot(c.id);
@@ -2991,7 +3858,7 @@
   }
 
   function guideHTML() {
-    const html = GENRES.filter((g) => !state.filter.genre || g.key === state.filter.genre).map((g) => {
+    const html = GENRES.filter(genreOn).map((g) => {
       const list = filtered(g);
       if (!list.length) return "";
       return `
@@ -3010,16 +3877,18 @@
     const f = state.filter, chips = [];
     if (f.genre) chips.push(["genre", GENRES.find((g) => g.key === f.genre).name]);
     if (f.lang) chips.push(["lang", f.lang]);
+    if (f.genres) chips.push(["genres", f.genres.length === 1 ? GENRES.find((g) => g.key === f.genres[0]).name : `${f.genres.length} genres`]);
+    if (f.langs) chips.push(["langs", f.langs.length === 1 ? f.langs[0] : `${f.langs.length} languages`]);
     if (f.q) chips.push(["q", `“${esc(f.q)}”`]);
     return chips.map(([k, v]) => `<button class="fchip" data-clear="${k}">${v}${I.close}</button>`).join("");
   }
 
   function refreshHome(root, draw) {
     const f = state.filter;
-    $('[data-act="genre"] span', root).textContent = f.genre ? GENRES.find((g) => g.key === f.genre).name : `Genre (${GENRES.length})`;
-    $('[data-act="genre"]', root).classList.toggle("on", !!f.genre);
-    $('[data-act="lang"] span', root).textContent = f.lang || `Language (${LANGUAGES.length})`;
-    $('[data-act="lang"]', root).classList.toggle("on", !!f.lang);
+    $('[data-act="genre"] span', root).textContent = genreLabel();
+    $('[data-act="genre"]', root).classList.toggle("on", !!(f.genre || f.genres));
+    $('[data-act="lang"] span', root).textContent = langLabel();
+    $('[data-act="lang"]', root).classList.toggle("on", !!(f.lang || f.langs));
     draw();
     syncMenuDot(root);
   }
@@ -3036,14 +3905,18 @@
     }));
     const rf = $('[data-act="reset-filters"]', root);
     if (rf) rf.addEventListener("click", () => {
-      Object.assign(state.filter, { genre: null, lang: null, q: "" });
+      Object.assign(state.filter, { genre: null, lang: null, q: "", genres: null, langs: null });
       $("#q", root).value = ""; $("#searchbar", root).hidden = true; $('[data-act="search"]', root).classList.remove("on");
       refreshHome(root, draw);
     });
   }
 
   function bindCards(root, replace = false) {
-    $$("[data-ch]", root).forEach((b) => b.addEventListener("click", () => playChannel(+b.dataset.ch, replace)));
+    // On the LCO "Watch OTT" TV a channel opens the old app's channel page; everywhere else the normal player
+    $$("[data-ch]", root).forEach((b) => b.addEventListener("click", () => {
+      if (b.closest(".from-lco")) go("tvChannel", { id: +b.dataset.ch });
+      else playChannel(+b.dataset.ch, replace);
+    }));
   }
 
   function playChannel(id, replace = false) {
@@ -3070,6 +3943,257 @@
       return;
     }
     go("player", { id });
+  }
+
+  /* ---------- LCO "Watch OTT" TV helpers (TV Guide, channel page, bottom bar, chip sheets) ---------- */
+  const GENRE_DESC = {
+    sports: "A sports show covering top events, match previews, expert analysis and highlights from cricket, football and more.",
+    entertainment: "Popular family drama with fresh episodes, twists and fan-favourite characters.",
+    movies: "Blockbuster movie block with hit films back to back.",
+    news: "Live news, headlines and in-depth coverage of the day's top stories.",
+    kids: "Cartoons and fun learning shows for kids.",
+    music: "Non-stop chart toppers, retro hits and new releases.",
+    devotional: "Bhajans, aarti and spiritual discourses.",
+    infotainment: "Documentaries about nature, science, travel and history.",
+  };
+  const chNo = (c) => 700 + c.id;   // demo channel number
+  const chInitials = (c) => esc(c.name.split(/\s+/).map((w) => w[0]).join("").slice(0, 3).toUpperCase());
+
+  // Programme list for one channel: the show on air now (same times as the Home card) plus shows before/after
+  function epgFor(c) {
+    const { start, end } = slotTimes(c.id);
+    const pool = CHANNELS.filter((x) => x.genre === c.genre).map((x) => x.show);
+    const pick = (k) => pool[(c.id + k) % pool.length];
+    const D = [60, 30, 90, 30, 60, 45];
+    const list = [{ title: pick(1), start: new Date(start.getTime() - 60 * 60000), end: start }, { title: c.show, start, end, live: true }];
+    let t = end;
+    for (let k = 0; k < 8; k++) {
+      const e = new Date(t.getTime() + D[(c.id + k) % D.length] * 60000);
+      list.push({ title: pick(k + 2), start: t, end: e });
+      t = e;
+    }
+    return list;
+  }
+
+  // TV Guide → tap a programme: details + Watch Now (live) / Remind me (later)
+  function openProgPopup(c, p) {
+    if (!p) return;
+    const now = new Date(), g = GENRES.find((x) => x.key === c.genre);
+    const live = p.start <= now && p.end > now, past = p.end <= now;
+    openSheet(`
+      <div class="tvp">
+        <h3>${esc(c.name)}</h3>
+        <div class="tvp-poster" style="background:${grad(c.colors)}"><b>${esc(p.title)}</b>${live ? `<span class="tvc-live"><i></i>LIVE</span>` : ""}</div>
+        <h4>${esc(p.title)}</h4>
+        <small>${fmt(p.start)} - ${fmt(p.end)} • ${c.lang}</small>
+        <small>${g.name} | ${esc(c.name)} | ${live ? "Live" : past ? "Ended" : "Upcoming"}</small>
+        <p>${GENRE_DESC[c.genre]}</p>
+        ${live ? `<button class="btn" id="tvpGo">${I.play} Watch Now</button>`
+          : past ? `<button class="btn ghost" id="tvpX">Catch-up not available (demo)</button>`
+          : `<button class="btn" id="tvpRemind">${I.bell} Remind me</button>`}
+      </div>`, (sh) => {
+      const go_ = $("#tvpGo", sh), rem = $("#tvpRemind", sh), x = $("#tvpX", sh);
+      if (go_) go_.addEventListener("click", () => go("tvChannel", { id: c.id }));
+      if (rem) rem.addEventListener("click", () => { closeSheet(); toast(`Reminder set for ${p.title} at ${fmt(p.start)} (demo)`, "success"); });
+      if (x) x.addEventListener("click", closeSheet);
+    });
+  }
+
+  // "Choose your Genre / Language" (multi-select chips + Remove All / Select All + Apply)
+  function openChipSheet(kind, after) {
+    const f = state.filter, isG = kind === "genre";
+    const all = isG ? GENRES.map((g) => [g.key, g.name]) : LANGUAGES.map((l) => [l, l]);
+    // Genre starts with everything selected; Language starts with none (= all languages)
+    const cur = new Set(isG ? (f.genres || (f.genre ? [f.genre] : all.map((a) => a[0]))) : (f.langs || (f.lang ? [f.lang] : [])));
+    openSheet(`
+      <div class="chip-sheet">
+        <h3>${isG ? I.masks : I.lang}Choose your ${isG ? "Genre" : "Language"}</h3>
+        <p>We will recommend channels and shows based on your selection.</p>
+        <div class="chip-top"><small id="csN"></small><button id="csAll"></button></div>
+        <div class="chips">${all.map(([k, l]) => `<button class="chip-o" data-k="${esc(k)}">${esc(l)}</button>`).join("")}</div>
+        <button class="btn" id="csApply">Apply</button>
+      </div>`, (sh) => {
+      const sync = () => {
+        $$("[data-k]", sh).forEach((b) => { const on = cur.has(b.dataset.k); b.classList.toggle("on", on); b.setAttribute("aria-pressed", on); });
+        $("#csN", sh).textContent = `${cur.size} selected`;
+        $("#csAll", sh).textContent = cur.size ? "Remove All" : "Select All";
+      };
+      $$("[data-k]", sh).forEach((b) => b.addEventListener("click", () => { cur.has(b.dataset.k) ? cur.delete(b.dataset.k) : cur.add(b.dataset.k); sync(); }));
+      $("#csAll", sh).addEventListener("click", () => { if (cur.size) cur.clear(); else all.forEach(([k]) => cur.add(k)); sync(); });
+      $("#csApply", sh).addEventListener("click", () => {
+        if (isG && !cur.size) { toast("Select at least one genre", "error"); return; }
+        const pickd = all.map(([k]) => k).filter((k) => cur.has(k));
+        const none = !pickd.length || pickd.length === all.length;   // nothing / everything = no filter
+        if (isG) { f.genre = null; f.genres = none ? null : pickd; } else { f.lang = null; f.langs = none ? null : pickd; }
+        closeSheet();
+        if (after) after();
+        toast(`${isG ? "Genre" : "Language"} preference saved (demo)`, "success");
+      });
+      sync();
+    });
+  }
+
+  // Demo account shown on the old app's Profile / Dashboard (the logged-in LCO watching TV)
+  function tvUser() {
+    const id = ((state.session && state.session.lcoid) || "LCODEMO").toLowerCase();
+    return { id: `${id}_demo`, name: `Partner ${id.toUpperCase()}`, mobile: DEMO_MOBILE, acc: `VIBE${id.toUpperCase()}${String(DEMO_MOBILE).slice(-4)}` };
+  }
+
+  function ctvNavHTML(tab) {
+    const B = [["dash", I.grid, "Dashboard"], ["recharge", I.card, "BB Recharge"], ["live", I.tv, "Live TV"], ["support", I.headset, "Support"], ["profile", I.userFill, "Profile"]];
+    return `
+      <nav class="ctv-nav">
+        ${B.map(([k, ic, l]) => k === "live"
+          ? `<button class="ctv-tv${tab === k ? " on" : ""}" data-cnav="${k}" aria-label="${l}">${ic}</button>`
+          : `<button class="${tab === k ? "on" : ""}" data-cnav="${k}" aria-label="${l}">${ic}<span>${l}</span></button>`).join("")}
+      </nav>`;
+  }
+  function bindCtvNav(root, tab) {
+    $$("[data-cnav]", root).forEach((b) => b.addEventListener("click", () => {
+      const t = b.dataset.cnav;
+      if (t === tab) { const sc = $(".tv-scroll", root); if (sc) sc.scrollTo({ top: 0, behavior: "smooth" }); return; }
+      if (t === "live") swapRoute("home", { fromLco: true });   // tab switch: Back still returns to the LCO dashboard
+      else if (t === "dash") swapRoute("ctvDash");
+      else if (t === "profile") swapRoute("ctvProfile");
+      else if (t === "recharge") swapRoute("ctvRecharge");
+      else if (t === "support") swapRoute("ctvSupport");
+    }));
+  }
+
+  /* ---- Watch OTT self-care: shared left menu, header and tabs ---- */
+  const CTV_MENU = [["Transaction", I.card], ["My Plan", I.history], ["Broadband", I.bolt], ["Vas", I.bolt], ["My Usage", I.pie], ["Support", I.headset], ["Self Help", I.news], ["FAQ", I.help], ["Notification", I.bell]];
+  function ctvDrawerHTML() {
+    const u = tvUser();
+    return `
+      <div class="drawer" id="drawer" aria-hidden="true">
+        <div class="drawer-backdrop" data-close-menu></div>
+        <nav class="drawer-panel ctv-drawer" aria-label="Menu">
+          <div class="drawer-head"><div class="brand"><img src="${MARK}" alt="VIBE" /><small>&amp; OTT Partners</small></div>
+            <button class="drawer-x" data-close-menu aria-label="Close menu">${I.close}</button></div>
+          <div class="ctv-ucard">
+            <button class="ctv-uname" data-act="dr-profile">${esc(u.id)} ${I.chev}</button>
+            <small>Mobile: ${u.mobile}</small>
+            <small>Account Number: ${u.acc}</small>
+          </div>
+          <div class="ctv-mgrid">${CTV_MENU.map(([l, ic]) => `<button data-qa="${l}">${ic}<span>${l}</span></button>`).join("")}</div>
+        </nav>
+      </div>`;
+  }
+  // Menu item / quick action → screen (pushed, so the phone's Back returns here)
+  function ctvGo(label) {
+    const R = { "FAQ": ["ctvFaq"], "Broadband": ["ctvRecharge", { sub: true }], "My Usage": ["ctvSession"], "Vas": ["ctvVas"],
+      "Support": ["ctvSupport", { sub: true }], "My Plan": ["ctvPlan"], "Transaction": ["ctvTxn"], "Self Help": ["ctvSelfHelp"], "Notification": ["ctvNotify"] };
+    const r = R[label];
+    if (r) go(r[0], r[1] || {}); else toast(`${label} (demo)`);
+  }
+  // Binds ☰ / drawer / logout / [data-qa] on any Watch OTT self-care screen
+  function bindCtvMenu(root) {
+    $$("[data-qa]", root).forEach((b) => b.addEventListener("click", () => {
+      const open = openDrawerEl();
+      closeDrawer();
+      if (open) setTimeout(() => ctvGo(b.dataset.qa), 200); else ctvGo(b.dataset.qa);
+    }));
+    const m = $('[data-act="menu"]', root);
+    if (m) m.addEventListener("click", () => openDrawer(root));
+    $$("[data-close-menu]", root).forEach((b) => b.addEventListener("click", closeDrawer));
+    const p = $('[data-act="dr-profile"]', root);
+    if (p) p.addEventListener("click", () => { closeDrawer(); go("tvProfile"); });
+    const lo = $('[data-act="logout"]', root);
+    if (lo) lo.addEventListener("click", lcoLogout);
+  }
+  // Header: bottom-bar tabs get ☰ + title + logout; pushed screens get ← + title
+  function ctvHeadHTML(title, sub) {
+    return sub
+      ? `<header class="ctv-head"><button class="lco-ic" data-act="back" aria-label="Back">${I.back}</button><h2>${title}</h2></header>`
+      : `<header class="ctv-head"><button class="lco-ic" data-act="menu" aria-label="Open menu" aria-expanded="false">${I.menu}</button><h2>${title}</h2>
+           <button class="lco-ic" data-act="logout" aria-label="Logout">${I.logout}</button></header>`;
+  }
+  const ctvTabsHTML = (tabs, on) => `<div class="ctv-tabs" role="tablist">${tabs.map(([k, l]) => `<button role="tab" data-tab="${k}" class="${k === on ? "on" : ""}" aria-selected="${k === on}">${l}</button>`).join("")}</div>`;
+  // Tab strip that redraws one body in place
+  function bindCtvTabs(root, draw) {
+    $$("[data-tab]", root).forEach((b) => b.addEventListener("click", () => {
+      $$("[data-tab]", root).forEach((x) => { const on = x === b; x.classList.toggle("on", on); x.setAttribute("aria-selected", on); });
+      b.scrollIntoView({ block: "nearest", inline: "nearest" });
+      draw(b.dataset.tab);
+    }));
+  }
+  // Shell for a self-care screen: header (+ tabs) + scroller + drawer/bottom bar on tab screens
+  function ctvShell(screen, title, { sub, tabs, tab, nav, body = "", extra = "" }) {
+    return el(`
+      <section class="screen-fixed tv ctv ctvx${sub ? " sub" : ""}" data-screen="${screen}">
+        ${ctvHeadHTML(title, sub)}
+        ${tabs ? ctvTabsHTML(tabs, tab) : ""}
+        <div class="tv-scroll" id="cx">${body}</div>
+        ${extra}
+        ${sub ? "" : ctvDrawerHTML() + ctvNavHTML(nav)}
+      </section>`);
+  }
+  function ctvBind(root, nav, sub) {
+    bindCommon(root);
+    bindCtvMenu(root);
+    if (!sub) bindCtvNav(root, nav);
+  }
+  const ctvEmpty = (msg) => `<div class="ctv-empty">${I.info}<p>${msg}</p></div>`;
+
+  // Support: raise a new ticket (Support FAB + Self Help "Create Ticket")
+  function openNewTicket(after, preset = "") {
+    const CATS = ["Network Issue", "Slow Speed", "CPE Not Working - Wi-Fi Router", "Billing", "KYC Update", "Other"];
+    openSheet(`
+      <h3>Create Ticket</h3>
+      <div class="lco-form ctv-sheetform">
+        <label class="lco-fl"><small>Problem Category</small>
+          <select id="ntCat">${CATS.map((c) => `<option${c === preset ? " selected" : ""}>${c}</option>`).join("")}</select></label>
+        <label class="lco-fl" id="ntWrap"><small>Description</small><input id="ntDesc" maxlength="80" placeholder="Describe the issue" /></label>
+        <p class="hint err" id="ntHint"></p>
+      </div>
+      <div class="lco-btn2"><button class="btn ghost" id="ntX">Cancel</button><button class="btn" id="ntOk">Submit</button></div>
+      <span class="demo-tag">Demo • no real ticket is raised</span>`, (sh) => {
+      $("#ntX", sh).addEventListener("click", closeSheet);
+      $("#ntOk", sh).addEventListener("click", () => {
+        const d = $("#ntDesc", sh).value.trim();
+        if (d.length < 3) { $("#ntHint", sh).textContent = "Please describe the issue (at least 3 characters)"; shake($("#ntWrap", sh)); return; }
+        const cat = $("#ntCat", sh).value;
+        const id = "TKT" + (4400000 + Math.floor(Math.random() * 99999));
+        const now = new Date();
+        CTV.tickets.unshift({ id, title: d, reason: cat, at: now, status: "Open", remarks: [] });
+        CTV.notes.unshift({ at: now, kind: "created", id, cat });
+        closeSheet();
+        toast(`Ticket ${id} created (demo)`, "success");
+        if (after) after();
+      });
+    });
+  }
+  function openTicket(t) {
+    openSheet(`
+      <h3>${esc(t.id)}</h3>
+      <div class="lco-inv">
+        <span><small>Ticket Title</small><b>${esc(t.title)}</b></span>
+        <span><small>Ticket Reason</small><b>${esc(t.reason)}</b></span>
+        <span><small>Status</small><b>${esc(t.status)}</b></span>
+        <span><small>Last Modified</small><b>${stamp(t.at)}</b></span>
+        ${t.remarks.map((r) => `<span><small>Remark</small><b>${esc(r)}</b></span>`).join("")}
+      </div>
+      <span class="demo-tag">Demo ticket</span>
+      <button class="btn ghost" id="tkX">Close</button>`, (sh) => $("#tkX", sh).addEventListener("click", closeSheet));
+  }
+  // Generic one-field edit sheet (Profile: Email / Mobile / GSTIN, CPE password)
+  function editSheet(title, value, { type = "text", max = 60, check, err }, onSave) {
+    openSheet(`
+      <h3>${title}</h3>
+      <div class="lco-form ctv-sheetform">
+        <label class="lco-fl" id="edWrap"><small>${title}</small><input id="edIn" type="${type}" maxlength="${max}" value="${esc(value)}" /></label>
+        <p class="hint err" id="edHint"></p>
+      </div>
+      <div class="lco-btn2"><button class="btn ghost" id="edX">Cancel</button><button class="btn" id="edOk">Save</button></div>`, (sh) => {
+      const inp = $("#edIn", sh);
+      $("#edX", sh).addEventListener("click", closeSheet);
+      $("#edOk", sh).addEventListener("click", () => {
+        const v = inp.value.trim();
+        if (!check(v)) { $("#edHint", sh).textContent = err; shake($("#edWrap", sh)); return; }
+        closeSheet();
+        onSave(v);
+      });
+    });
   }
 
   // Generic single-choice bottom sheet

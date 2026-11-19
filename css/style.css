@@ -2357,3 +2357,9 @@ button.lco-card:active { background: #1c1c22; }
 .vc-row { display: flex; gap: 10px; font-size: 12px; line-height: 1.45; padding: 3px 0; }
 .vc-row span { flex: none; width: 62px; color: #ffb300; font-weight: 600; }
 .vc-row b { font-weight: 500; color: var(--text); }
+
+/* ===== Locked TVE channel cards (Broadband / Other Users: outside the package) ===== */
+.ch-card.locked .thumb::after { content: ""; position: absolute; inset: 0; background: rgba(8, 8, 12, .45); }
+.ch-lock { position: absolute; top: 6px; right: 6px; z-index: 2; width: 24px; height: 24px; border-radius: 12px; display: grid; place-items: center; background: rgba(14, 13, 20, .9); border: 1px solid #c79a5a; color: #ffd700; }
+.ch-lock svg { width: 12px; height: 12px; }
+.ch-card.locked .ch-name { color: #c9c9cf; }

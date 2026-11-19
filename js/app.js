@@ -691,7 +691,13 @@
   // LTS: the linear channels of the Cable TV package (Cable LCO: all channels)
   const linearChannels = () => { const a = allowedCh(true); return CHANNELS.filter((c) => !a || a.has(c.id)); };
   // Live TV Home: Cable TV users see free-to-all (FTA) + TVE channels; everyone else sees what their plan allows
-  const homeCh = (c) => (hasCableTv() ? FREE_CH.has(c.id) || c.tve : canWatch(c));
+  // Broadband / Other Users: their package channels (unlocked) + every TVE channel (shown locked → upgrade)
+  // Rail order. Other Users (guest): free channels (DD included) before the locked ones.
+  // Everyone else: DD always last, then unlocked before locked.
+  const chSort = (a, b) => ((state.session || {}).type === "guest"
+    ? canWatch(b) - canWatch(a) || isDD(a) - isDD(b)
+    : isDD(a) - isDD(b) || canWatch(b) - canWatch(a));
+  const homeCh = (c) => (hasCableTv() ? FREE_CH.has(c.id) || c.tve : canWatch(c) || c.tve);
 
   const grad = (g, deg = 135) => `linear-gradient(${deg}deg, ${g.join(", ")})`;
 
@@ -3702,7 +3708,7 @@
       const bodyHTML = () => {
         const all = CHANNELS.filter((c) => !q || (c.name + " " + c.show).toLowerCase().includes(q));
         const html = GENRES.map((g) => {
-          const list = all.filter((c) => c.genre === g.key).sort((a, b) => isDD(a) - isDD(b) || canWatch(b) - canWatch(a));
+          const list = all.filter((c) => c.genre === g.key).sort((a, b) => chSort(a, b));
           return list.length ? `
             <div class="sec"><div class="sec-head"><h4><span class="sec-ic">${g.icon}</span>${g.name} (${list.length})</h4></div>
               <div class="lts-grid">${list.map(popCardHTML).join("")}</div></div>` : "";
@@ -4584,7 +4590,8 @@
     const { lang, q, langs } = state.filter;
     const ql = q.toLowerCase();
     return CHANNELS.filter((c) => c.genre === g.key && homeCh(c) && (!lang || c.lang === lang) && (!langs || langs.includes(c.lang)) &&
-      (!ql || c.name.toLowerCase().includes(ql) || c.show.toLowerCase().includes(ql)));
+      (!ql || c.name.toLowerCase().includes(ql) || c.show.toLowerCase().includes(ql)))
+      .sort((a, b) => chSort(a, b));   // see chSort
   }
   // Genres to show (single Genre pick on the customer Home, multi-select chips on the LCO TV)
   const genreOn = (g) => (!state.filter.genre || g.key === state.filter.genre) && (!state.filter.genres || state.filter.genres.includes(g.key));
@@ -4606,7 +4613,7 @@
     if (!state.recent || !state.recent.length) {
       // Demo seed: big channels first; guests (free plan only) fall back to the free-to-all ones
       state.recent = chByName(["Star Plus", "Star Sports 1", "Aaj Tak", "Sony Max", "Zee Bangla", "Aastha", "Sanskar", "DD National", "DD Sports"])
-        .filter(homeCh).slice(0, 4).map((c) => c.id);
+        .filter((c) => homeCh(c) && canWatch(c)).slice(0, 4).map((c) => c.id);   // only channels the viewer can play
     }
     // DD channels always sit at the end of a rail
     return state.recent.map((id) => CHANNELS[id]).filter(Boolean).sort((a, b) => isDD(a) - isDD(b));
@@ -4777,17 +4784,17 @@
     if (ql) list = list.filter((c) => c.name.toLowerCase().includes(ql) || c.show.toLowerCase().includes(ql));
 
     // Watchable first, then locked ones; DD channels always last
-    list.sort((a, b) => isDD(a) - isDD(b) || canWatch(b) - canWatch(a));
+    list.sort((a, b) => chSort(a, b));
     return list;
   }
 
   // tall = portrait ("vertical") card, used by every other genre rail on Home
   function cardHTML(c, grid = false, tall = false) {
-    const sl = slot(c.id);
+    const sl = slot(c.id), locked = !canWatch(c);   // locked = TVE channel outside the plan → tap opens "Not in your plan"
     return `
-      <button class="ch-card${grid ? " in-grid" : ""}${tall ? " tall" : ""}" data-ch="${c.id}">
+      <button class="ch-card${grid ? " in-grid" : ""}${tall ? " tall" : ""}${locked ? " locked" : ""}" data-ch="${c.id}">
         <div class="thumb" style="background:${grad(c.colors)}">
-          <span class="live-badge"><i></i>LIVE</span>
+          ${locked ? `<span class="ch-lock" title="Upgrade to watch">${I.lock}</span>` : `<span class="live-badge"><i></i>LIVE</span>`}
           <b class="prog">${esc(c.show)}</b>
           <span class="prog-bar"><i style="width:${sl.pct}%"></i></span>
         </div>

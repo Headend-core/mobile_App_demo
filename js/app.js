@@ -1,5 +1,5 @@
 /* =========================================================
-   VIBE (All-in-one hub) mobile prototype – front-end only demo
+   SITI PLAYTOP MAGIC (All-in-one hub) mobile prototype – front-end only demo
    No backend, no real authentication. Everything is simulated.
    ========================================================= */
 (function () {
@@ -11,8 +11,8 @@
   const APP_VERSION = "1.0.0";        // shown small at the top of every ☰ menu
   const DEMO_MOBILE = "9000000000";   // registered mobile linked to every Broadband User ID; works out of the box
 
-  const LOGO = "assets/logo/vibe-logo.png";   // full logo with "ALL-IN-ONE HUB"
-  const MARK = "assets/logo/vibe-mark.png";   // compact "VIBE" word for the home header
+  const LOGO = "assets/logo/siti-playtop-magic.svg";   // official SITI PLAYTOP MAGIC logo (dark-theme copy: MAGIC in yellow)
+  const MARK = "assets/logo/siti-playtop-magic.svg";   // compact "SITI PLAYTOP MAGIC" mark for the home header
 
   /* ---------- Icons (inline SVG, stroke style) ---------- */
   const s = (p, extra = "") =>
@@ -239,7 +239,7 @@
   /* ---------- OTT packages (LCO: OTT Activation + Package Renew CMS). App names are fictional — no real brand logos ---------- */
   const OTT_STATUS = { active: "Active", inactive: "Inactive", suspended: "Suspended" };
   const OTT_APPS = [
-    ["Vibe Play", ["#ff3fd0", "#9b5cff"]], ["Cine Max", ["#ff7a59", "#c2185b"]], ["Stream Box", ["#2fd8ff", "#3a6bff"]],
+    ["Magic Play", ["#ff3fd0", "#9b5cff"]], ["Cine Max", ["#ff7a59", "#c2185b"]], ["Stream Box", ["#2fd8ff", "#3a6bff"]],
     ["Desi Flix", ["#ffb300", "#ff6f00"]], ["Kids Zone", ["#43e97b", "#0f9b8e"]], ["Bangla Tales", ["#f857a6", "#ff5858"]],
     ["Music Wave", ["#7f7fd5", "#5b2bd8"]], ["Sports Hub", ["#00c6ff", "#0072ff"]], ["News Now", ["#fc4a1a", "#f7b733"]],
     ["Drama Plus", ["#c471f5", "#fa71cd"]], ["Toon Town", ["#56ccf2", "#2f80ed"]], ["Classic TV", ["#bdc3c7", "#5c6b7a"]],
@@ -257,12 +257,12 @@
 
   /* ---------- Cable TV packages (LCO → Active STB → subscriber → Upgrade Package). Fictional names/prices ---------- */
   const CABLE_PACKS = [
-    { name: "VIBE Basic SD", price: 199, ch: 180, hd: 0, ott: 0 },        // ott = number of OTT_APPS included (customer packages)
-    { name: "VIBE Bangla Value", price: 299, ch: 230, hd: 15, ott: 2 },
-    { name: "VIBE Family HD", price: 399, ch: 280, hd: 40, ott: 4 },
-    { name: "VIBE Sports Plus HD", price: 499, ch: 310, hd: 60, ott: 6 },
-    { name: "VIBE Premium HD", price: 649, ch: 360, hd: 90, ott: 9 },
-    { name: "VIBE Ultimate 4K", price: 799, ch: 400, hd: 120, ott: 11 },
+    { name: "SITI Basic SD", price: 199, ch: 180, hd: 0, ott: 0 },        // ott = number of OTT_APPS included (customer packages)
+    { name: "SITI Bangla Value", price: 299, ch: 230, hd: 15, ott: 2 },
+    { name: "SITI Family HD", price: 399, ch: 280, hd: 40, ott: 4 },
+    { name: "SITI Sports Plus HD", price: 499, ch: 310, hd: 60, ott: 6 },
+    { name: "SITI Premium HD", price: 649, ch: 360, hd: 90, ott: 9 },
+    { name: "SITI Ultimate 4K", price: 799, ch: 400, hd: 120, ott: 11 },
   ];
 
   /* ---------- LCO dashboard demo data (fictional people & numbers; generated once, stable per load) ---------- */
@@ -363,17 +363,17 @@
   const CTV = (() => {
     const ago = (days, h = 10) => { const d = new Date(Date.now() - days * 864e5); d.setHours(h, 30, 51, 0); return d; };
     const plan = (price, speed, extra = "") => ({ price, speed, data: "Unlimited", days: 30, extra,
-      name: `VIBE_${speed.replace(/\s/g, "").toUpperCase()}${extra ? "_" + extra.split(" ")[0].toUpperCase() : ""}` });
+      name: `SITI_${speed.replace(/\s/g, "").toUpperCase()}${extra ? "_" + extra.split(" ")[0].toUpperCase() : ""}` });
     return {
       plans: {
         unlimited: [plan(699, "100 Mbps"), plan(580, "80 Mbps"), plan(409, "30 Mbps"), plan(1406, "200 Mbps")],
         ott: [plan(799, "100 Mbps", "7 OTT apps"), plan(999, "150 Mbps", "10 OTT apps"), plan(1299, "200 Mbps", "15 OTT apps")],
         bundle: [plan(899, "100 Mbps", "Digital TV 300 channels"), plan(1199, "200 Mbps", "Digital TV 400 channels")],
       },
-      current: { name: "VIBE_DEMO_OPERATOR_02", activated: ago(600), expiry: new Date(Date.now() + 130 * 864e5), validity: 365, used: "1388.19 GB", unused: "1349.65 GB" },
+      current: { name: "SITI_DEMO_OPERATOR_02", activated: ago(600), expiry: new Date(Date.now() + 130 * 864e5), validity: 365, used: "1388.19 GB", unused: "1349.65 GB" },
       history: [
-        { name: "VIBE_DEMO_OPERATOR_02", activated: ago(600), expiry: ago(235), validity: 365, used: "0 GB", unused: "UL GB" },
-        { name: "VIBE_80MBPS", activated: ago(700), expiry: ago(600), validity: 30, used: "212.40 GB", unused: "UL GB" },
+        { name: "SITI_DEMO_OPERATOR_02", activated: ago(600), expiry: ago(235), validity: 365, used: "0 GB", unused: "UL GB" },
+        { name: "SITI_80MBPS", activated: ago(700), expiry: ago(600), validity: 30, used: "212.40 GB", unused: "UL GB" },
       ],
       tickets: [
         { id: "TKT4311978", title: "Ping issue", reason: "Network Issue", at: ago(70), status: "Closed", remarks: [] },
@@ -386,7 +386,7 @@
         { ref: "PAY" + "8611239", what: "Online payment (UPI)", amount: 699, at: ago(88), ok: false },
       ],
       purchases: [
-        { ref: "PUR" + "5520011", what: "VIBE_100MBPS · 30 days", amount: 699, at: ago(28), ok: true },
+        { ref: "PUR" + "5520011", what: "SITI_100MBPS · 30 days", amount: 699, at: ago(28), ok: true },
         { ref: "PUR" + "5410087", what: "Static IP (VAS) · 30 days", amount: 150, at: ago(45), ok: true },
       ],
       charges: [
@@ -421,11 +421,11 @@
     return o;
   };
   const CTV_DEV = [
-    mkDev({ name: "VBF-5515", serial: "VBFT2451A06C", ip: "100.64.126.178", mac: "02:5A:C4:00:00:43", model: "VBF-5515", brand: "VIBE Fiber",
-      ssid: "VIBE Home", tx: "2.20 dBm", rx: "-19.40 dBm", on: Date.now() - 111 * 6e4, synced: Date.now() },
+    mkDev({ name: "VBF-5515", serial: "VBFT2451A06C", ip: "100.64.126.178", mac: "02:5A:C4:00:00:43", model: "VBF-5515", brand: "SITI Fiber",
+      ssid: "SITI Home", tx: "2.20 dBm", rx: "-19.40 dBm", on: Date.now() - 111 * 6e4, synced: Date.now() },
       [["Living-Room-TV", "5G", true], ["Android-Phone", "5G", true], ["Work-Laptop", "2G", false], ["Tablet-5G", "5G", false], ["Smart-Speaker", "2G", false], ["Set-top-Box", "LAN", true]]),
-    mkDev({ name: "VBF-3300", serial: "VBFT2318B11D", ip: "100.64.98.24", mac: "02:5A:C4:00:01:9E", model: "VBF-3300", brand: "VIBE Fiber",
-      ssid: "VIBE Office", tx: "1.85 dBm", rx: "-21.10 dBm", on: Date.now() - 3 * 864e5 - 290 * 6e4, synced: Date.now() },
+    mkDev({ name: "VBF-3300", serial: "VBFT2318B11D", ip: "100.64.98.24", mac: "02:5A:C4:00:01:9E", model: "VBF-3300", brand: "SITI Fiber",
+      ssid: "SITI Office", tx: "1.85 dBm", rx: "-21.10 dBm", on: Date.now() - 3 * 864e5 - 290 * 6e4, synced: Date.now() },
       [["Office-PC", "LAN", true], ["Printer", "2G", true]]),
   ];
   const ctvDev = () => CTV_DEV[state.ctvDev || 0];
@@ -457,7 +457,7 @@
   function bbPlanInfo() {
     const from = new Date(Date.now() - 130 * 864e5), extra = CTV.renewDays || 0, total = 1828 + extra;
     const to = new Date(from.getTime() + total * 864e5);
-    return { name: "VIBE_DEMO_OPEN_100", speed: "100 Mbps", data: "Unlimited", used: "150 GB", price: 699, renew: 30, from, to, total, left: Math.round((to - Date.now()) / 864e5) };
+    return { name: "SITI_DEMO_OPEN_100", speed: "100 Mbps", data: "Unlimited", used: "150 GB", price: 699, renew: 30, from, to, total, left: Math.round((to - Date.now()) / 864e5) };
   }
   const tFmt = (d) => `${dFmt(d)} ${d.getHours() % 12 || 12}:${p2(d.getMinutes())}:${p2(d.getSeconds())} ${d.getHours() < 12 ? "AM" : "PM"}`;
 
@@ -478,18 +478,18 @@
   const CUST = {
     ottPlan: null,          // { plan, at, expiry } after "Subscribe Now"
     purchases: [{ at: new Date(Date.now() - 8 * 864e5), id: "#1764" + "402398156", what: "Welcome Plan", amount: 0, mode: "Cash", status: "Completed" }],
-    others: [{ name: "VIBE_TV_Box", at: new Date(Date.now() - 7 * 864e5 - 3e6) }],
+    others: [{ name: "SITI_TV_Box", at: new Date(Date.now() - 7 * 864e5 - 3e6) }],
     login: new Date(),
   };
 
   /* ---------- Broadband LCO demo data (Home / Case / Customer). All people, numbers and IDs are fictional ---------- */
   const BB_PLANS = [
-    { name: "VIBE_FIBER_50", speed: "50 Mbps", price: 499, days: 30, ott: 3 },
-    { name: "VIBE_FIBER_100", speed: "100 Mbps", price: 699, days: 30, ott: 7 },
-    { name: "VIBE_FIBER_200", speed: "200 Mbps", price: 899, days: 30, ott: 10 },
-    { name: "VIBE_FIBER_300", speed: "300 Mbps", price: 1099, days: 30, ott: 12 },
-    { name: "VIBE_FIBER_1G", speed: "1 Gbps", price: 2499, days: 30, ott: 15 },
-    { name: "VIBE_FIBER_100_6M", speed: "100 Mbps", price: 3799, days: 180, ott: 7 },
+    { name: "SITI_FIBER_50", speed: "50 Mbps", price: 499, days: 30, ott: 3 },
+    { name: "SITI_FIBER_100", speed: "100 Mbps", price: 699, days: 30, ott: 7 },
+    { name: "SITI_FIBER_200", speed: "200 Mbps", price: 899, days: 30, ott: 10 },
+    { name: "SITI_FIBER_300", speed: "300 Mbps", price: 1099, days: 30, ott: 12 },
+    { name: "SITI_FIBER_1G", speed: "1 Gbps", price: 2499, days: 30, ott: 15 },
+    { name: "SITI_FIBER_100_6M", speed: "100 Mbps", price: 3799, days: 180, ott: 7 },
   ];
   const BB_STATUS = { new: "New - Active", active: "Active", inactive: "Inactive", suspended: "Suspended", expired: "Expired" };
   const CASE_STATUS = { open: "Open", wip: "Work In Progress", done: "Completed" };
@@ -538,7 +538,7 @@
     });
     return {
       partner: {
-        name: "VIBE BROADBAND - KOLKATA SITE 1", email: "partner.kolkata@example.com",
+        name: "SITI BROADBAND - KOLKATA SITE 1", email: "partner.kolkata@example.com",
         wallet: "3568.97",
         counts: { active: 200, inactive: 1, online: 196, expired: 150, customers: 352 },
       },
@@ -720,8 +720,8 @@
     ["entertainment", "news", "music", "devotional", "movies", "kids", "sports", "infotainment"],
     ["entertainment", "news", "music", "devotional", "movies", "kids", "sports", "infotainment"],
   ];
-  const DEFAULT_PACK = { cable: 3, broadband: 1 };   // Cable TV: VIBE Sports Plus HD (SD + HD, sports); Broadband: VIBE Bangla Value   // the package a customer already has
-  const PLAN_KEY = "vibe.channelPlans";              // { "type:mobile": {pack, at} } — survives reloads
+  const DEFAULT_PACK = { cable: 3, broadband: 1 };   // Cable TV: SITI Sports Plus HD (SD + HD, sports); Broadband: SITI Bangla Value   // the package a customer already has
+  const PLAN_KEY = "spm.channelPlans";              // { "type:mobile": {pack, at} } — survives reloads
   const Plans = {
     all() { try { return JSON.parse(localStorage.getItem(PLAN_KEY) || "{}"); } catch (e) { return Plans.mem || (Plans.mem = {}); } },
     save(o) { try { localStorage.setItem(PLAN_KEY, JSON.stringify(o)); } catch (e) { Plans.mem = o; } },
@@ -735,9 +735,9 @@
     },
     set(pack) { const o = Plans.all(); o[Plans.key()] = { pack, at: Date.now() }; Plans.save(o); },
   };
-  // SITI Vibes purchases (separate from the package a customer already has): nothing until the viewer buys a
-  // package from ☰ → SITI Vibes. { "type:mobile": {pack, at} }
-  const SITI_KEY = "vibe.sitiPlans";
+  // SITI Packages purchases (separate from the package a customer already has): nothing until the viewer buys a
+  // package from ☰ → SITI Packages. { "type:mobile": {pack, at} }
+  const SITI_KEY = "spm.sitiPlans";
   const Siti = {
     all() { try { return JSON.parse(localStorage.getItem(SITI_KEY) || "{}"); } catch (e) { return Siti.mem || (Siti.mem = {}); } },
     get() { const p = Siti.all()[Plans.key()]; return p ? p.pack : null; },   // null = no SITI package yet
@@ -750,7 +750,7 @@
     if (t !== "guest" && t !== "cable" && t !== "broadband") return null;
     const p = Plans.get(), g = p.pack === null ? [] : PACK_GENRES[p.pack];
     const tve = t === "cable" && !linear;
-    const sdOnly = p.pack !== null && !CABLE_PACKS[p.pack].hd;   // e.g. VIBE Basic SD: no HD feeds
+    const sdOnly = p.pack !== null && !CABLE_PACKS[p.pack].hd;   // e.g. SITI Basic SD: no HD feeds
     return new Set(CHANNELS.filter((c) => FREE_CH.has(c.id) || (g.includes(c.genre) && !(sdOnly && c.hd)) || (tve && c.tve)).map((c) => c.id));
   }
   const canWatch = (c) => { const a = allowedCh(); return !a || a.has(c.id); };
@@ -775,12 +775,12 @@
      registered once (with VSC / User ID) can log in again with mobile only,
      also after reload. Stored per user type. Falls back to memory if storage is blocked. */
   const Registry = (() => {
-    const KEY = "vibe.registeredUsers";
+    const KEY = "spm.registeredUsers";
     let mem = {};
     const load = () => { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return mem; } };
     const save = (o) => { mem = o; try { localStorage.setItem(KEY, JSON.stringify(o)); } catch (e) { /* memory only */ } };
     // Pre-registered demo user: Broadband 9000000000 can log in (with OTP) without registering first
-    const SEED = { broadband: { [DEMO_MOBILE]: { id: "VIBEDEMO01", at: 0 } } };
+    const SEED = { broadband: { [DEMO_MOBILE]: { id: "SITIDEMO01", at: 0 } } };
     const bucket = (type) => ({ ...(SEED[type] || {}), ...(load()[type] || {}) });
     return {
       get: (type, mobile) => bucket(type)[mobile] || null,
@@ -981,7 +981,7 @@
     return `<div class="ambient" aria-hidden="true"><i class="orb o1"></i><i class="orb o2"></i><i class="orb o3"></i>${stars}</div>`;
   }
 
-  /* Neon heartbeat + wave line, echoing the line through the VIBE logo */
+  /* Neon heartbeat + wave line, echoing the line through the SITI logo */
   const PULSE = `
     <svg class="pulse-line" viewBox="0 0 320 28" preserveAspectRatio="none" aria-hidden="true">
       <defs><linearGradient id="pg" x1="0" x2="1"><stop offset="0" stop-color="#ff3fd0"/><stop offset=".5" stop-color="#9b5cff"/><stop offset="1" stop-color="#2fd8ff"/></linearGradient></defs>
@@ -996,7 +996,7 @@
       <div class="hero">
         ${bannerHTML()}
         ${withBack ? `<button class="back-btn" data-act="back" aria-label="Back">${I.back}</button>` : ""}
-        <img class="logo" src="${LOGO}" alt="VIBE – All-in-one hub" />
+        <img class="logo" src="${LOGO}" alt="SITI PLAYTOP MAGIC – All-in-one hub" />
       </div>
       <h1 class="headline">Entertainment,<em>your way.</em></h1>
       ${PULSE}`;
@@ -1335,7 +1335,7 @@
                 <span class="feat">${I.wifi}<b>Broadband</b></span>
               </div>
               <p class="feat-cap">Everything you watch — all in one hub</p>
-              <p class="terms">By continuing you agree to VIBE's <button class="tlink" data-toast="Terms of Service (demo)">Terms</button> &amp; <button class="tlink" data-toast="Privacy Policy (demo)">Privacy Policy</button></p>
+              <p class="terms">By continuing you agree to SITI PLAYTOP MAGIC's <button class="tlink" data-toast="Terms of Service (demo)">Terms</button> &amp; <button class="tlink" data-toast="Privacy Policy (demo)">Privacy Policy</button></p>
             </div>
           </div>
         </section>`);
@@ -1388,7 +1388,7 @@
       return otpRegisterScreen("lco", LCO_OTP, service);
     },
 
-    /* ---- LCO dashboard (layout from the LCO app screenshot, in VIBE colours) ---- */
+    /* ---- LCO dashboard (layout from the LCO app screenshot, in SITI colours) ---- */
     lcoDash() {
       const sess = state.session || {};
       const svc = sess.service ? USER_TYPES[sess.service].title : "";
@@ -1723,7 +1723,7 @@
 
     /* =====================================================================
        Broadband LCO (LCO → Broadband → LCO ID → OTP). Layout from the
-       broadband LCO app screenshot, in VIBE colours. Bottom bar: Home / Case / Customer / ☰ menu
+       broadband LCO app screenshot, in SITI colours. Bottom bar: Home / Case / Customer / ☰ menu
        ===================================================================== */
     bbDash() {
       const sess = state.session || {};
@@ -2015,7 +2015,7 @@
         device: () => openSheet(`
           <h3>Device Details</h3>
           <div class="lco-inv">
-            <span><small>Device</small><b>ONT · VIBE-ONT-200 (demo)</b></span>
+            <span><small>Device</small><b>ONT · SITI-ONT-200 (demo)</b></span>
             <span><small>Serial No</small><b>VBONT${String(A.mobile).slice(-6)}</b></span>
             <span><small>MAC</small><b>Not bound</b></span>
             <span><small>Status</small><b>Online</b></span>
@@ -2721,7 +2721,7 @@
               <!-- ☰ sits at the top-left, before the logo (the drawer slides in from the left) -->
               <button class="menu-btn" data-act="menu" aria-label="Open menu" aria-expanded="false">${I.menu}</button>
               <div class="brand">
-                <img src="${MARK}" alt="VIBE" />
+                <img src="${MARK}" alt="SITI PLAYTOP MAGIC" />
                 <small>&amp; OTT Partners</small>
               </div>
               ${fromLco ? "" : `<button class="menu-btn head-search${f.q ? " on" : ""}" data-act="search" aria-label="Search channels">${I.search}</button>`}
@@ -2742,12 +2742,12 @@
               <p class="dr-ver">Version ${APP_VERSION}</p>
               <div class="drawer-head">
                 <div class="brand">
-                  <img src="${MARK}" alt="VIBE" />
+                  <img src="${MARK}" alt="SITI PLAYTOP MAGIC" />
                   <small>&amp; OTT Partners</small>
                 </div>
                 <button class="drawer-x" data-close-menu aria-label="Close menu">${I.close}</button>
               </div>
-              ${fromLco ? "" : `<button class="gp dr-item" data-act="siti">${I.crown}<span>SITI Vibes</span></button>`}
+              ${fromLco ? "" : `<button class="gp dr-item" data-act="siti">${I.crown}<span>SITI Packages</span></button>`}
               <button class="gp dr-item" data-act="ott">${I.monitor}<span>OTT</span></button>
               ${fromLco ? `<button class="gp dr-item${f.q ? " on" : ""}" data-act="search">${I.search}<span>Search</span></button>` : ""}
               <button class="gp dr-item" data-act="profile">${I.userFill}<span>Profile</span></button>
@@ -2786,7 +2786,7 @@
       $('[data-act="ott"]', root).addEventListener("click", () => fromLco ? null : go("ottHome"));
       if (fromLco) $('[data-act="ott"]', root).addEventListener("click", () => openSheet(`
         <h3>OTT Partners</h3>
-        <p>Stream apps included with your VIBE pack.</p>
+        <p>Stream apps included with your SITI pack.</p>
         <div class="ott-grid">${OTT.map(([n, c]) => `<button class="ott" style="background:${grad(c)}" data-ott="${n}">${n}</button>`).join("")}</div>`, (sh) => {
         $$("[data-ott]", sh).forEach((b) => b.addEventListener("click", () => { closeSheet(); toast(`Opening ${b.dataset.ott} (demo)`); }));
       }));
@@ -2812,7 +2812,7 @@
     },
 
     /* =====================================================================
-       LCO (Cable TV) → Watch OTT: the old app's TV section, rebuilt in VIBE colours.
+       LCO (Cable TV) → Watch OTT: the old app's TV section, rebuilt in SITI colours.
        Home (from-lco) ─ FAB ─► TV Guide ─ programme ─► pop-up ─ Watch Now ─► channel page
        Bottom bar: Dashboard · BB Recharge · Live TV · Support · Profile
        ===================================================================== */
@@ -3032,7 +3032,7 @@
             <div class="lco-card ctv-card">
               <b class="ctv-t">My Plan</b>
               <div class="ctv-plan">
-                <span>${I.wifi}<small>Plan</small><b>VIBE_DEMO_OPEN_100</b></span>
+                <span>${I.wifi}<small>Plan</small><b>SITI_DEMO_OPEN_100</b></span>
                 <span>${I.clock}<small>Remaining Days</small><b>${left} Days/${pl.total} Days</b></span>
                 <span>${I.pie}<small>Used / Allocated</small><b>150 GB / Unlimited</b></span>
                 <span>${I.calendar}<small>Validity</small><b>${dmy(from)} – ${dmy(to)}</b></span>
@@ -3067,7 +3067,7 @@
       return root;
     },
 
-    /* ---- Self-care: Dashboard My Plan → Quick Renew (current plan + Quick Purchase → VIBE Pay) ---- */
+    /* ---- Self-care: Dashboard My Plan → Quick Renew (current plan + Quick Purchase → SITI Pay) ---- */
     ctvQuickRenew() {
       const root = ctvShell("ctv-quick-renew", "Quick Renew", { sub: true });
       const box = $("#cx", root);
@@ -3247,7 +3247,7 @@
         box.innerHTML = `
           <div class="lco-card ctv-contact">
             <b>Contact Us</b>
-            <div>${I.mail}<span>support@vibe-demo.example</span></div>
+            <div>${I.mail}<span>support@siti-demo.example</span></div>
             <div>${I.phone}<span>1800 000 0000 (demo)</span></div>
           </div>
           ${form ? formHTML() : listHTML()}`;
@@ -3414,7 +3414,7 @@
             <p>Dear User,</p>
             <p>A trouble ticket has been ${n.kind} in the system with the following details:</p>
             <p>Ticket Number: ${esc(n.id)}<br />Ticket Priority: Medium<br />Problem Category: ${esc(n.cat)}${n.kind === "closed" ? "<br />Solution: Issue resolved, checked and confirmed" : ""}</p>
-            <p>Thank You,<br />VIBE Broadband (demo)</p>
+            <p>Thank You,<br />SITI Broadband (demo)</p>
             <small>${stamp(n.at)}</small>
           </div>
         </div>`).join("") || ctvEmpty("No notifications") });
@@ -3423,7 +3423,7 @@
     },
 
     /* ---- Watch OTT self-care: FAQ ---- */
-    // app: true → the general VIBE FAQ opened from the Home / OTT ☰ menu (customer, guest, LCO Watch OTT)
+    // app: true → the general SITI FAQ opened from the Home / OTT ☰ menu (customer, guest, LCO Watch OTT)
     ctvFaq({ app = false } = {}) {
       const QS = app ? [
         ["How do I watch a channel?", "Tap any channel card or tile on Home. Channels outside your plan show a lock; tap it to see channel packages."],
@@ -3749,8 +3749,8 @@
           showLoader("Running diagnostic…"); await wait(1300); hideLoader();
           if (tab === "ping") ping = { host: "100.64.0.10", min: 11, avg: 12.5, max: 15 };
           else if (tab === "trace") trace = { host: "100.64.0.10", hops: [["192.168.1.1", 1.2], ["100.64.0.1", 4.8], ["10.10.4.1", 8.1], ["10.20.0.17", 11.6], ["100.64.0.10", 14.0]] };
-          else scan = [["VIBE_Neighbour_A", "24", 1, -48, 20], ["HomeNet-2G", "24", 6, -61, 20], ["Cafe_Free", "24", 11, -74, 40],
-            ["VIBE_Neighbour_A 5G", "5l", 36, -55, 80], ["Flat-3B_5G", "5l", 48, -68, 80], ["Office-Mesh", "5h", 149, -71, 80]].map(([ssid, band, ch, sig, w]) => ({ ssid, band, ch, sig, w }));
+          else scan = [["SITI_Neighbour_A", "24", 1, -48, 20], ["HomeNet-2G", "24", 6, -61, 20], ["Cafe_Free", "24", 11, -74, 40],
+            ["SITI_Neighbour_A 5G", "5l", 36, -55, 80], ["Flat-3B_5G", "5l", 48, -68, 80], ["Office-Mesh", "5h", 149, -71, 80]].map(([ssid, band, ch, sig, w]) => ({ ssid, band, ch, sig, w }));
           drawBody(); toast("Diagnostic complete (demo)", "success");
         });
         $$("[data-sub]", body).forEach((b) => b.addEventListener("click", () => { const [k, v] = b.dataset.sub.split(":"); sub[k] = v; if (k === "cl") sub.clp = 0; drawBody(); }));
@@ -3963,7 +3963,7 @@
           <div class="tv-scroll">
             <header class="tv-head otth-head">
               <button class="menu-btn" data-act="menu" aria-label="Open menu" aria-expanded="false">${I.menu}</button>
-              <div class="brand"><img src="${MARK}" alt="VIBE" /><small>&amp; OTT Partners</small></div>
+              <div class="brand"><img src="${MARK}" alt="SITI PLAYTOP MAGIC" /><small>&amp; OTT Partners</small></div>
               <button class="menu-btn head-search" data-act="osearch" aria-label="Search movies, shows or apps">${I.search}</button>
             </header>
             <div class="searchbar" id="osb" hidden>${I.search}<input id="oq" type="search" placeholder="Search movies, shows or apps" aria-label="Search OTT" /></div>
@@ -3981,10 +3981,10 @@
             <nav class="drawer-panel" aria-label="Menu">
               <p class="dr-ver">Version ${APP_VERSION}</p>
               <div class="drawer-head">
-                <div class="brand"><img src="${MARK}" alt="VIBE" /><small>&amp; OTT Partners</small></div>
+                <div class="brand"><img src="${MARK}" alt="SITI PLAYTOP MAGIC" /><small>&amp; OTT Partners</small></div>
                 <button class="drawer-x" data-close-menu aria-label="Close menu">${I.close}</button>
               </div>
-              <button class="gp dr-item" data-act="ositi">${I.crown}<span>SITI Vibes</span></button>
+              <button class="gp dr-item" data-act="ositi">${I.crown}<span>SITI Packages</span></button>
               <button class="gp dr-item" data-act="live">${I.tv}<span>Live TV</span></button>
               <button class="gp dr-item" data-act="oprofile">${I.userFill}<span>Profile</span></button>
               <i class="dr-sep"></i>
@@ -4335,17 +4335,17 @@
     },
 
     /* ---- Customer / guest: Channel Packages (upgrade the live-TV plan → payment gateway) ---- */
-    // Channel packages list. Opened from Profile → Upgrade Package, and from ☰ → SITI Vibes ({siti:true}).
+    // Channel packages list. Opened from Profile → Upgrade Package, and from ☰ → SITI Packages ({siti:true}).
     // Top: the viewer's own package card; every card opens the package detail page (purchase is only offered there).
     chPlans({ siti = false } = {}) {
-      const cur = siti ? Siti.get() : Plans.get().pack;   // SITI Vibes: only a package bought there; Upgrade: null = Welcome Free Plan (guest)
+      const cur = siti ? Siti.get() : Plans.get().pack;   // SITI Packages: only a package bought there; Upgrade: null = Welcome Free Plan (guest)
       const gname = (k) => GENRES.find((g) => g.key === k).name;
       const C1 = ["#2fd8ff", "#9b5cff", "#ff7a59", "#43e97b", "#ffb300", "#ff3fd0"];
       const root = el(`
-        <section class="tv osub chp" data-screen="${siti ? "siti-vibes" : "ch-plans"}">
+        <section class="tv osub chp" data-screen="${siti ? "siti-packages" : "ch-plans"}">
           <header class="sub-head">
             <button class="back-btn static" data-act="back" aria-label="Back">${I.back}</button>
-            <h2>${siti ? "SITI Vibes" : "Channel Packages"}<small>${siti ? "Your package and all channel packages" : "Upgrade your plan to watch more channels"}</small></h2>
+            <h2>${siti ? "SITI Packages" : "Channel Packages"}<small>${siti ? "Your package and all channel packages" : "Upgrade your plan to watch more channels"}</small></h2>
           </header>
           ${siti && cur === null ? "" : `<p class="chp-cap">Your package</p>
           <button class="chp-now chp-mine" data-pd="${cur === null ? "free" : cur}">
@@ -4383,8 +4383,8 @@
 
     // One package, explorable (ideas from the SITI Android TV app, laid out for a phone):
     // summary → sticky "Browse by category" tabs (with counts, incl. OTT Apps) + language filter + search → channel grid
-    // → fixed bottom bar "Package · N channels · M OTT apps · ₹X/month" + Proceed to Pay (VIBE Pay gateway).
-    // Same view for the viewer's own package (SITI Vibes card, Profile package card) and for upgrade packages.
+    // → fixed bottom bar "Package · N channels · M OTT apps · ₹X/month" + Proceed to Pay (SITI Pay gateway).
+    // Same view for the viewer's own package (SITI Packages card, Profile package card) and for upgrade packages.
     packDetail({ k = "free", siti = false } = {}) {
       const free = k === "free";
       const p = free ? { name: "Welcome Free Plan", price: 0, hd: 0, ott: 0 } : CABLE_PACKS[k];
@@ -4496,22 +4496,22 @@
       return root;
     },
 
-    /* ---- Simulated payment gateway ("VIBE Pay", demo). Nothing is charged and nothing leaves the browser ---- */
+    /* ---- Simulated payment gateway ("SITI Pay", demo). Nothing is charged and nothing leaves the browser ---- */
     payGateway({ amount = 0, purpose = "", order = "" } = {}) {
       const BANKS = ["Demo Bank A", "Demo Bank B", "Demo Co-op Bank", "Demo Rural Bank"];
-      const WALLETS = ["VIBE Wallet", "Demo Wallet"];
+      const WALLETS = ["SITI Wallet", "Demo Wallet"];
       const M = [["upi", I.bolt, "UPI", "Pay with any UPI app"], ["card", I.card, "Credit / Debit Card", "Demo test card"],
         ["nb", I.home, "Net Banking", "All major banks"], ["wallet", I.wallet, "Wallets", "Pay with a wallet"]];
       const root = el(`
         <section class="screen-fixed pg" data-screen="pay-gateway">
           <header class="pg-top">
             <button class="lco-ic" data-act="pg-cancel" aria-label="Cancel payment">${I.close}</button>
-            <span><b>VIBE Pay</b><small>${I.lock} Secure checkout · demo</small></span>
+            <span><b>SITI Pay</b><small>${I.lock} Secure checkout · demo</small></span>
           </header>
           <div class="pg-scroll">
             <div class="pg-merch">
-              <span class="pg-logo"><img src="${MARK}" alt="VIBE" /></span>
-              <span><b>VIBE &amp; OTT Partners</b><small>${esc(purpose)}</small><small>Order ${esc(order)}</small></span>
+              <span class="pg-logo"><img src="${MARK}" alt="SITI PLAYTOP MAGIC" /></span>
+              <span><b>SITI PLAYTOP MAGIC</b><small>${esc(purpose)}</small><small>Order ${esc(order)}</small></span>
               <b class="pg-amt">₹ ${money(amount)}</b>
             </div>
             <p class="pg-cap">Choose a payment method</p>
@@ -4521,8 +4521,8 @@
                   <button class="pg-mh" data-pick="${k}" aria-expanded="${!j}"><span class="pg-mi">${ic}</span><span><b>${l}</b><small>${d}</small></span><i class="pg-radio"></i></button>
                   <div class="pg-mb">${{
                     upi: `<label class="lco-fl" id="wUpi"><small>UPI ID</small><input id="pgUpi" placeholder="yourname@upi" autocomplete="off" /></label>
-                          <div class="pg-apps">${["VIBE UPI", "Demo Pay", "Any UPI"].map((a) => `<button class="pg-chip" data-upi="${a}">${a}</button>`).join("")}</div>`,
-                    card: `<div class="pg-card"><small>Demo test card — no real card is needed</small><b>4111 1111 1111 1111</b><span><span>VIBE DEMO USER</span><span>12/30</span></span></div>
+                          <div class="pg-apps">${["SITI UPI", "Demo Pay", "Any UPI"].map((a) => `<button class="pg-chip" data-upi="${a}">${a}</button>`).join("")}</div>`,
+                    card: `<div class="pg-card"><small>Demo test card — no real card is needed</small><b>4111 1111 1111 1111</b><span><span>SITI DEMO USER</span><span>12/30</span></span></div>
                           <label class="lco-fl" id="wCvv"><small>CVV (enter any 3 digits)</small><input id="pgCvv" type="password" inputmode="numeric" maxlength="3" placeholder="•••" /></label>`,
                     nb: `<div class="pg-banks">${BANKS.map((b) => `<button class="pg-chip" data-bank="${b}">${b}</button>`).join("")}</div>`,
                     wallet: `<div class="pg-banks">${WALLETS.map((b) => `<button class="pg-chip" data-wal="${b}">${b}</button>`).join("")}</div>`,
@@ -4580,7 +4580,7 @@
         res.innerHTML = `<div class="loader-ring"></div><b>Processing ₹ ${money(amount)}…</b><small>Please don't press back (demo)</small>`;
         await wait(1500);
         const txn = String(Date.now()).slice(-12);
-        res.innerHTML = `<div class="ok-badge">${I.checkBig}</div><b>Payment successful</b><small>₹ ${money(amount)} · ${label}</small><small>Transaction ID ${txn}</small><small class="pg-redir">Redirecting to VIBE…</small>`;
+        res.innerHTML = `<div class="ok-badge">${I.checkBig}</div><b>Payment successful</b><small>₹ ${money(amount)} · ${label}</small><small>Transaction ID ${txn}</small><small class="pg-redir">Redirecting to SITI PLAYTOP MAGIC…</small>`;
         await wait(1400);
         const cb = PAY.cb;
         PAY.cb = null;
@@ -5152,13 +5152,13 @@
 
   function recordRecent(id) {
     state.recent = [id, ...(state.recent || []).filter((x) => x !== id)].slice(0, 10);
-    try { localStorage.setItem("vibe.recentChannels.v2", JSON.stringify(state.recent)); } catch (e) {}
+    try { localStorage.setItem("spm.recentChannels.v2", JSON.stringify(state.recent)); } catch (e) {}
   }
 
   function getRecentChannels() {
     if (!state.recent) {
       try {
-        const stored = JSON.parse(localStorage.getItem("vibe.recentChannels.v2") || "null");
+        const stored = JSON.parse(localStorage.getItem("spm.recentChannels.v2") || "null");
         if (Array.isArray(stored) && stored.length) state.recent = stored;
       } catch (e) {}
     }
@@ -5600,7 +5600,7 @@
   }
 
   // Demo account shown on the old app's Profile / Dashboard (the logged-in LCO watching TV)
-  /* ---------- Channel packages: channel list, state and purchase (Channel Packages, SITI Vibes, package detail) ---------- */
+  /* ---------- Channel packages: channel list, state and purchase (Channel Packages, SITI Packages, package detail) ---------- */
   // Channels in package k (null = Welcome Free Plan). SD-only packs (hd: 0) leave out the HD feeds.
   function packChannels(k) {
     if (k === null) return CHANNELS.filter((c) => FREE_CH.has(c.id));
@@ -5608,12 +5608,12 @@
     return CHANNELS.filter((c) => FREE_CH.has(c.id) || (PACK_GENRES[k].includes(c.genre) && !(sdOnly && c.hd)));
   }
   // "cur" = the viewer's package, "low" = lower (already included), "up" = can be bought
-  // siti = SITI Vibes: compared with the package bought there (none at first → every package can be bought)
+  // siti = SITI Packages: compared with the package bought there (none at first → every package can be bought)
   function packState(k, siti = false) {
     const cur = siti ? Siti.get() : Plans.get().pack;
     return cur === k ? "cur" : cur !== null && k < cur ? "low" : "up";
   }
-  // Confirm sheet → VIBE Pay (demo) → package active → Done goes back to the packages list
+  // Confirm sheet → SITI Pay (demo) → package active → Done goes back to the packages list
   function buyPack(k, siti = false) {
     const cur = siti ? Siti.get() : Plans.get().pack, p = CABLE_PACKS[k], n = packChannels(k).length;
     const gname = (g) => GENRES.find((x) => x.key === g).name;
@@ -5647,7 +5647,7 @@
 
   /* ---------- Customer Profile → Other Services: linked Cable TV / Broadband accounts (front-end only) ----------
      The signed-in account comes first. Cable TV accounts are added by an 11-digit VC number; Broadband shows a demo
-     account (User ID VIBEDEMO01) that can be added. Tapping an account switches the app to it. */
+     account (User ID SITIDEMO01) that can be added. Tapping an account switches the app to it. */
   const ACC_LABEL = { cable: "Cable TV Customer", broadband: "Broadband Customer", guest: "Other User" };
   function linkedAccounts() {
     if (!state.accounts) {
@@ -5704,10 +5704,10 @@
           <small class="aa-err" id="aaErr"></small>
           <button class="btn" id="aaSub">Submit</button>`;
       }
-      const has = list.some((a) => a.type === "broadband" && a.id === "VIBEDEMO01");
+      const has = list.some((a) => a.type === "broadband" && a.id === "SITIDEMO01");
       return `
         <p class="aa-cap">Broadband account found for +91 ${DEMO_MOBILE.slice(0, 5)} ${DEMO_MOBILE.slice(5)} (demo)</p>
-        <div class="aa-acc">${I.wifi}<span><b>User ID VIBEDEMO01</b><small>VIBE Broadband · ${has ? "Already in your account" : "Not linked yet"}</small></span></div>
+        <div class="aa-acc">${I.wifi}<span><b>User ID SITIDEMO01</b><small>SITI Broadband · ${has ? "Already in your account" : "Not linked yet"}</small></span></div>
         <button class="btn" id="aaBb" ${has ? "disabled" : ""}>${has ? "Added to account" : "Add to account"}</button>`;
     };
     openSheet(`
@@ -5736,8 +5736,8 @@
         const bb = $("#aaBb", sh);
         if (bb && !bb.disabled) bb.addEventListener("click", async () => {
           showLoader("Linking account…"); await wait(800); hideLoader();
-          linkedAccounts().push({ type: "broadband", id: "VIBEDEMO01", mobile: DEMO_MOBILE });
-          closeSheet(); toast("Broadband account VIBEDEMO01 added (demo)", "success"); after();
+          linkedAccounts().push({ type: "broadband", id: "SITIDEMO01", mobile: DEMO_MOBILE });
+          closeSheet(); toast("Broadband account SITIDEMO01 added (demo)", "success"); after();
         });
       };
       $$(".aa-r", sh).forEach((r) => r.addEventListener("click", () => { kind = r.dataset.k; draw(); }));
@@ -5762,10 +5762,10 @@
     const s = state.session || {};
     if (s.type === "broadband") {   // Broadband customer (bottom bar → Dashboard / Recharge / Support / Profile)
       const m = s.mobile || DEMO_MOBILE;
-      return { id: `${m}_bb`, name: "Broadband Customer", mobile: m, acc: `VIBEBB${String(m).slice(-6)}` };
+      return { id: `${m}_bb`, name: "Broadband Customer", mobile: m, acc: `SITIBB${String(m).slice(-6)}` };
     }
     const id =((state.session && state.session.lcoid) || "LCODEMO").toLowerCase();
-    return { id: `${id}_demo`, name: `Partner ${id.toUpperCase()}`, mobile: DEMO_MOBILE, acc: `VIBE${id.toUpperCase()}${String(DEMO_MOBILE).slice(-4)}` };
+    return { id: `${id}_demo`, name: `Partner ${id.toUpperCase()}`, mobile: DEMO_MOBILE, acc: `SITI${id.toUpperCase()}${String(DEMO_MOBILE).slice(-4)}` };
   }
 
   function ctvNavHTML(tab) {
@@ -5798,7 +5798,7 @@
         <div class="drawer-backdrop" data-close-menu></div>
         <nav class="drawer-panel ctv-drawer" aria-label="Menu">
           <p class="dr-ver">Version ${APP_VERSION}</p>
-              <div class="drawer-head"><div class="brand"><img src="${MARK}" alt="VIBE" /><small>&amp; OTT Partners</small></div>
+              <div class="drawer-head"><div class="brand"><img src="${MARK}" alt="SITI PLAYTOP MAGIC" /><small>&amp; OTT Partners</small></div>
             <button class="drawer-x" data-close-menu aria-label="Close menu">${I.close}</button></div>
           <div class="ctv-ucard">
             <button class="ctv-uname" data-act="dr-profile">${esc(u.id)} ${I.chev}</button>
@@ -5920,7 +5920,7 @@
   }
   tick(); setInterval(tick, 30000);
 
-  /* ---------- Opening animation (VIBE intro video) ----------
+  /* ---------- Opening animation (intro logo animation) ----------
      Plays once when the app opens, then fades into the first page.
      If the video cannot autoplay, an animated logo is shown instead. */
   function runSplash() {

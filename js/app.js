@@ -106,11 +106,11 @@
   // Extra (non-mobile) fields used by some login types
   const EXTRA = {
     vsc: {
-      label: "VSC number", icon: I.card, placeholder: "Enter VSC Number", maxlength: 16, inputmode: "numeric",
-      clean: (v) => v.replace(/\D/g, "").slice(0, 16),
-      valid: (v) => /^\d{8,16}$/.test(v),
-      hint: "8–16 digit number printed on your set-top box / viewing card",
-      err: "Enter a valid VSC number (8–16 digits)",
+      label: "VSC number", icon: I.card, placeholder: "Enter VSC Number", maxlength: 11, inputmode: "numeric",
+      clean: (v) => v.replace(/\D/g, "").slice(0, 11),
+      valid: (v) => /^\d{11}$/.test(v),
+      hint: "11 digit number printed on your set-top box / viewing card",
+      err: "Enter a valid VSC number (11 digits)",
       short: "VSC No",
     },
     bbid: {
@@ -146,11 +146,11 @@
     cable: {
       // Cable users register ONCE with VSC + mobile; after that they log in with mobile only
       sub: "Registered cable user? Login with your mobile number",
-      subReg: "New cable customer? Register once with your VSC & mobile number",
+      subReg: "New cable customer? Verify your mobile number, then add your VSC number",
       label: "Join as Cable User",
       btn: "Login",
-      btnReg: "Register",
-      extra: "vsc",
+      btnReg: "Get OTP",
+      extra: "vsc", extraAfterOtp: true,   // sign up: mobile → OTP → VSC screen (cableVsc)
       otpLogin: true, otpAlways: true,   // OTP (DEMO_OTP) on every sign-in, registration included
       otpSubLogin: "Enter the 4-digit OTP sent to your mobile number",
       extraOnlyOnRegister: true,
@@ -1116,7 +1116,8 @@
       const once = !!cfg.extraOnlyOnRegister;      // Cable TV / Broadband: VSC / User ID only for first-time registration
       const canSign = once || !!cfg.track;          // customer types: login (registered numbers only) / sign up
       let reg = canSign ? signup : false;           // current mode: false = login, true = sign up
-      const needEx = () => !!ex && (!once || reg);
+      const later = !!cfg.extraAfterOtp;              // Cable TV: VSC is asked on its own screen after the OTP
+      const needEx = () => !!ex && !later && (!once || reg);
       const root = el(`
         <section class="screen-auth" data-screen="login-${type}">
           <div class="auth">
@@ -1126,9 +1127,8 @@
               <span class="role-label">${cfg.label}${service ? `<small class="svc-tag">${USER_TYPES[service].title}</small>` : ""}</span>
               <button class="link" data-act="change">Change Selection</button>
             </div>
-            ${ex ? `
+            ${ex && !later ? `
             <div class="ex-wrap" id="exWrap">
-              ${cfg.extra === "vsc" ? `<button class="link vch-link" data-act="vc-help">What is VSC number?</button>` : ""}
               <label class="field" id="exField">
                 ${ex.icon}
                 <input id="extra" type="text" inputmode="${ex.inputmode}" maxlength="${ex.maxlength}" autocomplete="off" placeholder="${ex.placeholder}" aria-label="${ex.label}" />
@@ -1165,8 +1165,6 @@
         else go("role");
       });
 
-      const vch = $('[data-act="vc-help"]', root);
-      if (vch) vch.addEventListener("click", openVcHelp);
       const mob = $("#mobile", root), hint = $("#hint", root), btn = $("#submit", root), field = $("#mobField", root);
       const xin = $("#extra", root), xHint = $("#exHint", root), xField = $("#exField", root), xWrap = $("#exWrap", root);
       const sw = $("#modeSwitch", root);
@@ -1206,7 +1204,7 @@
         else { hint.textContent = "✓ Valid mobile number"; hint.className = "hint ok"; }
       }
 
-      if (ex) xin.addEventListener("input", () => {
+      if (xin) xin.addEventListener("input", () => {
         xin.value = ex.clean(xin.value);
         xField.classList.remove("invalid");
         if (!xin.value) { xHint.textContent = ex.hint; xHint.className = "hint"; }
@@ -1214,7 +1212,7 @@
         else { xHint.textContent = cfg.extra === "vsc" ? `${xin.value.length} digits entered` : ex.hint; xHint.className = "hint"; }
         btn.classList.toggle("dim", !valid());
       });
-      if (ex) xin.addEventListener("keydown", (e) => { if (e.key === "Enter") mob.focus(); });
+      if (xin) xin.addEventListener("keydown", (e) => { if (e.key === "Enter") mob.focus(); });
 
       mob.addEventListener("input", () => {
         mob.value = mob.value.replace(/\D/g, "").slice(0, 10);
@@ -1269,7 +1267,7 @@
         $("#subTxt", root).textContent = cfg.otpSubLogin;
         lOtpWrap.hidden = false;
         lOtpWrap.classList.remove("reveal"); void lOtpWrap.offsetWidth; lOtpWrap.classList.add("reveal");
-        $(".lbl", btn).textContent = isNew ? "Verify & Register" : "Verify & Login";
+        $(".lbl", btn).textContent = isNew ? (later ? "Verify & Continue" : "Verify & Register") : "Verify & Login";
         btn.classList.add("dim");
         sendLoginOtp();
         lOtp.focus();
@@ -1340,7 +1338,7 @@
             registered = false;
             extraVal = known.id;
           } else if (reg) {
-            pendingReg = xin.value;   // saved only after the OTP is verified
+            if (!later) pendingReg = xin.value;   // saved only after the OTP is verified
             registered = true;
           } else {
             registered = false;
@@ -1355,6 +1353,8 @@
           return;
         }
         clearInterval(otpTimer);
+        // Cable TV sign up: mobile verified → next screen asks for the VSC number
+        if (later && registered) { toast("Mobile number verified (demo)", "success"); return go("cableVsc", { mobile: mob.value }); }
         if (pendingReg !== null) Registry.add(type, mob.value, pendingReg);
 
         if (cfg.track) {
@@ -1383,6 +1383,66 @@
       });
 
       setMode(reg, false);
+      return root;
+    },
+
+    /* ---- Cable TV sign up, step 2: VSC number (after mobile + OTP) ---- */
+    cableVsc({ mobile }) {
+      const ex = EXTRA.vsc, cfg = LOGIN.cable;
+      const root = el(`
+        <section class="screen-auth" data-screen="register-cable-vsc">
+          <div class="auth">
+            ${heroHTML(true)}
+            <p class="sub">Almost done! Add the VSC (Virtual Card) number of your set-top box</p>
+            <div class="cv-ok">${I.check}<span>Mobile verified · +91 ${esc(mobile.replace(/(\d{5})(\d{5})/, "$1 $2"))}</span></div>
+            <div class="row-between">
+              <span class="role-label">${cfg.label}</span>
+              <button class="link vch-link" data-act="vc-help">What is VSC number?</button>
+            </div>
+            <label class="field" id="exField">
+              ${ex.icon}
+              <input id="extra" type="text" inputmode="numeric" maxlength="${ex.maxlength}" autocomplete="off" placeholder="${ex.placeholder}" aria-label="${ex.label}" />
+            </label>
+            <p class="hint" id="exHint">${ex.hint}</p>
+            <button class="btn dim" id="submit"><span class="lbl">Register</span>${ARROW}</button>
+          </div>
+        </section>`);
+      bindCommon(root);
+      $('[data-act="vc-help"]', root).addEventListener("click", openVcHelp);
+      const xin = $("#extra", root), xHint = $("#exHint", root), xField = $("#exField", root), btn = $("#submit", root);
+      xin.addEventListener("input", () => {
+        xin.value = ex.clean(xin.value);
+        xField.classList.remove("invalid");
+        if (!xin.value) { xHint.textContent = ex.hint; xHint.className = "hint"; }
+        else if (ex.valid(xin.value)) { xHint.textContent = `✓ Valid ${ex.label}`; xHint.className = "hint ok"; }
+        else { xHint.textContent = `${xin.value.length} digits entered`; xHint.className = "hint"; }
+        btn.classList.toggle("dim", !ex.valid(xin.value));
+      });
+      xin.addEventListener("keydown", (e) => { if (e.key === "Enter") btn.click(); });
+      btn.addEventListener("click", async () => {
+        if (btn.classList.contains("loading")) return;
+        if (!ex.valid(xin.value)) {
+          shake(xField);
+          xHint.textContent = ex.err; xHint.className = "hint err";
+          toast(ex.err, "error");
+          return xin.focus();
+        }
+        xin.blur();
+        setLoading(btn, true);
+        await wait(1300);
+        setLoading(btn, false);
+        Registry.add("cable", mobile, xin.value);
+        state.session = { type: "cable", mobile, vsc: xin.value };
+        openSheet(`
+          <div class="ok-badge">${I.checkBig}</div>
+          <h3>${cfg.doneReg}</h3>
+          <p>${cfg.doneRegMsg}<br/>${ex.short}: ${esc(xin.value)}<br/>Mobile: +91 ${esc(mobile.replace(/(\d{5})(\d{5})/, "$1 $2"))}</p>
+          <span class="demo-tag">Demo • No real OTP sent</span>
+          <button class="btn" id="toHome">Continue to Home</button>`, (sh) => {
+          $("#toHome", sh).addEventListener("click", () => enterHome("cable"));
+        });
+        toast("Registered successfully (demo)", "success");
+      });
       return root;
     },
 

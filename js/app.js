@@ -196,8 +196,10 @@
     guest: {
       // Guests register and log in with the mobile number only (no VSC / User ID)
       sub: "Explore content without a subscription – sign in with your mobile number & OTP",
+      subReg: "New here? Sign up with your mobile number & OTP",
       label: "Join as Other User",
       btn: "Continue",
+      btnReg: "Sign up",
       track: true,
       otpLogin: true, otpAlways: true,   // OTP (DEMO_OTP) on every sign-in, first time included
       otpSubLogin: "Enter the 4-digit OTP sent to your mobile number",
@@ -266,6 +268,34 @@
   ];
 
   /* ---------- LCO dashboard demo data (fictional people & numbers; generated once, stable per load) ---------- */
+  // Cable LCO subscriber page: action icons drawn to match the old LCO portal's ACTIONS icons
+  const ACT_IC = (() => {
+    const sv = (body) => `<svg class="act-ic" viewBox="0 0 40 40" aria-hidden="true">${body}</svg>`;
+    const disc = (c) => `<circle cx="20" cy="20" r="19" fill="${c}"/>`;
+    const tile = `<rect x="1" y="1" width="38" height="38" rx="10" fill="#eceef2"/>`;
+    const rupee = (c) => `<path d="M14 12h12M14 17h12M16.5 12c5 0 5 7 0 7h-2.5l8 9" fill="none" stroke="${c}" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>`;
+    return {
+      // All Package deactivation: person with a red "no" slash
+      userSlash: sv(`<circle cx="20" cy="20" r="19" fill="#fdecec"/><circle cx="20" cy="15.5" r="4.6" fill="#8d6e63"/><path d="M11.5 29c.8-5.2 4.3-8 8.5-8s7.7 2.8 8.5 8z" fill="#8d6e63"/><circle cx="20" cy="20" r="14.5" fill="none" stroke="#d32f2f" stroke-width="3"/><path d="M10 10l20 20" stroke="#d32f2f" stroke-width="3" stroke-linecap="round"/>`),
+      // Package deactivation: red "no entry"
+      minus: sv(`<circle cx="20" cy="20" r="19" fill="#fdf2f2"/><circle cx="20" cy="20" r="14.5" fill="none" stroke="#d32f2f" stroke-width="3"/><rect x="12" y="18" width="16" height="4" rx="1" fill="#d32f2f"/>`),
+      rupee: sv(disc("#f5a011") + rupee("#1b1b1b")),
+      sync: sv(disc("#3d8bf2") + `<path d="M12.5 18a8 8 0 0 1 14-4.2M27.5 22a8 8 0 0 1-14 4.2" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/><path d="M28.5 9.5v6h-6zM11.5 30.5v-6h6z" fill="#fff"/>`),
+      // Upgrade / Downgrade: orange ₹ with a black lightning badge
+      rupeeBolt: sv(`<circle cx="18" cy="18" r="17" fill="#f7941d"/><g transform="translate(-2 -2)">${rupee("#fff")}</g><circle cx="30.5" cy="30.5" r="8" fill="#1b1b1b"/><path d="M31.6 24.6l-4.4 6.6h3.2l-1 5.2 4.6-7h-3.3z" fill="#ffd60a"/>`),
+      // STB replacement: green up + red down arrows
+      upDown: sv(tile + `<path d="M14 31V12M8.5 17.5L14 11l5.5 6.5" fill="none" stroke="#2e9e44" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M26 9v19M20.5 22.5L26 29l5.5-6.5" fill="none" stroke="#e53935" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>`),
+      // VC replacement: orange swap arrows
+      swap: sv(tile + `<path d="M9 15h21M25 10l5 5-5 5M31 25H10M15 20l-5 5 5 5" fill="none" stroke="#f08a24" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`),
+      history: sv(disc("#3d8bf2") + `<path d="M12.8 15.5A8.6 8.6 0 1 1 11.4 21" fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round"/><path d="M9.5 11.5v6h6z" fill="#fff"/><path d="M20 15.5V20l3.2 2.6" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>`),
+      info: sv(disc("#3d8bf2") + `<circle cx="20" cy="12.5" r="2.6" fill="#fff"/><path d="M16.5 17.5h5v10h2.5v2.5h-8v-2.5h2.5v-7.5h-2z" fill="#fff"/>`),
+      person: sv(disc("#6f42c1") + `<circle cx="20" cy="15.5" r="4.8" fill="#fff"/><path d="M11.5 28.5c.6-5 4.1-7.8 8.5-7.8s7.9 2.8 8.5 7.8z" fill="#fff"/>`),
+      // Complaint management: pink support agent with headset
+      headset: sv(disc("#e8408f") + `<circle cx="20" cy="20" r="5.2" fill="#fff"/><path d="M12.5 21v-2a7.5 7.5 0 0 1 15 0v2" fill="none" stroke="#fff" stroke-width="2.4"/><rect x="10.5" y="18.5" width="4" height="6" rx="1.6" fill="#fff"/><rect x="25.5" y="18.5" width="4" height="6" rx="1.6" fill="#fff"/><path d="M27.5 24.5c0 3-2.5 4.5-5.5 4.5" fill="none" stroke="#fff" stroke-width="2"/><path d="M17.8 20.4a3 3 0 0 0 4.4 0" fill="none" stroke="#e8408f" stroke-width="1.6" stroke-linecap="round"/>`),
+      // Reconfirmation package and repair: blue chain links
+      chain: sv(`<circle cx="20" cy="20" r="19" fill="#e9f1fb"/><g fill="none" stroke-width="4.2" stroke-linecap="round"><path d="M18.2 23.8l-3.4 3.4a4.6 4.6 0 0 1-6.5-6.5l4.6-4.6a4.6 4.6 0 0 1 6.5 0" stroke="#3a7bd5"/><path d="M21.8 16.2l3.4-3.4a4.6 4.6 0 0 1 6.5 6.5l-4.6 4.6a4.6 4.6 0 0 1-6.5 0" stroke="#6fa8ea"/></g>`),
+    };
+  })();
   const LCO_DATA = (() => {
     let seed = 20261118;
     const r = () => ((seed = (seed * 9301 + 49297) % 233280) / 233280);
@@ -457,7 +487,9 @@
   function bbPlanInfo() {
     const from = new Date(Date.now() - 130 * 864e5), extra = CTV.renewDays || 0, total = 1828 + extra;
     const to = new Date(from.getTime() + total * 864e5);
-    return { name: "SITI_DEMO_OPEN_100", speed: "100 Mbps", data: "Unlimited", used: "150 GB", price: 699, renew: 30, from, to, total, left: Math.round((to - Date.now()) / 864e5) };
+    const now = new Date(), u = ctvMonthTotals(now.getFullYear(), now.getMonth()), usedGB = (u.up + u.dn) / 1024, fup = 200;   // 200 GB data per month (demo)
+    return { name: "SITI_DEMO_OPEN_100", speed: "100 Mbps", data: `${fup} GB / month`, fup, usedGB, used: `${usedGB.toFixed(2)} GB`, up: u.up, dn: u.dn,
+      price: 699, renew: 30, from, to, total, left: Math.round((to - Date.now()) / 864e5) };
   }
   const tFmt = (d) => `${dFmt(d)} ${d.getHours() % 12 || 12}:${p2(d.getMinutes())}:${p2(d.getSeconds())} ${d.getHours() < 12 ? "AM" : "PM"}`;
 
@@ -493,6 +525,33 @@
   ];
   const BB_STATUS = { new: "New - Active", active: "Active", inactive: "Inactive", suspended: "Suspended", expired: "Expired" };
   const CASE_STATUS = { open: "Open", wip: "Work In Progress", done: "Completed" };
+  // Create Case: Type → Reason / Category → Sub Category ([] = no sub category)
+  const CASE_REASONS = {
+    Complaint: {
+      Technical_Problem_Category: ["Browsing Related", "Slow Browsing", "Static IP Related", "Wi-Fi Range – ONU Issue", "Wi-Fi Range – Wi-Fi Router",
+        "Auto Login / Waiting Login Page", "Automatic ONU Reset", "Cable Damaged – Drop Wire", "Cable Damaged – Patch Cord", "Call Drop (VOIP)",
+        "CPE Not Working – ONU Issue", "CPE Not Working – GPON / ONU", "CPE Not Working – Wi-Fi Router", "Fibre Cut – LCO End"],
+      "Corporate Leased Line": ["Link Down", "Packet Loss", "High Latency", "Bandwidth Issue"],
+      "Billing Problem": ["Wrong Bill Amount", "Payment Not Updated", "Invoice Not Received", "Refund Request"],
+      "Non Technical Issue": [],
+      "Operator Support": ["Technician Not Visited", "Delay in Service", "Staff Behaviour"],
+      "Network Issue": ["Area Outage", "Frequent Disconnection", "High Ping"],
+      "Grievance Category": [],
+    },
+    Request: {
+      "Change Request": ["Plan Change", "Name Change", "Mobile Number Change", "Email ID Change", "Address Change"],
+      "Shifting Request": ["Within Same Area", "To Another Area"],
+      "Corporate Leased Line": ["New Link", "Bandwidth Upgrade"],
+      "Static IP Request": [],
+      "Disconnection Request": ["Temporary", "Permanent"],
+    },
+    Feedback: {
+      "Service Feedback": ["Appreciation", "Suggestion", "Dissatisfied"],
+      "Installation Feedback": [],
+      "Operator Support": [],
+      "App Feedback": [],
+    },
+  };
   const BB_DATA = (() => {
     let seed = 7731;
     const r = () => ((seed = (seed * 9301 + 49297) % 233280) / 233280);
@@ -779,8 +838,12 @@
     let mem = {};
     const load = () => { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return mem; } };
     const save = (o) => { mem = o; try { localStorage.setItem(KEY, JSON.stringify(o)); } catch (e) { /* memory only */ } };
-    // Pre-registered demo user: Broadband 9000000000 can log in (with OTP) without registering first
-    const SEED = { broadband: { [DEMO_MOBILE]: { id: "SITIDEMO01", at: 0 } } };
+    // Pre-registered demo number 9000000000 in every customer section (Cable TV, Broadband, Other Users)
+    const SEED = {
+      broadband: { [DEMO_MOBILE]: { id: "SITIDEMO01", at: 0 } },
+      cable: { [DEMO_MOBILE]: { id: "12345678", at: 0 } },
+      guest: { [DEMO_MOBILE]: { id: "", at: 0 } },
+    };
     const bucket = (type) => ({ ...(SEED[type] || {}), ...(load()[type] || {}) });
     return {
       get: (type, mobile) => bucket(type)[mobile] || null,
@@ -1049,7 +1112,8 @@
       const toOtpRegister = () => go("login", { type, signup: true });
       const ex = cfg.extra ? EXTRA[cfg.extra] : null;
       const once = !!cfg.extraOnlyOnRegister;      // Cable TV / Broadband: VSC / User ID only for first-time registration
-      let reg = once ? signup : false;              // current mode for "once" types
+      const canSign = once || !!cfg.track;          // customer types: login (registered numbers only) / sign up
+      let reg = canSign ? signup : false;           // current mode: false = login, true = sign up
       const needEx = () => !!ex && (!once || reg);
       const root = el(`
         <section class="screen-auth" data-screen="login-${type}">
@@ -1086,7 +1150,7 @@
               </div>
             </div>` : ""}
             <button class="btn dim" id="submit"><span class="lbl"></span>${ARROW}</button>
-            ${once ? `<button class="link mode-switch" id="modeSwitch"></button>` : ""}
+            ${canSign ? `<button class="link mode-switch" id="modeSwitch"></button>` : ""}
           </div>
         </section>`);
 
@@ -1106,15 +1170,15 @@
 
       // Switch between "login with mobile" and "first-time registration with VSC / User ID"
       function setMode(r, animate) {
-        if (once) reg = r;
-        const isReg = once ? reg : signup;
-        $("#subTxt", root).textContent = once && isReg ? cfg.subReg : cfg.sub;
+        if (canSign) reg = r;
+        const isReg = canSign ? reg : signup;
+        $("#subTxt", root).textContent = canSign && isReg ? cfg.subReg : cfg.sub;
         $(".lbl", btn).textContent = isReg ? (cfg.btnReg || "Register") : cfg.btn;
         if (xWrap) {
           xWrap.hidden = !needEx();
           if (animate && !xWrap.hidden) { xWrap.classList.remove("reveal"); void xWrap.offsetWidth; xWrap.classList.add("reveal"); }
         }
-        if (sw) sw.textContent = reg ? "Already registered? Login with mobile number" : `New user? Register with ${ex.label}`;
+        if (sw) { sw.textContent = reg ? "Already registered? Login with mobile number" : "New user? Sign up"; sw.classList.remove("glow"); }
         btn.classList.toggle("dim", !valid());
         updateMobHint();
       }
@@ -1128,9 +1192,9 @@
         else if (cfg.track) {
           // Guest: mobile only – first time registers, after that logs in
           const known = Registry.get(type, mob.value);
-          hint.textContent = known ? "✓ Registered user – login with your mobile number" : "✓ New number – you'll be registered as an other user";
+          hint.textContent = known ? "✓ Registered user – login with your mobile number" : reg ? "✓ New number – you'll be registered as an other user" : "✓ Valid mobile number";
           hint.className = "hint ok";
-          $(".lbl", btn).textContent = known ? "Login" : "Register";
+          $(".lbl", btn).textContent = known ? "Login" : reg ? cfg.btnReg : cfg.btn;
           return;
         }
         else if (once && !reg) { hint.textContent = "✓ Valid mobile number"; hint.className = "hint ok"; }
@@ -1150,14 +1214,24 @@
       mob.addEventListener("input", () => {
         mob.value = mob.value.replace(/\D/g, "").slice(0, 10);
         field.classList.remove("invalid");
+        if (sw) sw.classList.remove("glow");
         updateMobHint();
         btn.classList.toggle("dim", !valid());
       });
       mob.addEventListener("keydown", (e) => { if (e.key === "Enter") btn.click(); });
       if (sw) sw.addEventListener("click", () => {
-        if (cfg.otpRegister) return toOtpRegister();
-        setMode(!reg, true); (reg ? xin : mob).focus();
+        if (cfg.otpRegister && !reg) return toOtpRegister();   // Broadband sign up = User ID + OTP screen
+        setMode(!reg, true); (reg && xin ? xin : mob).focus();
       });
+      // Login with a number that is not registered: stay here, say so and make "Sign up" glow
+      function notRegistered() {
+        shake(field);
+        hint.textContent = "Not a registered customer. Sign up first.";
+        hint.className = "hint err";
+        toast("Not a registered customer. Sign up first.", "error", 3200);
+        if (sw) { sw.classList.remove("glow"); void sw.offsetWidth; sw.classList.add("glow"); }
+        mob.focus();
+      }
 
       /* Broadband login OTP step: registered number → OTP (DEMO_OTP) → logged in */
       let otpStep = false, otpOk = false, otpTimer = null;
@@ -1251,19 +1325,10 @@
         let extraVal = ex && needEx() ? xin.value : undefined;
         let pendingReg = null;     // Cable first-time registration: VSC to save once the OTP is verified
 
+        if (cfg.track && !reg && !Registry.get(type, mob.value)) return notRegistered();
         if (once) {
           const known = Registry.get(type, mob.value);
-          if (!reg && !known && cfg.otpRegister) {
-            // Broadband: unregistered number → open the User ID + OTP register screen
-            toast("New number – register with your User ID (first time only)", "error", 3200);
-            return toOtpRegister();
-          }
-          if (!reg && !known) {
-            // Not registered yet → ask for VSC / User ID once
-            setMode(true, true);
-            toast(`New number – enter your ${ex.label} to register (first time only)`, "error", 3200);
-            return xin.focus();
-          }
+          if (!reg && !known) return notRegistered();   // login is for registered numbers only
           if (reg && known) {
             // Already registered → just log in, keep the original VSC / User ID
             toast("This number is already registered – logged in with mobile", "info", 3000);
@@ -1378,7 +1443,7 @@
         else go("login", { type: state.service });
       });
       if (!isLco) $("#signup", root).addEventListener("click", () => {
-        go("login", state.service === "guest" ? { type: "guest" } : { type: state.service, signup: true });
+        go("login", { type: state.service, signup: true });
       });
       return root;
     },
@@ -1728,8 +1793,10 @@
     bbDash() {
       const sess = state.session || {};
       const P = BB_DATA.partner, C = P.counts;
-      const openCases = BB_DATA.cases.filter((c) => c.status !== "done").length;
-      const unassigned = BB_DATA.cases.filter((c) => !c.assigned).length;
+      // Complaints ring: Open / Work in progress / Completed (tap a status to show its count, tap the ring to open that list)
+      const CMP = [["open", "Open"], ["wip", "WIP"], ["done", "Completed"]];
+      const cmpCount = (k) => BB_DATA.cases.filter((c) => c.status === k).length;
+      let cst = "open";
       const RANGES = { day: 1, week: 7, month: 30 };
       let range = "month";
       const root = el(`
@@ -1752,10 +1819,12 @@
                 .map(([k, l, n]) => `<button class="lco-stat" data-view="${k}"><b>${n}</b><span>${l}</span></button>`).join("")}
             </div>
             <div class="bb-mid">
-              <div class="bb-quick">
-                <button data-go="customers">${I.users}<span>Customer</span><b>${C.customers}</b></button>
-                <button data-go="cases">${I.ticket}<span>Complaints</span><b>${openCases}</b></button>
-                <button data-go="unassigned">${I.alert}<span>Unassigned</span><b>${unassigned}</b></button>
+              <div class="bb-exp bb-cmp">
+                <small>Complaints</small>
+                <button class="bb-ring" data-go="cmp" aria-label="Open the selected complaints"><b id="cmpN"></b><i id="cmpL"></i></button>
+                <div class="bb-cseg" role="radiogroup" aria-label="Complaint status">
+                  ${CMP.map(([k, l]) => `<button role="radio" data-cst="${k}" class="${k === cst ? "on" : ""}" aria-checked="${k === cst}">${l}</button>`).join("")}
+                </div>
               </div>
               <div class="bb-exp">
                 <small>Expiring soon</small>
@@ -1765,13 +1834,11 @@
                 </div>
               </div>
             </div>
-            <div class="lco-card bb-grid">
-              <button data-go="topup">${I.wallet}<span>Top Up</span></button>
-              <button data-toast="Collect Payment (demo)">${I.rupee}<span>Payment</span></button>
-              <button data-go="commission">${I.card}<span>OTT Commission</span></button>
-              <button data-toast="Report (demo)">${I.chart}<span>Report</span></button>
-              <button data-go="plans">${I.news}<span>Available Plan</span></button>
-              <button data-go="profile">${I.user}<span>Profile</span></button>
+            <div class="bb-tiles">
+              <button class="bb-tile t1" data-go="topup"><span class="bb-tic">${I.wallet}</span><b>Top Up</b><small>Wallet ₹ ${P.wallet}</small></button>
+              <button class="bb-tile t2" data-toast="Collect Payment (demo)"><span class="bb-tic">${I.rupee}</span><b>Payment</b><small>Collect from customers</small></button>
+              <button class="bb-tile t3" data-go="commission"><span class="bb-tic">${I.card}</span><b>OTT Commission</b><small>Your earnings</small></button>
+              <button class="bb-tile t4" data-toast="Report (demo)"><span class="bb-tic">${I.chart}</span><b>Report</b><small>Business summary</small></button>
             </div>
           </div>
           ${bbNavHTML("home")}
@@ -1783,15 +1850,20 @@
         $$("[data-range]", root).forEach((x) => { x.classList.toggle("on", x === b); x.setAttribute("aria-checked", x === b); });
         drawExp();
       }));
+      const drawCmp = () => { $("#cmpN", root).textContent = cmpCount(cst); $("#cmpL", root).textContent = { open: "Open", wip: "In Progress", done: "Completed" }[cst]; };
+      $$("[data-cst]", root).forEach((b) => b.addEventListener("click", () => {
+        cst = b.dataset.cst;
+        $$("[data-cst]", root).forEach((x) => { x.classList.toggle("on", x === b); x.setAttribute("aria-checked", x === b); });
+        drawCmp();
+      }));
+      drawCmp();
       $$("[data-toast]", root).forEach((b) => b.addEventListener("click", () => toast(b.dataset.toast)));
       $$("[data-view]", root).forEach((b) => b.addEventListener("click", () => go("bbCustomers", { view: b.dataset.view })));
       $$("[data-go]", root).forEach((b) => b.addEventListener("click", () => {
         const g = b.dataset.go;
         if (g === "topup") go("lcoTopUp", { wallet: "bb" });
         else if (g === "search") go("bbCustomers", { focus: true });
-        else if (g === "customers") go("bbCustomers");
-        else if (g === "cases") go("bbCases", { tab: "all" });
-        else if (g === "unassigned") go("bbCases", { tab: "unassigned" });
+        else if (g === "cmp") go("bbCases", { tab: cst === "wip" ? "wip" : cst === "done" ? "completed" : "all", status: cst === "open" ? "open" : "" });
         else if (g === "renewal") go("bbCustomers", { view: "renewal", days: RANGES[range] });
         else if (g === "commission") go("lcoCommission");
         else if (g === "plans") go("bbPlans");
@@ -1805,9 +1877,10 @@
     },
 
     /* ---- Broadband LCO: Case Management (Assigned / Unassigned / Completed / All) ---- */
-    bbCases({ tab = "assigned" } = {}) {
+    bbCases({ tab = "wip", status = "" } = {}) {
       let mine = false;
-      const TABS = [["assigned", "Assigned"], ["unassigned", "Unassigned"], ["completed", "Completed"], ["all", "All"]];
+      if (tab === "assigned") tab = "wip";
+      const TABS = [["wip", "Work in Progress"], ["unassigned", "Unassigned"], ["completed", "Completed"], ["all", "All"]];
       const root = el(`
         <section class="screen-fixed tv lco bb" data-screen="bb-cases">
           <div class="tv-scroll">
@@ -1817,6 +1890,7 @@
             </div>
             <div class="bb-casebar">
               <label class="bb-check"><input type="checkbox" id="mine" /><span>My Case</span></label>
+              <button class="fchip bb-stchip" id="stChip" ${status ? "" : "hidden"} aria-label="Remove status filter">Status: ${CASE_STATUS[status] || ""} ✕</button>
               <button class="lco-ic" data-toast="Filter cases (demo)" aria-label="Filter">${I.filter}</button>
             </div>
             <div class="lco-list" id="list"></div>
@@ -1825,10 +1899,12 @@
             <button data-dial="case">${I.ticket}<span>New Case</span>${I.chev}</button>
           </div>
           <button class="bb-fab" id="fab" aria-label="More actions" aria-expanded="false">${I.plus}</button>
-          ${bbNavHTML("case")}
+          ${bbNavHTML("")}
         </section>`);
       $$("[data-toast]", root).forEach((b) => b.addEventListener("click", () => toast(b.dataset.toast)));
-      const inTab = (c) => tab === "all" || (tab === "assigned" ? c.assigned && c.status !== "done" : tab === "unassigned" ? !c.assigned : c.status === "done");
+      const inTab = (c) => (!status || c.status === status) &&
+        (tab === "all" || (tab === "wip" ? c.status === "wip" : tab === "unassigned" ? !c.assigned : c.status === "done"));
+      $("#stChip", root).addEventListener("click", (e) => { status = ""; e.currentTarget.hidden = true; draw(); });
       const draw = () => {
         const list = BB_DATA.cases.filter((c) => inTab(c) && (!mine || c.mine));
         $("#list", root).innerHTML = list.length
@@ -1863,16 +1939,16 @@
       const toggleDial = (open) => { dial.hidden = !open; fab.classList.toggle("open", open); fab.setAttribute("aria-expanded", open); };
       fab.addEventListener("click", () => toggleDial(dial.hidden));
       $('[data-dial="case"]', root).addEventListener("click", () => { toggleDial(false); go("bbNewCase"); });
-      bindBbNav(root, "case");
+      bindBbNav(root, "");
       draw();
       return root;
     },
 
-    /* ---- Broadband LCO: Case FAB → New Case → Create Case form (replaces the old New Case sheet) ---- */
+    /* ---- Broadband LCO: Case Creation (bottom bar / Case FAB) → Create Case form ----
+       User Name (broadband user id) fills Mobile + Email; Type → Case Reason → Sub Category (when the reason has one) → Remarks → Create */
     bbNewCase() {
       const users = [...BB_DATA.customers].sort((a, b) => a.user.localeCompare(b.user));
-      const REASONS = ["No Internet", "Slow Speed", "Router Issue", "Change Request", "Shifting Request", "Corporate Leased Line", "Billing", "Other"];
-      const opt = (a) => a.map((x) => `<option>${x}</option>`).join("");
+      const opt = (a) => a.map((x) => `<option>${esc(x)}</option>`).join("");
       const root = el(`
         <section class="screen-fixed lco bb bbnc" data-screen="bb-new-case">
           <header class="sub-head">
@@ -1882,23 +1958,27 @@
           <div class="tv-scroll">
             <div class="lco-card bbnc-sec">
               <h5>Case Form</h5>
-              <label class="lco-fl" id="fFor"><small>Case For *</small>
-                <select id="cFor"><option value="">Select</option><option value="customer">Customer</option><option value="self">Self (LCO)</option></select></label>
               <label class="lco-fl" id="fUser"><small>User Name *</small>
-                <select id="cUser" disabled><option value="">Select Case For first</option></select></label>
-              <label class="lco-fl" id="fMob"><small>Mobile Number</small><input id="cMob" type="tel" inputmode="numeric" maxlength="10" placeholder="10-digit mobile" /></label>
-              <label class="lco-fl" id="fMail"><small>Email ID</small><input id="cMail" type="email" maxlength="60" placeholder="name@example.com" /></label>
-              <label class="lco-fl"><small>Case Origin</small>
-                <select id="cOrg">${opt(["None", "Phone Call", "Walk-in", "Email", "Mobile App"])}</select></label>
+                <input id="cUser" list="cUsers" maxlength="30" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Broadband user id, e.g. ${esc(users[0].user)}" /></label>
+              <datalist id="cUsers">${users.map((c) => `<option value="${esc(c.user)}">${esc(c.name)}</option>`).join("")}</datalist>
+              <p class="bbnc-who" id="cWho" hidden></p>
+              <label class="lco-fl" id="fMob"><small>Mobile Number</small><input id="cMob" type="tel" inputmode="numeric" maxlength="10" placeholder="Filled from the user name" /></label>
+              <label class="lco-fl" id="fMail"><small>Email ID</small><input id="cMail" type="email" maxlength="60" placeholder="Filled from the user name" /></label>
             </div>
             <div class="lco-card bbnc-sec">
               <h5>Select Type</h5>
-              <label class="lco-fl"><small>Type</small><select id="cType">${opt(["Feedback", "Complaint", "Request", "Query"])}</select></label>
+              <label class="lco-fl" id="fType"><small>Type *</small>
+                <select id="cType"><option value="">Select Type</option>${opt(Object.keys(CASE_REASONS))}</select></label>
             </div>
-            <div class="lco-card bbnc-sec">
+            <div class="lco-card bbnc-sec" id="sRsn" hidden>
               <h5>Select Case Reason</h5>
-              <label class="lco-fl" id="fRsn"><small>Reason / Category *</small>
-                <select id="cRsn"><option value="">Select Category</option>${opt(REASONS)}</select></label>
+              <label class="lco-fl" id="fRsn"><small>Reason / Category *</small><select id="cRsn"></select></label>
+              <label class="lco-fl" id="fSub" hidden><small>Sub Category (optional)</small><select id="cSub"></select></label>
+            </div>
+            <div class="lco-card bbnc-sec" id="sRem" hidden>
+              <h5>Remarks</h5>
+              <label class="lco-fl" id="fRem"><small>Description *</small>
+                <textarea id="cRem" rows="4" maxlength="300" placeholder="Describe the issue or request"></textarea></label>
             </div>
             <p class="hint err bbnc-err" id="cErr"></p>
             <button class="btn bbnc-go" id="cGo">Create</button>
@@ -1906,38 +1986,47 @@
         </section>`);
       bindCommon(root);
       const V = (id) => $(id, root);
-      V("#cFor").addEventListener("change", () => {
-        const f = V("#cFor").value, u = V("#cUser");
-        u.disabled = !f;
-        if (f === "customer") u.innerHTML = `<option value="">Select User Name</option>${users.map((c) => `<option value="${c.id}">${esc(c.user)} — ${esc(c.name)}</option>`).join("")}`;
-        else if (f === "self") { const id = (state.session && state.session.lcoid) || "LCO"; u.innerHTML = `<option value="self">${esc(id)} (${esc(BB_DATA.partner.name)})</option>`; }
-        else u.innerHTML = `<option value="">Select Case For first</option>`;
-        V("#cMob").value = f === "self" ? DEMO_MOBILE : "";
-        V("#cMail").value = f === "self" ? BB_DATA.partner.email : "";
+      const findUser = () => { const u = V("#cUser").value.trim().toLowerCase(); return u ? BB_DATA.customers.find((x) => x.user.toLowerCase() === u) : null; };
+      V("#cUser").addEventListener("input", () => {   // typed / picked user id → fill their contact details
+        const c = findUser(), who = V("#cWho");
+        V("#cMob").value = c ? c.mobile : "";
+        V("#cMail").value = c ? c.email : "";
+        who.hidden = !c;
+        if (c) who.innerHTML = `${I.check}${esc(c.title)} ${esc(c.name)} · ${esc(c.plan)}`;
       });
-      V("#cUser").addEventListener("change", () => {   // pick a customer → fill their contact details
-        const c = BB_DATA.customers.find((x) => x.id === +V("#cUser").value);
-        if (c) { V("#cMob").value = c.mobile; V("#cMail").value = c.email; }
+      V("#cType").addEventListener("change", () => {
+        const t = V("#cType").value;
+        V("#sRsn").hidden = !t;
+        V("#cRsn").innerHTML = `<option value="">Select Reason</option>${t ? opt(Object.keys(CASE_REASONS[t])) : ""}`;
+        V("#fSub").hidden = true; V("#cSub").innerHTML = "";
+        V("#sRem").hidden = true;
+      });
+      V("#cRsn").addEventListener("change", () => {
+        const subs = (CASE_REASONS[V("#cType").value] || {})[V("#cRsn").value] || [];
+        V("#fSub").hidden = !subs.length;
+        V("#cSub").innerHTML = subs.length ? `<option value="">Select Sub Category</option>${opt(subs)}` : "";
+        V("#sRem").hidden = !V("#cRsn").value;   // reason picked → Sub Category (if any) + Remarks
       });
       V("#cMob").addEventListener("input", (e) => { e.target.value = e.target.value.replace(/\D/g, "").slice(0, 10); });
       V("#cGo").addEventListener("click", async () => {
         const err = V("#cErr");
         const fail = (box, msg) => { shake(V(box)); err.textContent = msg; toast(msg, "error"); };
-        const f = V("#cFor").value, uv = V("#cUser").value, mob = V("#cMob").value, mail = V("#cMail").value.trim(), rsn = V("#cRsn").value;
-        if (!f) return fail("#fFor", "Select who the case is for");
-        if (!uv) return fail("#fUser", "Select a user name");
+        const c = findUser(), mob = V("#cMob").value, mail = V("#cMail").value.trim();
+        const type = V("#cType").value, rsn = V("#cRsn").value, sub = V("#cSub").value, rem = V("#cRem").value.trim();
+        if (!V("#cUser").value.trim()) return fail("#fUser", "Enter the customer's user name");
+        if (!c) return fail("#fUser", "No broadband customer with this user name");
         if (mob && !/^[6-9]\d{9}$/.test(mob)) return fail("#fMob", "Mobile must be 10 digits starting with 6–9");
         if (mail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) return fail("#fMail", "Enter a valid email ID");
+        if (!type) return fail("#fType", "Select a type");
         if (!rsn) return fail("#fRsn", "Select a case reason / category");
+        if (rem.length < 5) return fail("#fRem", "Write a short description (at least 5 characters)");
         err.textContent = "";
-        const c = f === "customer" ? BB_DATA.customers.find((x) => x.id === +uv) : null;
-        const lco = (state.session && state.session.lcoid) || "LCO";
         showLoader("Creating case…");
         await wait(700);
         hideLoader();
         const id = "TKT45" + String(Date.now()).slice(-5);
-        BB_DATA.cases.unshift({ id, cust: c ? c.name : BB_DATA.partner.name, user: c ? c.user : lco, cat: rsn, status: "open", assigned: false, mine: false, to: "",
-          at: new Date(), type: V("#cType").value, origin: V("#cOrg").value, mobile: mob, email: mail });
+        BB_DATA.cases.unshift({ id, cust: c.name, user: c.user, cat: sub ? `${rsn} · ${sub}` : rsn, status: "open", assigned: false, mine: false, to: "",
+          at: new Date(), type, reason: rsn, sub, remarks: rem, mobile: mob, email: mail });
         if (stack.length > 1 && stack[stack.length - 2].name === "bbCases") stack[stack.length - 2].params = { tab: "unassigned" };   // show it on return
         toast(`Case ${id} created (demo)`, "success");
         back();
@@ -2063,7 +2152,7 @@
               <button class="lco-pill big" data-act="invoice">${I.news}Invoice</button>
             </div>
           </div>
-          ${bbNavHTML("customer")}
+          ${bbNavHTML("")}
         </section>`);
       bindCommon(root);
       $$("[data-toast]", root).forEach((b) => b.addEventListener("click", () => toast(b.dataset.toast)));
@@ -2135,7 +2224,7 @@
       }));
       q.addEventListener("input", draw);
       $('[data-act="new-cust"]', root).addEventListener("click", () => go("bbCreateCustomer"));
-      bindBbNav(root, "customer");
+      bindBbNav(root, "");
       draw();
       // Newly created customer: scroll to it and highlight it once
       if (state.bbNew) {
@@ -2595,6 +2684,15 @@
       const s = LCO_DATA[kind][i];
       const rows = [["Account Balance", s.balance], ["VC No", s.vc], ["SMS ID", s.sms],
         ["Status", s.active ? "Active" : "Deactive"], ["STB No", s.stb], ["Due Date", s.due]];
+      // [handler, icon, label]; package actions only for active subscribers
+      const acts = [
+        ["detail", "person", "Subscriber Detail"], ["instant", "rupee", "Instant Recharge"],
+        ["repair", "info", "Repairing Request"], ["reconfirm", "history", "Reconfirmation Package"],
+        ...(s.active ? [["add", "sync", "Recharge - add package"], ["change", "rupeeBolt", "Upgrade/Downgrade"],
+          ["pkgoff", "minus", "Package deactivation"], ["alloff", "userSlash", "All Package deactivation"]] : []),
+        ["stb", "upDown", "STB replacement"], ["vc", "swap", "VC replacement"],
+        ["complaint", "headset", "Complaint management"], ["reconfrepair", "chain", "Reconfirmation package and repair"],
+      ];
       const root = el(`
         <section class="tv lco" data-screen="lco-subscriber">
           <header class="sub-head">
@@ -2605,33 +2703,79 @@
             <h3>${I.userFill}<span>${esc(s.name)}</span></h3>
             ${rows.map(([k, v]) => `<p><b>${k} :</b> <span class="${k === "Status" ? (s.active ? "ok" : "off") : ""}">${v}</span></p>`).join("")}
           </div>
-          <div class="lco-actions">
-            <button class="lco-pill big" data-act="detail">Subscriber Detail</button>
-            <button class="lco-pill big" data-toast="Instant Recharge (demo)">Instant Recharge</button>
-            <button class="lco-pill big" data-toast="Repairing Request (demo)">Repairing Request</button>
-            <button class="lco-pill big" data-toast="Reconfirmation Package (demo)">Reconfirmation Package</button>
-            ${s.active ? `<button class="lco-pill big" data-act="upgrade">Upgrade Package</button>` : ""}
+          <div class="lco-acts2">
+            ${acts.map(([k, ic, l]) => `<button class="lco-act" data-sa="${k}">${ACT_IC[ic]}<span>${l.replace("/", "/<wbr>")}</span></button>`).join("")}
           </div>
         </section>`);
       bindCommon(root);
-      $$("[data-toast]", root).forEach((b) => b.addEventListener("click", () => toast(b.dataset.toast)));
-      $('[data-act="detail"]', root).addEventListener("click", () => go("lcoSubDetail", { kind, i }));
-      const up = $('[data-act="upgrade"]', root);
-      if (up) up.addEventListener("click", () => go("lcoUpgrade", { kind, i }));
+      const redraw = () => swapRoute("lcoSub", { kind, i });
+      const done = async (msg, apply) => { closeSheet(); showLoader("Processing…"); await wait(900); hideLoader(); if (apply) apply(); toast(msg, "success"); if (apply) redraw(); };
+      const confirm = (title, text, btn, msg, apply) => openSheet(`
+        <h3>${title}</h3><p>${text}</p>
+        <button class="btn" id="saOk">${btn}</button><button class="btn ghost" id="saNo">Cancel</button>
+        <span class="demo-tag">Demo • No real change is made</span>`, (sh) => {
+        $("#saNo", sh).addEventListener("click", closeSheet);
+        $("#saOk", sh).addEventListener("click", () => done(msg, apply));
+      });
+      const replace = (what, cur, re, hint, key) => openSheet(`
+        <h3>${what} Replacement</h3>
+        <div class="lco-inv"><span><small>Current ${what} No</small><b>${esc(cur)}</b></span></div>
+        <div class="lco-form"><label class="lco-fl" id="rpW"><small>New ${what} No *</small><input id="rpIn" maxlength="20" autocomplete="off" placeholder="${hint}" /></label>
+          <label class="lco-fl"><small>Reason</small><select id="rpWhy"><option>Faulty</option><option>Damaged</option><option>Lost</option><option>Upgrade</option></select></label>
+          <p class="hint err" id="rpErr"></p></div>
+        <button class="btn" id="rpOk">Replace ${what}</button><button class="btn ghost" id="rpNo">Cancel</button>
+        <span class="demo-tag">Demo • No real change is made</span>`, (sh) => {
+        $("#rpNo", sh).addEventListener("click", closeSheet);
+        $("#rpOk", sh).addEventListener("click", () => {
+          const v = $("#rpIn", sh).value.trim().toUpperCase();
+          if (!re.test(v)) { $("#rpErr", sh).textContent = `Enter a valid ${what} No (${hint})`; shake($("#rpW", sh)); return; }
+          if (v === cur) { $("#rpErr", sh).textContent = `That is the current ${what} No`; shake($("#rpW", sh)); return; }
+          done(`${what} replaced (demo)`, () => { s[key] = v; });
+        });
+      });
+      const H = {
+        detail: () => go("lcoSubDetail", { kind, i }),
+        instant: () => toast("Instant Recharge (demo)"),
+        repair: () => toast("Repairing Request (demo)"),
+        reconfirm: () => toast("Reconfirmation Package (demo)"),
+        add: () => go("lcoUpgrade", { kind, i }),
+        change: () => go("lcoUpgrade", { kind, i, mode: "change" }),
+        pkgoff: () => confirm("Package deactivation", `Deactivate <b>${esc(CABLE_PACKS[s.pack].name)}</b> for ${esc(s.name)}?`, "Deactivate package", "Package deactivated (demo)"),
+        alloff: () => confirm("All Package deactivation", `Deactivate <b>all packages</b> for ${esc(s.name)} (VC ${s.vc})? The STB will show as Deactive.`, "Deactivate all", "All packages deactivated (demo)", () => { s.active = false; }),
+        stb: () => replace("STB", s.stb, /^[A-Z0-9]{10,20}$/, "10–20 letters / digits", "stb"),
+        vc: () => replace("VC", s.vc, /^\d{11}$/, "11 digits", "vc"),
+        complaint: () => openSheet(`
+          <h3>Complaint management</h3>
+          <div class="lco-form">
+            <label class="lco-fl"><small>Complaint Type *</small><select id="cpT"><option>No Signal</option><option>Channel Missing</option><option>STB Not Working</option><option>Remote Issue</option><option>Billing</option><option>Other</option></select></label>
+            <label class="lco-fl" id="cpW"><small>Remarks *</small><input id="cpR" maxlength="200" placeholder="Describe the problem" /></label>
+            <p class="hint err" id="cpErr"></p></div>
+          <button class="btn" id="cpOk">Register Complaint</button><button class="btn ghost" id="cpNo">Cancel</button>
+          <span class="demo-tag">Demo • No real complaint is raised</span>`, (sh) => {
+          $("#cpNo", sh).addEventListener("click", closeSheet);
+          $("#cpOk", sh).addEventListener("click", () => {
+            if ($("#cpR", sh).value.trim().length < 3) { $("#cpErr", sh).textContent = "Write a short remark"; shake($("#cpW", sh)); return; }
+            done(`Complaint CMP${String(Date.now()).slice(-6)} registered (demo)`);
+          });
+        }),
+        reconfrepair: () => confirm("Reconfirmation package and repair", `Re-send all active packages to the STB of ${esc(s.name)} (VC ${s.vc}) and run a repair?`, "Reconfirm & repair", "Package reconfirmed and repair sent (demo)"),
+      };
+      $$("[data-sa]", root).forEach((b) => b.addEventListener("click", () => H[b.dataset.sa]()));
       return root;
     },
 
     /* ---- LCO: Active subscriber → Upgrade Package (higher packs only; cost debited from the CATV wallet) ---- */
-    lcoUpgrade({ kind = "active", i = 0 }) {
+    lcoUpgrade({ kind = "active", i = 0, mode = "add" }) {
       const s = LCO_DATA[kind][i];
       const P = LCO_DATA.partner;
       const cur = CABLE_PACKS[s.pack];
-      const higher = CABLE_PACKS.map((p, k) => ({ ...p, k })).filter((p) => p.k > s.pack);
+      const chg = mode === "change";
+      const higher = CABLE_PACKS.map((p, k) => ({ ...p, k })).filter((p) => (chg ? p.k !== s.pack : p.k > s.pack));
       const root = el(`
         <section class="tv lco" data-screen="lco-upgrade">
           <header class="sub-head">
             <button class="back-btn static" data-act="back" aria-label="Back">${I.back}</button>
-            <h2>Upgrade Package</h2>
+            <h2>${chg ? "Upgrade / Downgrade" : "Recharge - Add Package"}</h2>
           </header>
           <div class="lco-card lco-up-cur">
             <small>${esc(s.name)} · VC ${s.vc}</small>
@@ -2643,8 +2787,8 @@
           <div class="lco-list">
             ${higher.length ? higher.map((p) => `
               <div class="lco-card lco-up">
-                <div><b>${p.name}</b><small>${p.ch} channels · ${p.hd} HD</small><small>+${p.ch - cur.ch} channels vs current</small></div>
-                <div class="lco-up-r"><span>₹ ${p.price}<small>/month</small></span><button class="lco-pill" data-up="${p.k}">Upgrade</button></div>
+                <div><b>${p.name}</b><small>${p.ch} channels · ${p.hd} HD</small><small>${p.ch >= cur.ch ? "+" : ""}${p.ch - cur.ch} channels vs current</small></div>
+                <div class="lco-up-r"><span>₹ ${p.price}<small>/month</small></span><button class="lco-pill" data-up="${p.k}">${!chg ? "Add" : p.k > s.pack ? "Upgrade" : "Downgrade"}</button></div>
               </div>`).join("")
               : `<div class="empty">${I.checkBig}<b>Already on the top package</b><p>${cur.name} is the highest package.</p></div>`}
           </div>
@@ -2654,30 +2798,30 @@
       $$("[data-up]", root).forEach((b) => b.addEventListener("click", () => {
         const k = +b.dataset.up;
         const p = CABLE_PACKS[k];
-        const diff = p.price - cur.price;
+        const down = k < s.pack, diff = down ? 0 : p.price - cur.price;
         openSheet(`
-          <h3>Confirm upgrade</h3>
-          <p>${esc(s.name)}<br/>${cur.name} → <b>${p.name}</b><br/>Amount: <b>₹ ${money(diff)}</b> (price difference for this month)<br/>Debited from your CATV wallet (₹ ${P.wallet})</p>
-          <button class="btn" id="upOk">Upgrade for ₹ ${money(diff)}</button>
+          <h3>Confirm ${down ? "downgrade" : "upgrade"}</h3>
+          <p>${esc(s.name)}<br/>${cur.name} → <b>${p.name}</b><br/>${down ? "No charge · the lower package starts now" : `Amount: <b>₹ ${money(diff)}</b> (price difference for this month)<br/>Debited from your CATV wallet (₹ ${P.wallet})`}</p>
+          <button class="btn" id="upOk">${down ? "Downgrade" : `${chg ? "Upgrade" : "Add package"} for ₹ ${money(diff)}`}</button>
           <button class="btn ghost" id="upNo">Cancel</button>`, (sh) => {
           $("#upNo", sh).addEventListener("click", closeSheet);
           $("#upOk", sh).addEventListener("click", async () => {
             if (parseFloat(P.wallet) < diff) { closeSheet(); toast("Not enough CATV wallet balance — top up first", "error"); return; }
             closeSheet();
-            showLoader("Upgrading package…");
+            showLoader(down ? "Changing package…" : "Upgrading package…");
             await wait(1100);
             hideLoader();
             P.wallet = money(parseFloat(P.wallet) - diff);
             s.pack = k;
             openSheet(`
               <div class="ok-badge">${I.checkBig}</div>
-              <h3>Package upgraded</h3>
-              <p>${esc(s.name)} is now on <b>${p.name}</b>.<br/>₹ ${money(diff)} debited · CATV wallet: ₹ ${P.wallet}</p>
+              <h3>Package ${down ? "downgraded" : "upgraded"}</h3>
+              <p>${esc(s.name)} is now on <b>${p.name}</b>.<br/>${down ? "No charge" : `₹ ${money(diff)} debited`} · CATV wallet: ₹ ${P.wallet}</p>
               <span class="demo-tag">Demo • No real change made</span>
               <button class="btn" id="upDone">Done</button>`, (s2) => {
               $("#upDone", s2).addEventListener("click", () => { closeSheet(); back(); });
             });
-            toast("Package upgraded (demo)", "success");
+            toast(`Package ${down ? "downgraded" : "upgraded"} (demo)`, "success");
           });
         });
       }));
@@ -2739,7 +2883,6 @@
           <div class="drawer" id="drawer" aria-hidden="true">
             <div class="drawer-backdrop" data-close-menu></div>
             <nav class="drawer-panel" aria-label="Menu">
-              <p class="dr-ver">Version ${APP_VERSION}</p>
               <div class="drawer-head">
                 <div class="brand">
                   <img src="${MARK}" alt="SITI PLAYTOP MAGIC" />
@@ -2756,6 +2899,7 @@
               <button class="gp dr-item${f.genre || f.genres ? " on" : ""}" data-act="genre">${I.masks}<span>${genreLabel()}</span></button>
               <button class="gp dr-item${f.lang || f.langs ? " on" : ""}" data-act="lang">${I.lang}<span>${langLabel()}</span></button>
               ${drawerExtrasHTML()}
+              <p class="dr-ver">Version ${APP_VERSION}</p>
             </nav>
           </div>
         </section>`);
@@ -2782,14 +2926,8 @@
       if (!fromLco) $('[data-act="siti"]', root).addEventListener("click", () => go("chPlans", { siti: true }));
       // ☰ → FAQ + Partner apps tiles (bottom of the menu)
       bindDrawerExtras(root);
-      // Customer / guest: OTT → the OTT home. LCO Watch OTT keeps the OTT Partners sheet.
-      $('[data-act="ott"]', root).addEventListener("click", () => fromLco ? null : go("ottHome"));
-      if (fromLco) $('[data-act="ott"]', root).addEventListener("click", () => openSheet(`
-        <h3>OTT Partners</h3>
-        <p>Stream apps included with your SITI pack.</p>
-        <div class="ott-grid">${OTT.map(([n, c]) => `<button class="ott" style="background:${grad(c)}" data-ott="${n}">${n}</button>`).join("")}</div>`, (sh) => {
-        $$("[data-ott]", sh).forEach((b) => b.addEventListener("click", () => { closeSheet(); toast(`Opening ${b.dataset.ott} (demo)`); }));
-      }));
+      // ☰ → OTT: the OTT page — customers, Other Users and LCO Watch OTT alike
+      $('[data-act="ott"]', root).addEventListener("click", () => go("ottHome"));
       // ☰ → LTS (Cable TV only): every channel in the Cable TV package as square logo tiles
       if (cable) $('[data-act="lts"]', root).addEventListener("click", () => go("ltsHome"));
       // The old app's "Choose your Genre / Language" chip sheets (multi-select) — same for LCO, customer and guest
@@ -3002,8 +3140,10 @@
       const h = new Date().getHours();
       const hi = h < 12 ? "Good Morning" : h < 17 ? "Good Afternoon" : "Good Evening";
       const pl = bbPlanInfo(), { from, to, left } = pl;
-      const now = new Date(), use = ctvMonthTotals(now.getFullYear(), now.getMonth()), dv = ctvDev();
-      const QA = [["faq", I.help, "FAQ"], ["broadband", I.wifi, "Broadband"], ["usage", I.pie, "My Usage"], ["vas", I.play, "Vas"], ["support", I.headset, "Support"], ["plan", I.news, "My Plan"]];
+      const now = new Date(), dv = ctvDev();
+      const pct = Math.min(1, pl.usedGB / pl.fup);
+      const st = CTV.status || "Active";   // Active / Suspended / Inactive
+      const openN = CTV.tickets.filter((t) => t.status !== "Closed").length;
       const root = el(`
         <section class="screen-fixed tv ctv" data-screen="ctv-dashboard">
           <div class="tv-scroll">
@@ -3012,37 +3152,41 @@
               <h2>Dashboard</h2>
               <button class="lco-ic" data-act="logout" aria-label="Logout">${I.logout}</button>
             </header>
-            <p class="ctv-hi">${hi}, <b>${esc(u.name)}</b></p>
+            <div class="ctv-hi2"><p class="ctv-hi">${hi}, <b>${esc(u.name)}</b></p><span class="ctv-acst ${st.toLowerCase()}"><i></i>${st}</span></div>
+            <button class="ctv-otk" data-act="tickets">${I.ticket}<span>Open ticket</span><b>${openN}</b>${I.chev}</button>
+            <button class="lco-card ctv-card ctv-use" data-act="more" aria-label="Usage details">
+              <span class="ctv-use-h"><b>${I.pie}Current Usage</b><small>${MON[now.getMonth()]} ${now.getFullYear()}</small></span>
+              <span class="ctv-use-b">
+                <svg viewBox="0 0 120 120" class="ctv-use-ring" aria-hidden="true">
+                  <defs><linearGradient id="useG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2fd8ff" /><stop offset=".55" stop-color="#9b5cff" /><stop offset="1" stop-color="#ff3fd0" /></linearGradient></defs>
+                  <circle cx="60" cy="60" r="50" class="bg" />
+                  <circle cx="60" cy="60" r="50" class="fg" stroke="url(#useG)" stroke-dasharray="${(pct * 314.16).toFixed(1)} 314.16" transform="rotate(-90 60 60)" />
+                  <text x="60" y="56" class="v">${pl.usedGB.toFixed(1)}</text><text x="60" y="73" class="l">GB used</text>
+                </svg>
+                <span class="ctv-use-l">
+                  <span><i class="dn"></i><small>Download</small><b>${mbFmt(pl.dn)}</b></span>
+                  <span><i class="up"></i><small>Upload</small><b>${mbFmt(pl.up)}</b></span>
+                  <span><i class="lf"></i><small>Left of ${pl.fup} GB</small><b>${Math.max(0, pl.fup - pl.usedGB).toFixed(2)} GB</b></span>
+                </span>
+              </span>
+              <span class="ctv-use-f">${Math.round(pct * 100)}% of this month's data used<em>More Details ${ARROW}</em></span>
+            </button>
             <div class="lco-card ctv-card">
-              <div class="ctv-row"><b>My Account</b><span class="ctv-online">Online<i></i></span></div>
-              <div class="ctv-row">${I.pin}<span>Status</span><b class="ok">Active</b></div>
-              <div class="ctv-row">${I.news}<span>Open Service Request</span><b>${CTV.tickets.filter((t) => t.status !== "Closed").length}</b></div>
-              <button class="ctv-support" data-qa="Support">${I.headset}Support</button>
-              <hr />
-              <div class="ctv-row">${I.pie}<span>Current Usage</span></div>
-              <div class="ctv-usage"><span>${I.up}${mbFmt(use.up)}</span><span>${I.down}${mbFmt(use.dn)}</span><span>${I.swapv}${mbFmt(use.up + use.dn)}</span></div>
-              <button class="ctv-more" data-act="more">More Details ${ARROW}</button>
+              <b class="ctv-t">My Plan</b>
+              <div class="ctv-plan">
+                <span>${I.wifi}<small>Plan</small><b>${pl.name}</b></span>
+                <span>${I.clock}<small>Remaining Days</small><b>${left} Days/${pl.total} Days</b></span>
+                <span>${I.pie}<small>Used / Allocated</small><b>${pl.used} / ${pl.fup} GB</b></span>
+                <span>${I.calendar}<small>Validity</small><b>${dmy(from)} – ${dmy(to)}</b></span>
+              </div>
+              <div class="ctv-plan-a"><button class="ctv-more" data-act="renew">Quick Renew ${ARROW}</button>
+                <button class="ctv-more ghost" data-act="more-packs">More Packages ${ARROW}</button></div>
             </div>
             <div class="lco-card ctv-card ctv-devc">
               <div class="ctv-devh">${I.wifi}<b>My Device</b><select class="ctv-sel" id="devSel" aria-label="Device">${CTV_DEV.map((x, j) => `<option value="${j}"${x === dv ? " selected" : ""}>${x.name}</option>`).join("")}</select></div>
               <div class="ctv-kv"><span>Serial Number</span><b id="devSn">${dv.serial}</b></div>
               <div class="ctv-kv"><span>Connected Devices :</span><b id="devCn">${dv.clients.length}</b></div>
               <div class="ctv-devf"><button class="ctv-ref" data-act="dev-ref" aria-label="Refresh device">${I.refresh}</button><button class="link" data-act="dev-more">More Details</button></div>
-            </div>
-            <div class="lco-card ctv-card">
-              <b class="ctv-t">My Plan</b>
-              <div class="ctv-plan">
-                <span>${I.wifi}<small>Plan</small><b>SITI_DEMO_OPEN_100</b></span>
-                <span>${I.clock}<small>Remaining Days</small><b>${left} Days/${pl.total} Days</b></span>
-                <span>${I.pie}<small>Used / Allocated</small><b>150 GB / Unlimited</b></span>
-                <span>${I.calendar}<small>Validity</small><b>${dmy(from)} – ${dmy(to)}</b></span>
-              </div>
-              <div class="ctv-plan-a"><button class="ctv-more" data-act="renew">Quick Renew ${ARROW}</button>
-                <button class="ctv-more ghost" data-act="more-packs">More Packages ${ARROW}</button></div>
-            </div>
-            <div class="lco-card ctv-card">
-              <b class="ctv-t">Quick Action</b>
-              <div class="ctv-qa">${QA.map(([k, ic, l]) => `<button data-qa="${l}">${ic}<span>${l}</span></button>`).join("")}</div>
             </div>
           </div>
           ${ctvDrawerHTML()}
@@ -3051,6 +3195,7 @@
       $$("[data-toast]", root).forEach((b) => b.addEventListener("click", () => toast(b.dataset.toast)));
       bindCtvMenu(root);
       $('[data-act="more"]', root).addEventListener("click", () => go("ctvSession"));
+      $('[data-act="tickets"]', root).addEventListener("click", () => go("ctvSupport", { sub: true }));
       $('[data-act="renew"]', root).addEventListener("click", () => go("ctvQuickRenew"));
       $('[data-act="more-packs"]', root).addEventListener("click", () => ctvGo("Broadband"));
       $("#devSel", root).addEventListener("change", (e) => {
@@ -3195,37 +3340,34 @@
     ctvSupport({ sub, raise } = {}) {
       const root = ctvShell("ctv-support", "Support", { sub, nav: "support" });
       const box = $("#cx", root);
-      // "Raise a Ticket" → New Ticket / Service Request form (old app): Type, reasons for Problem, Customer Information
-      const TYPES = ["Problem", "Feedback", "Question", "Request"];
-      const REASONS = ["Slow Browsing", "Mail Server - Outgoing", "Mail Server - Incoming", "Ping issue", "Router not working", "High Latency - Particular Site",
-        "High Latency - All Sites", "Lco Support", "VPN - Not Able to Connect", "VPN - Frequently Disconnected", "Speed Issue - Upload", "Speed Issue - Peering",
-        "Speed Issue - Normal Download", "Speed Issue - Streaming", "P2P Delivery", "LCO Personal Job"];
+      // "Raise a Ticket" → New Ticket: Type (Feedback / Question / Problem) → Problem: Case Reason / Category → Sub Category → Remarks (0–200) → Create
+      const TYPES = ["Feedback", "Question", "Problem"];
+      const CATS = CASE_REASONS.Complaint;
+      const PRESET = { "Slow Browsing": ["Technical_Problem_Category", "Slow Browsing"], "Router not working": ["Technical_Problem_Category", "CPE Not Working – Wi-Fi Router"] };
       const u = tvUser();
-      // null = ticket list; else { type, reason, more, info, desc }. raise (Self Help → Create Ticket) opens the form directly
-      let form = raise === undefined ? null : { type: "Problem", reason: raise, more: !!raise && !REASONS.slice(0, 10).includes(raise), info: false, desc: "" };
+      const blank = () => ({ type: "", cat: "", sub: "", desc: "" });
+      // null = ticket list; raise (Self Help → Create Ticket) opens the form directly as a Problem, with the reason preset when known
+      let form = raise === undefined ? null : Object.assign(blank(), { type: "Problem" }, PRESET[raise] ? { cat: PRESET[raise][0], sub: PRESET[raise][1] } : {});
+      const opts = (list, cur) => list.map((x) => `<option${x === cur ? " selected" : ""}>${esc(x)}</option>`).join("");
       const formHTML = () => {
-        const f = form, prob = f.type === "Problem";
-        const shown = f.more ? REASONS : REASONS.slice(0, 10);
+        const f = form, prob = f.type === "Problem", subs = prob && f.cat ? CATS[f.cat] || [] : [];
         return `
-          <div class="lco-card ctv-nt">
-            <div class="ctv-nt-h"><b>New Ticket/ Service Request</b><button class="lco-ic" data-act="nt-x" aria-label="Close form">${I.close}</button></div>
-            <label class="ctv-nt-l" for="ntType">Type :</label>
-            <select class="ctv-sel ctv-nt-sel" id="ntType">${TYPES.map((t) => `<option${t === f.type ? " selected" : ""}>${t}</option>`).join("")}</select>
+          <div class="lco-card ctv-nt ctv-nt2">
+            <div class="ctv-nt-h"><b>New Ticket</b><button class="lco-ic" data-act="nt-x" aria-label="Close form">${I.close}</button></div>
+            <p class="ctv-nt-who">${I.userFill}<span>${esc(u.id)} · ${esc(CTV.profile.mobile || u.mobile)}</span></p>
+            <label class="lco-fl" id="ntTypeW"><small>Type *</small>
+              <select id="ntType"><option value="">Select</option>${opts(TYPES, f.type)}</select></label>
             ${prob ? `
-              <p class="ctv-nt-l">Select Reason :</p>
-              <div class="ctv-nt-chips" id="ntChips">${shown.map((r) => `<button class="${r === f.reason ? "on" : ""}" data-rs="${esc(r)}">${esc(r)}</button>`).join("")}</div>
-              <button class="link ctv-nt-more" data-act="nt-more">${f.more ? "Show Less" : "Show More"}</button>
-              ${f.more ? `<select class="ctv-sel ctv-nt-sel" id="ntReason" aria-label="Reason"><option value="">Select reason</option>${REASONS.map((r) => `<option${r === f.reason ? " selected" : ""}>${r}</option>`).join("")}</select>` : ""}` : ""}
-            <button class="ctv-nt-acc${f.info ? " open" : ""}" data-act="nt-info" aria-expanded="${f.info}"><span>Customer Information</span>${I.chev}</button>
-            ${f.info ? `
-              <div class="ctv-nt-info">
-                <div class="ctv-nt-in">${I.userFill}<span>${esc(u.id)}</span></div>
-                <div class="ctv-nt-in">${I.mail}<span>${esc(CTV.profile.email)}</span></div>
-                <div class="ctv-nt-in">${I.phone}<span>${esc(CTV.profile.mobile || u.mobile)}</span></div>
-                <label class="ctv-nt-in" id="ntDW">${I.news}<input id="ntDesc" maxlength="120" placeholder="Description" value="${esc(f.desc)}" aria-label="Description" /></label>
-              </div>` : ""}
+              <label class="lco-fl" id="ntCatW"><small>Case Reason / Category *</small>
+                <select id="ntCat"><option value="">Select Reason</option>${opts(Object.keys(CATS), f.cat)}</select></label>
+              ${subs.length ? `<label class="lco-fl" id="ntSubW"><small>Sub Category (optional)</small>
+                <select id="ntSub"><option value="">Select Sub Category</option>${opts(subs, f.sub)}</select></label>` : ""}` : ""}
+            ${f.type && (!prob || f.cat) ? `
+              <label class="lco-fl ctv-nt-rem" id="ntRemW"><small>Remarks${prob ? " (optional)" : " *"}</small>
+                <textarea id="ntDesc" rows="4" maxlength="200" placeholder="${prob ? "Add details about the problem" : `Write your ${f.type.toLowerCase()}`}">${esc(f.desc)}</textarea>
+                <i class="ctv-nt-cnt" id="ntCnt">${f.desc.length}/200</i></label>` : ""}
             <p class="hint err" id="ntErr"></p>
-            <button class="ctv-more ctv-nt-go" data-act="nt-create">${I.lock}Create</button>
+            <button class="btn ctv-nt-go" data-act="nt-create">Create</button>
           </div>
           <span class="demo-tag">Demo • no real ticket is raised</span>`;
       };
@@ -3252,7 +3394,7 @@
           </div>
           ${form ? formHTML() : listHTML()}`;
         if (form) return bindForm();
-        $('[data-act="raise"]', box).addEventListener("click", () => { form = { type: "Problem", reason: "", more: false, info: false, desc: "" }; draw(); });
+        $('[data-act="raise"]', box).addEventListener("click", () => { form = blank(); draw(); });
         $$("[data-view]", box).forEach((b) => b.addEventListener("click", () => openTicket(CTV.tickets[+b.dataset.view])));
         $$("[data-done]", box).forEach((b) => b.addEventListener("click", () => {
           const t = CTV.tickets[+b.dataset.done];
@@ -3273,26 +3415,24 @@
       };
       const keepDesc = () => { const d = $("#ntDesc", box); if (d) form.desc = d.value; };
       const bindForm = () => {
-        const on = (a, fn) => $(`[data-act="${a}"]`, box).addEventListener("click", fn);
-        on("nt-x", () => { form = null; draw(); });
-        on("nt-info", () => { keepDesc(); form.info = !form.info; draw(); });
-        $("#ntType", box).addEventListener("change", (e) => { keepDesc(); form.type = e.target.value; form.reason = ""; draw(); });
-        if (form.type === "Problem") {
-          on("nt-more", () => { keepDesc(); form.more = !form.more; draw(); });
-          $$("[data-rs]", box).forEach((b) => b.addEventListener("click", () => { keepDesc(); form.reason = b.dataset.rs; draw(); }));
-          const rs = $("#ntReason", box);
-          if (rs) rs.addEventListener("change", () => { keepDesc(); form.reason = rs.value; draw(); });
-        }
-        on("nt-create", async () => {
+        $('[data-act="nt-x"]', box).addEventListener("click", () => { form = null; draw(); });
+        $("#ntType", box).addEventListener("change", (e) => { keepDesc(); Object.assign(form, { type: e.target.value, cat: "", sub: "" }); draw(); });
+        const cat = $("#ntCat", box), sb = $("#ntSub", box), d = $("#ntDesc", box);
+        if (cat) cat.addEventListener("change", () => { keepDesc(); Object.assign(form, { cat: cat.value, sub: "" }); draw(); });
+        if (sb) sb.addEventListener("change", () => { form.sub = sb.value; if (sb.value) { $("#ntErr", box).textContent = ""; $("#ntSubW", box).classList.remove("invalid"); } });
+        if (d) d.addEventListener("input", () => { form.desc = d.value; $("#ntCnt", box).textContent = `${d.value.length}/200`; });
+        $('[data-act="nt-create"]', box).addEventListener("click", async () => {
           keepDesc();
-          const prob = form.type === "Problem", d = form.desc.trim();
-          const err = prob && !form.reason ? "Please select a reason" : !prob && d.length < 3 ? "Please open Customer Information and add a description" : "";
-          if (err) { $("#ntErr", box).textContent = err; shake($(".ctv-nt", box)); return; }
+          const f = form, prob = f.type === "Problem", txt = f.desc.trim();
+          const fail = (w, msg) => { $("#ntErr", box).textContent = msg; const x = $(w, box); if (x) shake(x); toast(msg, "error"); };
+          if (!f.type) return fail("#ntTypeW", "Please select a type");
+          if (prob && !f.cat) return fail("#ntCatW", "Please select a case reason / category");
+          if (!prob && txt.length < 3) return fail("#ntRemW", `Please write your ${f.type.toLowerCase()} in Remarks`);
           showLoader("Creating ticket…"); await wait(1000); hideLoader();
           const id = "TKT" + (4400000 + Math.floor(Math.random() * 99999)), now = new Date();
-          const title = prob ? form.reason : d;
-          CTV.tickets.unshift({ id, title, reason: prob ? "Network Issue" : form.type, at: now, status: "Open", remarks: prob && d ? [d] : [] });
-          CTV.notes.unshift({ at: now, kind: "created", id, cat: prob ? form.reason : form.type });
+          const title = prob ? f.sub || f.cat : txt.length > 40 ? txt.slice(0, 40) + "…" : txt;
+          CTV.tickets.unshift({ id, title, reason: prob ? f.cat : f.type, at: now, status: "Open", remarks: txt ? [txt] : [] });
+          CTV.notes.unshift({ at: now, kind: "created", id, cat: prob ? f.sub || f.cat : f.type });
           form = null; draw();
           toast(`Ticket ${id} created (demo)`, "success");
         });
@@ -3919,7 +4059,9 @@
        ===================================================================== */
     ottHome() {
       const f = state.filter;
-      const bar = (state.session || {}).type === "broadband";   // Broadband customer: same fixed bottom bar as the Live TV Home
+      const lco = (state.session || {}).type === "lco";        // opened from LCO Watch OTT
+      // Same fixed bottom bar rule as the Live TV Home: Broadband customer and Broadband LCO (not Cable TV)
+      const bar = !hasCableTv() && (lco || (state.session || {}).type === "broadband");
       const slides = OTT_TITLES.slice(0, 6);
       // Genre / Language (same preferences as the TV): titles map Kids → kids, Documentary → infotainment, others → movies / entertainment
       const tGenres = (t) => (t[2] === "Kids" ? ["kids"] : t[2] === "Documentary" ? ["infotainment"] : ["movies", "entertainment"]);
@@ -3979,18 +4121,18 @@
           <div class="drawer" id="drawer" aria-hidden="true">
             <div class="drawer-backdrop" data-close-menu></div>
             <nav class="drawer-panel" aria-label="Menu">
-              <p class="dr-ver">Version ${APP_VERSION}</p>
               <div class="drawer-head">
                 <div class="brand"><img src="${MARK}" alt="SITI PLAYTOP MAGIC" /><small>&amp; OTT Partners</small></div>
                 <button class="drawer-x" data-close-menu aria-label="Close menu">${I.close}</button>
               </div>
-              <button class="gp dr-item" data-act="ositi">${I.crown}<span>SITI Packages</span></button>
+              ${lco ? "" : `<button class="gp dr-item" data-act="ositi">${I.crown}<span>SITI Packages</span></button>`}
               <button class="gp dr-item" data-act="live">${I.tv}<span>Live TV</span></button>
               <button class="gp dr-item" data-act="oprofile">${I.userFill}<span>Profile</span></button>
               <i class="dr-sep"></i>
               <button class="gp dr-item" data-act="genre">${I.masks}<span></span></button>
               <button class="gp dr-item" data-act="lang">${I.lang}<span></span></button>
               ${drawerExtrasHTML()}
+              <p class="dr-ver">Version ${APP_VERSION}</p>
             </nav>
           </div>
         </section>`);
@@ -4054,8 +4196,8 @@
       $$("[data-close-menu]", root).forEach((b) => b.addEventListener("click", closeDrawer));
       $$(".dr-item", root).forEach((b) => b.addEventListener("click", closeDrawer));
       $('[data-act="live"]', root).addEventListener("click", () => setTimeout(back, 200));
-      $('[data-act="oprofile"]', root).addEventListener("click", () => go("custProfile"));
-      $('[data-act="ositi"]', root).addEventListener("click", () => go("chPlans", { siti: true }));
+      $('[data-act="oprofile"]', root).addEventListener("click", () => go(lco ? "tvProfile" : "custProfile"));   // LCO: same Profile as its Live TV menu
+      if (!lco) $('[data-act="ositi"]', root).addEventListener("click", () => go("chPlans", { siti: true }));
       if (bar) bindCtvNav(root, "ott");
       bindDrawerExtras(root);
       $('[data-act="genre"]', root).addEventListener("click", () => openChipSheet("genre", draw));
@@ -4978,7 +5120,7 @@
   }
 
   function bbNavHTML(tab) {
-    const B = [["home", I.home, "Home"], ["case", I.ticket, "Case"], ["customer", I.users, "Customer"], ["menu", I.menu, "Menu"]];
+    const B = [["home", I.home, "Home"], ["case", I.ticket, "Case Creation"], ["customer", I.users, "New Customer"], ["menu", I.menu, "Menu"]];
     return `
       <nav class="lco-nav bb-nav">
         ${B.map(([k, ic, l]) => `<button class="${k === tab ? "on" : ""}" data-nav="${k}" aria-label="${l}">${ic}<span>${l}</span></button>`).join("")}
@@ -4995,42 +5137,61 @@
         else reset("bbDash", {}, "back");
         return;
       }
-      const name = t === "case" ? "bbCases" : "bbCustomers";
-      if (tab === "home") go(name); else swapRoute(name);   // Case ↔ Customer: swap, so Back returns to Home
+      go(t === "case" ? "bbNewCase" : "bbCreateCustomer");   // Case Creation / New Customer open their forms directly
     }));
   }
 
-  // ☰ menu (bottom sheet): Management / Customer / Settings
+  // ☰ menu (bottom sheet): Available Plan, Profile, Change Password, Transaction History, Subscriber Report
   function openBbMenu() {
-    const C = BB_DATA.partner.counts;
-    const badge = (n) => (n ? `<i class="bb-badge">${n > 99 ? "99+" : n}</i>` : "");
-    const item = (k, ic, l, n) => `<button class="bb-mi" data-m="${k}">${badge(n)}<span class="bb-mic">${ic}</span><span>${l}</span></button>`;
+    const P = BB_DATA.partner;
+    const M = [
+      ["plans", I.news, "Available Plan", "Broadband plans you can sell"],
+      ["profile", I.user, "Profile", "Partner account details"],
+      ["password", I.lock, "Change Password", "Update your login password"],
+      ["txns", I.card, "Transaction History", "Wallet top ups and payments"],
+      ["subreport", I.chart, "Subscriber Report", "Active, expired and online customers"],
+    ];
     openSheet(`
-      <div class="bb-menu">
-        <h4>Management</h4>
-        <div class="bb-mgrid">
-          ${item("topup", I.wallet, "Top Up")}${item("report", I.chart, "Report Details")}${item("plans", I.news, "Available Plan")}
-        </div>
-        <h4>Customer</h4>
-        <div class="bb-mgrid">
-          ${item("active", I.users, "Active Customers", C.active)}${item("inactive", I.users, "Inactive Customers", C.inactive)}
-          ${item("expired", I.users, "Expired Customers", C.expired)}${item("online", I.wifi, "Online Customers")}
-          ${item("renewal", I.calendar, "Upcoming Renewal", bbExpiring(30).length)}${item("outstanding", I.rupee, "Outstanding Collection")}
-        </div>
-        <h4>Settings</h4>
-        <div class="bb-mgrid">
-          ${item("profile", I.user, "Profile")}${item("password", I.lock, "Change Password")}
-          ${item("txns", I.card, "Transaction History")}${item("subreport", I.chart, "Subscriber Report")}
+      <div class="bb-menu bb-menu2">
+        <div class="bb-mhead"><span class="lco-av">${P.name[0]}</span><span><b>${esc(P.name)}</b><small>${esc((state.session && state.session.lcoid) || "")} · Broadband</small></span></div>
+        <div class="bb-mlist">
+          ${M.map(([k, ic, l, d], i) => `<button class="bb-mrow" data-m="${k}"><span class="bb-mic c${i}">${ic}</span><span class="bb-mt"><b>${l}</b><small>${d}</small></span>${I.chev}</button>`).join("")}
         </div>
       </div>`, (sh) => {
       $$("[data-m]", sh).forEach((b) => b.addEventListener("click", () => {
         const m = b.dataset.m;
-        if (m === "topup" || m === "txns") go("lcoTopUp", { wallet: "bb" });
+        if (m === "txns") go("lcoTopUp", { wallet: "bb" });
         else if (m === "plans") go("bbPlans");
         else if (m === "profile") go("bbAccount");
-        else if (["active", "inactive", "expired", "online", "renewal"].includes(m)) go("bbCustomers", { view: m });
-        else { closeSheet(); toast(`${b.textContent.trim()} (demo)`); }
+        else if (m === "password") openBbPassword();
+        else { closeSheet(); toast("Subscriber Report (demo)"); }
       }));
+    });
+  }
+  // ☰ → Change Password (simulated)
+  function openBbPassword() {
+    openSheet(`
+      <h3>Change Password</h3>
+      <div class="lco-form">
+        <label class="lco-fl" id="pwO"><small>Current Password *</small><input id="pwOld" type="password" maxlength="30" autocomplete="off" /></label>
+        <label class="lco-fl" id="pwN"><small>New Password *</small><input id="pwNew" type="password" maxlength="30" autocomplete="off" /></label>
+        <label class="lco-fl" id="pwC"><small>Confirm New Password *</small><input id="pwCon" type="password" maxlength="30" autocomplete="off" /></label>
+        <p class="hint">8+ characters with letters and numbers · Demo, nothing is saved</p>
+        <p class="hint err" id="pwErr"></p>
+      </div>
+      <button class="btn" id="pwGo">Update Password</button>
+      <button class="btn ghost" id="pwX">Cancel</button>`, (sh) => {
+      $("#pwX", sh).addEventListener("click", closeSheet);
+      $("#pwGo", sh).addEventListener("click", async () => {
+        const o = $("#pwOld", sh).value, n = $("#pwNew", sh).value, c = $("#pwCon", sh).value;
+        const fail = (box, msg) => { shake($(box, sh)); $("#pwErr", sh).textContent = msg; };
+        if (!o) return fail("#pwO", "Enter your current password");
+        if (n.length < 8 || !/[A-Za-z]/.test(n) || !/\d/.test(n)) return fail("#pwN", "Use 8+ characters with letters and numbers");
+        if (n === o) return fail("#pwN", "New password must be different");
+        if (n !== c) return fail("#pwC", "Passwords do not match");
+        closeSheet(); showLoader("Updating password…"); await wait(700); hideLoader();
+        toast("Password changed (demo)", "success");
+      });
     });
   }
 
@@ -5045,7 +5206,9 @@
       <div class="lco-inv">
         <span><small>Customer</small><b>${esc(c.cust)}</b></span>
         <span><small>User Name</small><b>${esc(c.user)}</b></span>
-        <span><small>Category</small><b>${c.cat}</b></span>
+        ${c.type ? `<span><small>Type</small><b>${esc(c.type)}</b></span>` : ""}
+        <span><small>Category</small><b>${esc(c.cat)}</b></span>
+        ${c.remarks ? `<span><small>Remarks</small><b>${esc(c.remarks)}</b></span>` : ""}
         <span><small>Created</small><b>${stamp(c.at)}</b></span>
         <span><small>Assigned to</small><b>${c.assigned ? esc(c.to) : "Not assigned"}</b></span>
         <span class="tot"><small>Status</small><b>${CASE_STATUS[c.status]}</b></span>
@@ -5769,7 +5932,7 @@
   }
 
   function ctvNavHTML(tab) {
-    const B = [["dash", I.grid, "Dashboard"], ["recharge", I.card, "BB Recharge"], ["live", I.tv, "Live TV"], ["support", I.headset, "Support"], ["profile", I.userFill, "Profile"]];
+    const B = [["dash", I.grid, "Dashboard"], ["device", I.wifi, "My Device"], ["live", I.tv, "Live TV"], ["support", I.headset, "Support"], ["profile", I.userFill, "Profile"]];
     return `
       <nav class="ctv-nav">
         ${B.map(([k, ic, l]) => k === "live"
@@ -5784,7 +5947,7 @@
       if (t === "live") { if (tab === "ott") back(); else swapRoute("home", { fromLco: (state.session || {}).type === "lco" }); }   // tab switch: Back still returns to the LCO dashboard
       else if (t === "dash") swapRoute("ctvDash");
       else if (t === "profile") swapRoute("ctvProfile");
-      else if (t === "recharge") swapRoute("ctvRecharge");
+      else if (t === "device") go("ctvUdm");   // My Device (Udm) opens with its own Back
       else if (t === "support") swapRoute("ctvSupport");
     }));
   }
@@ -5797,7 +5960,6 @@
       <div class="drawer" id="drawer" aria-hidden="true">
         <div class="drawer-backdrop" data-close-menu></div>
         <nav class="drawer-panel ctv-drawer" aria-label="Menu">
-          <p class="dr-ver">Version ${APP_VERSION}</p>
               <div class="drawer-head"><div class="brand"><img src="${MARK}" alt="SITI PLAYTOP MAGIC" /><small>&amp; OTT Partners</small></div>
             <button class="drawer-x" data-close-menu aria-label="Close menu">${I.close}</button></div>
           <div class="ctv-ucard">
@@ -5806,6 +5968,7 @@
             <small>Account Number: ${u.acc}</small>
           </div>
           <div class="ctv-mgrid">${CTV_MENU.map(([l, ic]) => `<button data-qa="${l}">${ic}<span>${l}</span></button>`).join("")}</div>
+          <p class="dr-ver">Version ${APP_VERSION}</p>
         </nav>
       </div>`;
   }

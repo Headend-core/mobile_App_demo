@@ -6191,14 +6191,14 @@
   function runSplash() {
     const sp = $("#splash");
     if (!sp) return;
-    const v = $("#splashVideo"), bgv = $("#splashBg"), bar = $("#splashBar");
+    const v = $("#splashVideo"), bar = $("#splashBar");
     const skip = $("#splashSkip"), snd = $("#splashSound");
     let finished = false, usedFallback = false;
 
     const finish = () => {
       if (finished) return;
       finished = true;
-      try { v.pause(); bgv.pause(); } catch (e) { /* ignore */ }
+      try { v.pause(); } catch (e) { /* ignore */ }
       sp.classList.add("done");
       document.removeEventListener("keydown", onKey);
       setTimeout(() => sp.remove(), 650);
@@ -6206,7 +6206,8 @@
     const fallback = () => {
       if (usedFallback || finished) return;
       usedFallback = true;
-      v.hidden = bgv.hidden = snd.hidden = true;
+      v.hidden = snd.hidden = true;
+      sp.style.backgroundColor = "";
       $("#splashFallback").hidden = false;
       bar.style.transition = "width 2.8s linear";
       requestAnimationFrame(() => (bar.style.width = "100%"));
@@ -6224,13 +6225,14 @@
     });
     v.addEventListener("timeupdate", () => {
       if (v.duration) bar.style.width = `${(v.currentTime / v.duration) * 100}%`;
-      if (Math.abs(bgv.currentTime - v.currentTime) > 0.3) bgv.currentTime = v.currentTime; // keep the blurred copy in sync
+      // Screen colour = the video's edge colour (measured): black, then fades to the logo's grey #262828 between 8 and 9.75 s
+      const k = Math.max(0, Math.min(1, (v.currentTime - 8) / 1.75));
+      sp.style.backgroundColor = `rgb(${Math.round(38 * k)},${Math.round(40 * k)},${Math.round(40 * k)})`;
     });
     v.addEventListener("ended", finish);
     v.addEventListener("error", fallback);
 
     const p = v.play();
-    bgv.play().catch(() => {});
     if (p && p.catch) p.catch(fallback);
     // Safety nets: video never starts → logo animation; something stalls → open the app anyway
     setTimeout(() => { if (!finished && v.currentTime === 0) fallback(); }, 2500);

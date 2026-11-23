@@ -465,24 +465,21 @@ svg { display: block; }
 .splash {
   position: absolute; inset: 0; z-index: 90;
   display: grid; place-items: center;
-  background: #050507;
+  background: #000;   /* JS follows the video's edge colour: black, then the logo's dark grey from ~8 s */
   overflow: hidden;
-  transition: opacity .6s ease, transform .6s ease;
+  transition: opacity .6s ease, transform .6s ease, background-color .3s linear;
 }
 .splash.done { opacity: 0; transform: scale(1.04); pointer-events: none; }
 .splash [hidden] { display: none !important; }
-/* Blurred, enlarged copy fills the portrait screen around the landscape video */
-.splash-bg {
-  position: absolute; inset: -10%;
-  width: 120%; height: 120%;
-  object-fit: cover;
-  filter: blur(28px) saturate(1.4) brightness(.55);
-}
+/* Full-screen look: the landscape video is enlarged 1.8x and its top / bottom edges fade
+   into a background of the same colour as the video's own edges, so there are no bars */
+.splash { container-type: size; }
 .splash-video {
-  position: relative;
-  width: 100%; max-height: 100%;
-  object-fit: contain;
-  box-shadow: 0 0 60px rgba(160, 60, 255, .35);
+  position: absolute; left: 50%; top: 50%;
+  width: min(180cqw, 177.78cqh); height: auto; max-width: none;   /* 1.8x: the globe / logo (24–75% of the frame) never get cut */
+  transform: translate(-50%, -50%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 16%, #000 84%, transparent 100%);
+          mask-image: linear-gradient(to bottom, transparent 0, #000 16%, #000 84%, transparent 100%);
 }
 .splash-fallback {
   position: relative; width: 78%;

@@ -292,8 +292,10 @@
       person: sv(disc("#6f42c1") + `<circle cx="20" cy="15.5" r="4.8" fill="#fff"/><path d="M11.5 28.5c.6-5 4.1-7.8 8.5-7.8s7.9 2.8 8.5 7.8z" fill="#fff"/>`),
       // Complaint management: pink support agent with headset
       headset: sv(disc("#e8408f") + `<circle cx="20" cy="20" r="5.2" fill="#fff"/><path d="M12.5 21v-2a7.5 7.5 0 0 1 15 0v2" fill="none" stroke="#fff" stroke-width="2.4"/><rect x="10.5" y="18.5" width="4" height="6" rx="1.6" fill="#fff"/><rect x="25.5" y="18.5" width="4" height="6" rx="1.6" fill="#fff"/><path d="M27.5 24.5c0 3-2.5 4.5-5.5 4.5" fill="none" stroke="#fff" stroke-width="2"/><path d="M17.8 20.4a3 3 0 0 0 4.4 0" fill="none" stroke="#e8408f" stroke-width="1.6" stroke-linecap="round"/>`),
-      // Reconfirmation package and repair: blue chain links
-      chain: sv(`<circle cx="20" cy="20" r="19" fill="#e9f1fb"/><g fill="none" stroke-width="4.2" stroke-linecap="round"><path d="M18.2 23.8l-3.4 3.4a4.6 4.6 0 0 1-6.5-6.5l4.6-4.6a4.6 4.6 0 0 1 6.5 0" stroke="#3a7bd5"/><path d="M21.8 16.2l3.4-3.4a4.6 4.6 0 0 1 6.5 6.5l-4.6 4.6a4.6 4.6 0 0 1-6.5 0" stroke="#6fa8ea"/></g>`),
+      // Repairing Request: green chain links on a light tile
+      chain: sv(tile + `<g transform="rotate(-45 20 20)" fill="none" stroke-width="3.4"><rect x="18.2" y="15.4" width="14.6" height="9.2" rx="4.6" stroke="#2e9e44"/><path d="M21.8 20a4.6 4.6 0 0 1-4.6 4.6" stroke="#eceef2" stroke-width="6.4"/><rect x="7.2" y="15.4" width="14.6" height="9.2" rx="4.6" stroke="#2e9e44"/></g>`),   // two interlocked links
+      // VC replacement: purple document with lines, on a light tile
+      doc: sv(tile + `<path d="M12.5 8.5h10.5l5.5 5.5v17.5h-16z" fill="#7b4fd6"/><path d="M23 8.5V14h5.5z" fill="#b89cf0"/><path d="M15.5 19.5h10M15.5 23.5h10M15.5 27.5h6" stroke="#fff" stroke-width="2" stroke-linecap="round"/>`),
     };
   })();
   const LCO_DATA = (() => {
@@ -1126,6 +1128,7 @@
             </div>
             ${ex ? `
             <div class="ex-wrap" id="exWrap">
+              ${cfg.extra === "vsc" ? `<button class="link vch-link" data-act="vc-help">What is VSC number?</button>` : ""}
               <label class="field" id="exField">
                 ${ex.icon}
                 <input id="extra" type="text" inputmode="${ex.inputmode}" maxlength="${ex.maxlength}" autocomplete="off" placeholder="${ex.placeholder}" aria-label="${ex.label}" />
@@ -1162,6 +1165,8 @@
         else go("role");
       });
 
+      const vch = $('[data-act="vc-help"]', root);
+      if (vch) vch.addEventListener("click", openVcHelp);
       const mob = $("#mobile", root), hint = $("#hint", root), btn = $("#submit", root), field = $("#mobField", root);
       const xin = $("#extra", root), xHint = $("#exHint", root), xField = $("#exField", root), xWrap = $("#exWrap", root);
       const sw = $("#modeSwitch", root);
@@ -2685,13 +2690,14 @@
       const rows = [["Account Balance", s.balance], ["VC No", s.vc], ["SMS ID", s.sms],
         ["Status", s.active ? "Active" : "Deactive"], ["STB No", s.stb], ["Due Date", s.due]];
       // [handler, icon, label]; package actions only for active subscribers
+      // Icons as mapped by the user (screenshot 69)
       const acts = [
-        ["detail", "person", "Subscriber Detail"], ["instant", "rupee", "Instant Recharge"],
-        ["repair", "info", "Repairing Request"], ["reconfirm", "history", "Reconfirmation Package"],
-        ...(s.active ? [["add", "sync", "Recharge - add package"], ["change", "rupeeBolt", "Upgrade/Downgrade"],
-          ["pkgoff", "minus", "Package deactivation"], ["alloff", "userSlash", "All Package deactivation"]] : []),
-        ["stb", "upDown", "STB replacement"], ["vc", "swap", "VC replacement"],
-        ["complaint", "headset", "Complaint management"], ["reconfrepair", "chain", "Reconfirmation package and repair"],
+        ["detail", "person", "Subscriber Detail"], ["instant", "rupeeBolt", "Instant Recharge"],
+        ["repair", "chain", "Repairing Request"], ["reconfirm", "sync", "Reconfirmation Package"],
+        ...(s.active ? [["add", "rupee", "Recharge - add package"], ["change", "upDown", "Upgrade/Downgrade"],
+          ["pkgoff", "userSlash", "Package deactivation"], ["alloff", "minus", "All Package deactivation"]] : []),
+        ["stb", "swap", "STB replacement"], ["vc", "doc", "VC replacement"],
+        ["complaint", "headset", "Complaint management"],
       ];
       const root = el(`
         <section class="tv lco" data-screen="lco-subscriber">
@@ -2758,7 +2764,6 @@
             done(`Complaint CMP${String(Date.now()).slice(-6)} registered (demo)`);
           });
         }),
-        reconfrepair: () => confirm("Reconfirmation package and repair", `Re-send all active packages to the STB of ${esc(s.name)} (VC ${s.vc}) and run a repair?`, "Reconfirm & repair", "Package reconfirmed and repair sent (demo)"),
       };
       $$("[data-sa]", root).forEach((b) => b.addEventListener("click", () => H[b.dataset.sa]()));
       return root;
@@ -5854,6 +5859,37 @@
       });
     }));
   }
+  // "What is VSC number?" — the TV error message + STB Information page (press info 4 times), VC number marked in yellow
+  function vcHelpHTML() {
+    const qr = Array.from({ length: 49 }, (_, k) => ((k * 37 + (k >> 2)) % 5 < 2 || [0, 1, 7, 8, 5, 6, 12, 13, 35, 36, 42, 43].includes(k) ? `<rect x="${(k % 7) * 3}" y="${Math.floor(k / 7) * 3}" width="3" height="3"/>` : "")).join("");
+    const now = new Date();
+    return `
+      <div class="vch">
+        <div class="vch-tv">
+          <div class="vch-tt">Information</div>
+          <p class="vch-err">120: This channel is not subscribed - Contact Your Cable Operator!</p>
+          <div class="vch-row">
+            <dl><dt>Virtual Card</dt><dd><mark>xxx xxxx xxxx - x</mark></dd><dt>Chip ID</dt><dd>xxx xxxx xxxx</dd>
+              <dt>STB Number</dt><dd>xxxxxxxxxxxxxxxxxx</dd><dt>LCN</dt><dd>xx</dd></dl>
+            <span class="vch-qr"><svg viewBox="0 0 21 21" aria-hidden="true">${qr}</svg></span>
+          </div>
+          <div class="vch-foot"><span><i></i>Check Package Status</span><span>${dmy(now)} ${hmFmt(now)}</span></div>
+        </div>
+        <p class="vch-cap">Error message on your TV</p>
+        <div class="vch-tv vch-stb">
+          <div class="vch-tt left">STB Information</div>
+          <dl><dt>Company</dt><dd>SITI Networks Limited</dd><dt>Loader Version</dt><dd>00.00.01.00</dd><dt>H/W Version</dt><dd>82.09.58.05</dd>
+            <dt>S/W Version</dt><dd>00.00.E0.0D</dd><dt>STB Model</dt><dd>xxxxxxx</dd><dt>STB Number</dt><dd>xxxxxxxxxxxxxxxxxx</dd>
+            <dt>Chip ID</dt><dd>xxx xxxx xxxx</dd><dt>Virtual Card Number</dt><dd><mark>xxx xxxx xxxx - x</mark></dd></dl>
+        </div>
+        <p class="vch-cap">Press <b class="vch-info">info</b> button 4 times on your remote to open this page</p>
+        <p class="vch-note">${I.card}<span>Your <b>VSC / Virtual Card number</b> is the number underlined in yellow. Enter it without spaces or the dash.</span></p>
+      </div>`;
+  }
+  function openVcHelp() {
+    openSheet(`<h3>What is VSC number?</h3>${vcHelpHTML()}<button class="btn" id="vchOk">Got it</button>`,
+      (sh) => $("#vchOk", sh).addEventListener("click", closeSheet));
+  }
   function openAddAccount(after) {
     let kind = "cable";
     const body = () => {
@@ -5862,7 +5898,8 @@
         const cab = list.filter((a) => a.type === "cable");
         return `
           ${cab.length ? `<p class="aa-cap">Your Cable TV account${cab.length > 1 ? "s" : ""}</p>${cab.map((a) => `<div class="aa-acc">${I.tv}<span><b>VC No ${esc(a.id)}</b><small>${isActiveAcc(a) ? "Active" : "Linked"} · ${esc(a.mobile)}</small></span></div>`).join("")}` : ""}
-          <p class="aa-cap">Add another Cable TV account</p>
+          <div class="aa-caprow"><p class="aa-cap">Add another Cable TV account</p><button class="link vch-link" id="aaHelpBtn" aria-expanded="false">What is VSC number?</button></div>
+          <div id="aaHelp" hidden>${vcHelpHTML()}</div>
           <label class="aa-in">${I.card}<input id="aaVc" inputmode="numeric" maxlength="11" placeholder="Virtual Card Number (11 Digit)" aria-label="Virtual Card Number" /></label>
           <small class="aa-err" id="aaErr"></small>
           <button class="btn" id="aaSub">Submit</button>`;
@@ -5885,6 +5922,11 @@
         $("#aaBody", sh).innerHTML = body();
         const vc = $("#aaVc", sh);
         if (vc) {
+          $("#aaHelpBtn", sh).addEventListener("click", (e) => {   // What is VSC number? → unfold the help inside this sheet
+            const h = $("#aaHelp", sh); h.hidden = !h.hidden;
+            e.currentTarget.setAttribute("aria-expanded", !h.hidden);
+            e.currentTarget.textContent = h.hidden ? "What is VSC number?" : "Hide help";
+          });
           vc.addEventListener("input", () => { vc.value = vc.value.replace(/\D/g, "").slice(0, 11); $("#aaErr", sh).textContent = ""; });
           $("#aaSub", sh).addEventListener("click", async () => {
             const v = vc.value;

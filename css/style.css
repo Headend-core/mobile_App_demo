@@ -2764,3 +2764,29 @@ button.lco-card:active { background: #1c1c22; }
 .dr-ver { flex: none; margin: 12px 0 0; text-align: center; }
 .drawer-panel > .dr-ver:last-child { margin-top: auto; padding-top: 12px; }
 .dr-pa + .dr-ver { margin-top: 12px; padding-top: 0; }
+
+/* "What is VSC number?" help (Cable TV sign up + Add Cable account): the old app's TV screens, redrawn */
+.vch-link { display: block; margin: 0 0 6px auto; font-size: 12.5px; font-weight: 600; color: var(--accent-cyan); text-decoration: underline; text-underline-offset: 3px; }
+.aa-caprow { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.aa-caprow .vch-link { margin: 0; flex: none; }
+#aaHelp { margin: 4px 0 10px; }
+.vch { display: flex; flex-direction: column; gap: 6px; margin: 4px 0 12px; }
+.vch-tv { border-radius: 6px; padding: 6px 10px 8px; color: #e9ecf5; font-family: Arial, Helvetica, sans-serif;
+  background: linear-gradient(180deg, #1b2240, #10142a); border: 2px solid #3b4470; box-shadow: inset 0 0 0 1px #0a0d1c; }
+.vch-tt { text-align: center; font-size: 12.5px; padding-bottom: 4px; margin: 0 -10px 6px; border-bottom: 1px solid #56608f; }
+.vch-tt.left { text-align: left; padding-left: 4px; }
+.vch-err { margin: 0 0 6px; font-size: 10.5px; }
+.vch-row { display: flex; align-items: flex-start; gap: 8px; }
+.vch dl { flex: 1; display: grid; grid-template-columns: auto 1fr; gap: 3px 10px; margin: 0; font-size: 10.5px; }
+.vch dt { color: #c9cfe4; white-space: nowrap; }
+.vch dd { margin: 0; font-family: "Courier New", monospace; font-size: 10px; overflow-wrap: anywhere; }
+.vch mark { background: none; color: #fff; border-bottom: 2.5px solid #ffd21f; padding-bottom: 1px; }
+.vch-qr { flex: none; width: 40px; height: 40px; padding: 3px; background: #fff; border-radius: 2px; }
+.vch-qr svg { display: block; width: 100%; height: 100%; fill: #111; }
+.vch-foot { display: flex; justify-content: space-between; gap: 8px; margin-top: 6px; font-size: 10px; }
+.vch-foot i { display: inline-block; width: 9px; height: 9px; margin-right: 5px; background: #2ecc40; vertical-align: -1px; }
+.vch-stb dl { gap: 4px 14px; }
+.vch-cap { margin: 0 0 6px; text-align: center; font-size: 11.5px; font-weight: 600; color: #d8d6e2; }
+.vch-info { display: inline-block; padding: 0 6px; margin: 0 2px; border: 1.5px solid currentColor; border-radius: 50%; font-size: 10.5px; }
+.vch-note { display: flex; gap: 8px; align-items: flex-start; margin: 2px 0 0; padding: 9px 10px; border-radius: 10px; background: rgba(255, 210, 31, .08); border: 1px solid rgba(255, 210, 31, .3); font-size: 11.5px; color: #e9e6f2; }
+.vch-note svg { width: 16px; height: 16px; flex: none; color: #ffd21f; margin-top: 1px; }

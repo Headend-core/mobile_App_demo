@@ -2891,3 +2891,6 @@ button.lco-card:active { background: #1c1c22; }
 .mini-timer { position: absolute; right: 6px; bottom: 6px; z-index: 4; width: 32px; height: 32px; background: rgba(0, 0, 0, .55); }
 .mini-timer b { font-size: 12px; }
 .mini.show.ctl .mini-body > .mini-live { opacity: 0; }   /* the title strip takes the top while controls show */
+/* Bigger logo in every header and ☰ menu (user screenshot 81) */
+.brand img { height: 66px; }
+.brand small { font-size: 10.5px; margin-top: 3px; }

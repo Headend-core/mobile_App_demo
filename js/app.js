@@ -3035,7 +3035,6 @@
               <button class="menu-btn" data-act="menu" aria-label="Open menu" aria-expanded="false">${I.menu}</button>
               <div class="brand">
                 <img src="${MARK}" alt="SITI PLAYTOP MAGIC" />
-                <small>&amp; OTT Partners</small>
               </div>
               ${fromLco ? "" : `<button class="menu-btn head-search${f.q ? " on" : ""}" data-act="search" aria-label="Search channels">${I.search}</button>`}
             </header>
@@ -3055,7 +3054,6 @@
               <div class="drawer-head">
                 <div class="brand">
                   <img src="${MARK}" alt="SITI PLAYTOP MAGIC" />
-                  <small>&amp; OTT Partners</small>
                 </div>
                 <button class="drawer-x" data-close-menu aria-label="Close menu">${I.close}</button>
               </div>
@@ -4290,7 +4288,7 @@
           <div class="tv-scroll">
             <header class="tv-head otth-head">
               <button class="menu-btn" data-act="menu" aria-label="Open menu" aria-expanded="false">${I.menu}</button>
-              <div class="brand"><img src="${MARK}" alt="SITI PLAYTOP MAGIC" /><small>&amp; OTT Partners</small></div>
+              <div class="brand"><img src="${MARK}" alt="SITI PLAYTOP MAGIC" /></div>
               <button class="menu-btn head-search" data-act="osearch" aria-label="Search movies, shows or apps">${I.search}</button>
             </header>
             <div class="searchbar" id="osb" hidden>${I.search}<input id="oq" type="search" placeholder="Search movies, shows or apps" aria-label="Search OTT" /></div>
@@ -4307,13 +4305,14 @@
             <div class="drawer-backdrop" data-close-menu></div>
             <nav class="drawer-panel" aria-label="Menu">
               <div class="drawer-head">
-                <div class="brand"><img src="${MARK}" alt="SITI PLAYTOP MAGIC" /><small>&amp; OTT Partners</small></div>
+                <div class="brand"><img src="${MARK}" alt="SITI PLAYTOP MAGIC" /></div>
                 <button class="drawer-x" data-close-menu aria-label="Close menu">${I.close}</button>
               </div>
               ${lco ? "" : `<button class="gp dr-item" data-act="ositi">${I.crown}<span>SITI Packages</span></button>`}
               <button class="gp dr-item" data-act="live">${I.tv}<span>Live TV</span></button>
               <button class="gp dr-item" data-act="oprofile">${I.userFill}<span>Profile</span></button>
               <i class="dr-sep"></i>
+              ${hasCableTv() ? `<button class="gp dr-item" data-act="olts">${I.router}<span>LTS</span></button>` : ""}
               <button class="gp dr-item" data-act="genre">${I.masks}<span></span></button>
               <button class="gp dr-item" data-act="lang">${I.lang}<span></span></button>
               ${drawerExtrasHTML()}
@@ -4381,6 +4380,7 @@
       $$("[data-close-menu]", root).forEach((b) => b.addEventListener("click", closeDrawer));
       $$(".dr-item", root).forEach((b) => b.addEventListener("click", closeDrawer));
       $('[data-act="live"]', root).addEventListener("click", () => setTimeout(back, 200));
+      if (hasCableTv()) $('[data-act="olts"]', root).addEventListener("click", () => go("ltsHome"));   // Cable TV: LTS like the Live TV menu
       $('[data-act="oprofile"]', root).addEventListener("click", () => go(lco ? "tvProfile" : "custProfile"));   // LCO: same Profile as its Live TV menu
       if (!lco) $('[data-act="ositi"]', root).addEventListener("click", () => go("chPlans", { siti: true }));
       if (bar) bindCtvNav(root, "ott");
@@ -6299,7 +6299,7 @@
       <div class="drawer" id="drawer" aria-hidden="true">
         <div class="drawer-backdrop" data-close-menu></div>
         <nav class="drawer-panel ctv-drawer" aria-label="Menu">
-              <div class="drawer-head"><div class="brand"><img src="${MARK}" alt="SITI PLAYTOP MAGIC" /><small>&amp; OTT Partners</small></div>
+              <div class="drawer-head"><div class="brand"><img src="${MARK}" alt="SITI PLAYTOP MAGIC" /></div>
             <button class="drawer-x" data-close-menu aria-label="Close menu">${I.close}</button></div>
           <div class="ctv-ucard">
             <button class="ctv-uname" data-act="dr-profile">${esc(u.id)} ${I.chev}</button>

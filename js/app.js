@@ -2802,7 +2802,7 @@
       });
       const H = {
         detail: () => go("lcoSubDetail", { kind, i }),
-        instant: () => toast("Instant Recharge (demo)"),
+        instant: () => go("lcoInstant", { kind, i }),
         repair: () => toast("Repairing Request (demo)"),
         reconfirm: () => toast("Reconfirmation Package (demo)"),
         add: () => go("lcoUpgrade", { kind, i }),
@@ -2891,6 +2891,109 @@
           });
         });
       }));
+      return root;
+    },
+
+    /* ---- LCO: subscriber → Instant Recharge (renew the CURRENT package; cost debited from the CATV wallet) ---- */
+    lcoInstant({ kind = "active", i = 0 }) {
+      const s = LCO_DATA[kind][i];
+      const P = LCO_DATA.partner;
+      const cur = CABLE_PACKS[s.pack];
+      const MONTHS = [1, 3, 6, 12];
+      let months = 1;
+      const toDate = (d) => { const [dd, mm, yy] = d.split("-").map(Number); return new Date(yy, mm - 1, dd); };
+      const dmyStr = (d) => `${String(d.getDate()).padStart(2, "0")}-${String(d.getMonth() + 1).padStart(2, "0")}-${d.getFullYear()}`;
+      const today = new Date(); today.setHours(0, 0, 0, 0);
+      const dueD = toDate(s.due);
+      const expired = !s.active || dueD < today;
+      const newDue = () => { const d = new Date(Math.max(dueD.getTime(), today.getTime())); d.setMonth(d.getMonth() + months); return d; };
+      const amount = () => cur.price * months;
+      const root = el(`
+        <section class="tv lco" data-screen="lco-instant-recharge">
+          <header class="sub-head">
+            <button class="back-btn static" data-act="back" aria-label="Back">${I.back}</button>
+            <h2>Instant Recharge</h2>
+          </header>
+          <div class="lco-card ir-sub">
+            <h3>${I.userFill}<span>${esc(s.name)}</span></h3>
+            <p><span>VC No</span><b>${s.vc}</b></p>
+            <p><span>STB No</span><b>${s.stb}</b></p>
+            <p><span>Status</span><b class="${s.active ? "ok" : "off"}">${s.active ? "Active" : "Deactive"}</b></p>
+          </div>
+          <div class="lco-card ir-pack">
+            <span class="ir-cap">Current package</span>
+            <b class="ir-name">${cur.name}</b>
+            <div class="ir-stats">
+              <span><b>${cur.ch}</b><small>Channels</small></span>
+              <span><b>${cur.hd}</b><small>HD</small></span>
+              <span><b>${cur.ott}</b><small>OTT apps</small></span>
+              <span><b>₹ ${cur.price}</b><small>per month</small></span>
+            </div>
+            <p class="ir-due ${expired ? "off" : ""}">${I.clock}${expired ? `Expired · was valid till ${s.due}` : `Valid till ${s.due}`}</p>
+          </div>
+          <h4 class="ir-h">Recharge the same package for</h4>
+          <div class="ir-months" role="radiogroup" aria-label="Recharge period">
+            ${MONTHS.map((m) => `<button class="ir-m${m === months ? " on" : ""}" role="radio" aria-checked="${m === months}" data-m="${m}"><b>${m}</b><small>${m === 1 ? "month" : "months"}</small><i>₹ ${cur.price * m}</i></button>`).join("")}
+          </div>
+          <div class="lco-card ir-sum">
+            <p><span>Package</span><b>${cur.name}</b></p>
+            <p><span>Period</span><b id="irPer"></b></p>
+            <p><span>New due date</span><b id="irDue"></b></p>
+            <p class="ir-tot"><span>Amount</span><b id="irAmt"></b></p>
+          </div>
+          <div class="lco-bal">${I.wallet}<span>CATV wallet</span><b id="irWal">₹ ${P.wallet}</b></div>
+          <button class="btn" id="irPay"><span class="lbl"></span></button>
+          <p class="more-note">Demo prices • No real recharge is made</p>
+        </section>`);
+      bindCommon(root);
+      const draw = () => {
+        $("#irPer", root).textContent = `${months} ${months === 1 ? "month" : "months"}`;
+        $("#irDue", root).textContent = dmyStr(newDue());
+        $("#irAmt", root).textContent = `₹ ${money(amount())}`;
+        $(".lbl", $("#irPay", root)).textContent = `Recharge ₹ ${money(amount())}`;
+        $$(".ir-m", root).forEach((b) => { const on = +b.dataset.m === months; b.classList.toggle("on", on); b.setAttribute("aria-checked", on); });
+      };
+      $$(".ir-m", root).forEach((b) => b.addEventListener("click", () => { months = +b.dataset.m; draw(); }));
+      $("#irPay", root).addEventListener("click", () => {
+        const amt = amount(), nd = dmyStr(newDue());
+        openSheet(`
+          <h3>Confirm recharge</h3>
+          <p>${esc(s.name)} · VC ${s.vc}<br/><b>${cur.name}</b> for ${months} ${months === 1 ? "month" : "months"}<br/>New due date: <b>${nd}</b><br/>Amount: <b>₹ ${money(amt)}</b> · debited from your CATV wallet (₹ ${P.wallet})</p>
+          <button class="btn" id="irOk">Recharge ₹ ${money(amt)}</button>
+          <button class="btn ghost" id="irNo">Cancel</button>`, (sh) => {
+          $("#irNo", sh).addEventListener("click", closeSheet);
+          $("#irOk", sh).addEventListener("click", async () => {
+            if (parseFloat(P.wallet) < amt) { closeSheet(); toast("Not enough CATV wallet balance — top up first", "error"); return; }
+            closeSheet();
+            showLoader("Recharging…");
+            await wait(1100);
+            hideLoader();
+            P.wallet = money(parseFloat(P.wallet) - amt);
+            s.due = nd;
+            s.active = true;            // recharging a deactive / expired box turns it back on
+            const txn = "RCH" + String(Date.now()).slice(-8);
+            openSheet(`
+              <div class="ok-badge">${I.checkBig}</div>
+              <h3>Recharge successful</h3>
+              <div class="lco-inv">
+                <span><small>Subscriber</small><b>${esc(s.name)}</b></span>
+                <span><small>VC No</small><b>${s.vc}</b></span>
+                <span><small>Package</small><b>${cur.name}</b></span>
+                <span><small>Period</small><b>${months} ${months === 1 ? "month" : "months"}</b></span>
+                <span><small>Valid till</small><b>${nd}</b></span>
+                <span><small>Amount</small><b>₹ ${money(amt)}</b></span>
+                <span><small>Transaction ID</small><b>${txn}</b></span>
+                <span><small>CATV wallet</small><b>₹ ${P.wallet}</b></span>
+              </div>
+              <span class="demo-tag">Demo • No real recharge made</span>
+              <button class="btn" id="irDone">Done</button>`, (s2) => {
+              $("#irDone", s2).addEventListener("click", () => { closeSheet(); back(); });
+            });
+            toast("Recharge successful (demo)", "success");
+          });
+        });
+      });
+      draw();
       return root;
     },
 

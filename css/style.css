@@ -2848,3 +2848,33 @@ button.lco-card:active { background: #1c1c22; }
 .tvc-snd.on .s-off { display: none; }
 .tvc-player.has-vid .tvc-live, .tvc-player.has-vid .tvc-arr, .tvc-player.has-vid .tvc-wm { z-index: 2; }
 @media (prefers-reduced-motion: reduce) { .mini { transform: none; transition: opacity .2s ease; } }
+
+/* LCO subscriber → Instant Recharge (renew the current package) */
+.ir-sub h3 { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; font-size: 15px; }
+.ir-sub h3 svg { width: 18px; height: 18px; flex: none; color: var(--accent); }
+.ir-sub h3 span { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ir-sub p, .ir-sum p { display: flex; justify-content: space-between; gap: 12px; margin: 0; padding: 5px 0; font-size: 12.5px; }
+.ir-sub p span, .ir-sum p span { color: var(--muted); }
+.ir-sub p b, .ir-sum p b { text-align: right; word-break: break-all; }
+.ir-sub .ok { color: #34d399; } .ir-sub .off { color: #ff6b81; }
+.ir-pack { background: linear-gradient(135deg, rgba(155, 92, 255, .22), rgba(47, 216, 255, .1)); border-color: rgba(155, 92, 255, .45); }
+.ir-cap { display: block; font-size: 11.5px; font-weight: 600; color: var(--accent-cyan); text-transform: uppercase; letter-spacing: .06em; }
+.ir-name { display: block; margin: 2px 0 10px; font-size: 18px; }
+.ir-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.ir-stats span { display: flex; flex-direction: column; align-items: center; padding: 8px 2px; border-radius: 10px; background: rgba(0, 0, 0, .25); }
+.ir-stats b { font-size: 14px; white-space: nowrap; }
+.ir-stats small { font-size: 10.5px; color: var(--muted); }
+.ir-due { display: flex; align-items: center; gap: 6px; margin: 10px 0 0; font-size: 12.5px; color: #34d399; }
+.ir-due.off { color: #ff6b81; }
+.ir-due svg { width: 15px; height: 15px; flex: none; }
+.ir-h { margin: 16px 16px 8px; font-size: 13.5px; flex-shrink: 0; }
+.ir-months { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin: 0 12px; flex-shrink: 0; }
+.ir-m { display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 10px 4px; border-radius: 12px; border: 1px solid #3a2b55; background: #15121e; color: #fff; transition: border-color .2s, background .2s; }
+.ir-m b { font-size: 18px; line-height: 1.1; }
+.ir-m small { font-size: 10.5px; color: var(--muted); }
+.ir-m i { margin-top: 3px; font-style: normal; font-size: 11.5px; font-weight: 600; color: var(--accent-cyan); }
+.ir-m.on { border-color: var(--accent); background: rgba(155, 92, 255, .18); box-shadow: 0 0 0 1px var(--accent) inset; }
+.ir-sum { margin-top: 12px; }
+.ir-sum .ir-tot { margin-top: 4px; padding-top: 9px; border-top: 1px solid #2a2340; font-size: 14px; }
+.ir-sum .ir-tot b { color: var(--accent-cyan); font-size: 16px; }
+.lco #irPay { margin: 14px 12px 0; width: calc(100% - 24px); flex-shrink: 0; }

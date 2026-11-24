@@ -3062,7 +3062,7 @@
               ${fromLco ? `<button class="gp dr-item${f.q ? " on" : ""}" data-act="search">${I.search}<span>Search</span></button>` : ""}
               <button class="gp dr-item" data-act="profile">${I.userFill}<span>Profile</span></button>
               <i class="dr-sep"></i>
-              ${cable ? `<button class="gp dr-item" data-act="lts">${I.router}<span>LTS</span></button>` : ""}
+              ${cable ? `<button class="gp dr-item" data-act="lts">${I.router}<span>ALTD</span></button>` : ""}
               <button class="gp dr-item${f.genre || f.genres ? " on" : ""}" data-act="genre">${I.masks}<span>${genreLabel()}</span></button>
               <button class="gp dr-item${f.lang || f.langs ? " on" : ""}" data-act="lang">${I.lang}<span>${langLabel()}</span></button>
               ${drawerExtrasHTML()}
@@ -4312,7 +4312,7 @@
               <button class="gp dr-item" data-act="live">${I.tv}<span>Live TV</span></button>
               <button class="gp dr-item" data-act="oprofile">${I.userFill}<span>Profile</span></button>
               <i class="dr-sep"></i>
-              ${hasCableTv() ? `<button class="gp dr-item" data-act="olts">${I.router}<span>LTS</span></button>` : ""}
+              ${hasCableTv() ? `<button class="gp dr-item" data-act="olts">${I.router}<span>ALTD</span></button>` : ""}
               <button class="gp dr-item" data-act="genre">${I.masks}<span></span></button>
               <button class="gp dr-item" data-act="lang">${I.lang}<span></span></button>
               ${drawerExtrasHTML()}
@@ -4450,7 +4450,7 @@
             <div class="lts-top">
               <header class="sub-head lts-head">
                 <button class="back-btn static" data-act="back" aria-label="Back">${I.back}</button>
-                <div class="lts-t"><h2>LTS</h2><small>${esc(pack)} · ${all.length} channels · ${all.filter((c) => c.hd).length} HD</small></div>
+                <div class="lts-t"><h2>ALTD</h2><small>${esc(pack)} · ${all.length} channels · ${all.filter((c) => c.hd).length} HD</small></div>
                 <button class="menu-btn head-search" data-act="lsearch" aria-label="Search channels">${I.search}</button>
               </header>
               <div class="searchbar" id="lsb" hidden>${I.search}<input id="lq" type="search" placeholder="Search channels in your pack" aria-label="Search channels" /></div>

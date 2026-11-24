@@ -2792,3 +2792,59 @@ button.lco-card:active { background: #1c1c22; }
 .cv-ok { display: flex; align-items: center; gap: 8px; margin: 0 0 14px; padding: 9px 12px; border-radius: 12px; font-size: 13px; font-weight: 600; color: #7ef0b0; background: rgba(46, 204, 113, .1); border: 1px solid rgba(46, 204, 113, .3); }
 .cv-ok svg { width: 16px; height: 16px; flex: none; }
 [data-screen="register-cable-vsc"] .row-between .vch-link { margin: 0; }
+/* Mini player (landing channel after sign-in + any minimised channel), floats over every screen */
+.mini {
+  position: absolute; right: 12px; bottom: 16px; z-index: 50;
+  width: min(250px, calc(100% - 24px)); border-radius: 16px; overflow: hidden;
+  background: #121218; border: 1px solid rgba(255, 255, 255, .14);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, .65), 0 0 0 1px rgba(155, 92, 255, .25);
+  /* enters from its own corner: starts small, low and transparent, then glides up (JS adds .show once the picture is ready) */
+  opacity: 0; transform: translateY(40px) scale(.85); transform-origin: 100% 100%;
+  transition: opacity .4s ease, transform .6s cubic-bezier(.16, 1, .3, 1), bottom .35s var(--ease);
+  will-change: transform, opacity;
+}
+.mini.show { opacity: 1; transform: none; }
+.mini[hidden] { display: none; }
+.mini.up { bottom: 82px; }                      /* above a bottom bar */
+.mini.show.bye { opacity: 0; transform: translateY(16px) scale(.94); transition-duration: .35s; }
+.device:has(.drawer.open) .mini.show { opacity: 0; pointer-events: none; }   /* ☰ menu open */
+.mini .mini-body > * { opacity: 0; transition: opacity .45s ease .2s; }       /* picture fades in after the card lands */
+.mini.show .mini-body > * { opacity: 1; }
+.mini-head { display: flex; align-items: center; gap: 6px; padding: 6px 6px 6px 4px; }
+.mini-x, .mini-open { flex: none; width: 30px; height: 30px; display: grid; place-items: center; border-radius: 50%; color: #fff; background: rgba(255, 255, 255, .08); }
+.mini-x svg, .mini-open svg { width: 16px; height: 16px; }
+.mini-t { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.2; }
+.mini-t b { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mini-t small { font-size: 10.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mini-body { position: relative; display: block; width: 100%; aspect-ratio: 16 / 9; padding: 0; overflow: hidden; }
+.mini-vid { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.mini-show { position: absolute; inset: 0; display: grid; place-content: center; gap: 6px; justify-items: center; padding: 8px; text-align: center; font-size: 13px; text-shadow: 0 2px 8px rgba(0, 0, 0, .6); }
+.mini-live { position: absolute; left: 6px; top: 6px; display: inline-flex; align-items: center; gap: 4px; padding: 2px 6px; border-radius: 5px; font-size: 9.5px; font-weight: 700; background: rgba(0, 0, 0, .55); }
+.mini-live i { width: 6px; height: 6px; border-radius: 50%; background: #ff3b5c; animation: tvdot 1.2s ease-in-out infinite; }
+.mini-timer { position: relative; flex: none; width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; background: rgba(255, 255, 255, .06); }   /* top right of the header */
+.mini-timer svg { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); }
+.mini-timer circle { fill: none; stroke: rgba(255, 255, 255, .22); stroke-width: 3; }
+.mini-timer .mini-ring { stroke: #2fd8ff; stroke-linecap: round; stroke-dasharray: 106.8; stroke-dashoffset: 0; }
+.mini.show .mini-ring { animation-name: miniRing; animation-timing-function: linear; animation-fill-mode: forwards; }   /* duration set inline */
+.mini-timer b { position: relative; font-size: 12.5px; font-weight: 700; }
+.mini-body { cursor: pointer; }
+/* Full-screen button: in the middle of the video, only after a tap */
+.mini-full { position: absolute; left: 50%; top: 50%; z-index: 2; width: 46px; height: 46px; display: grid; place-items: center; border-radius: 50%;
+  color: #fff; background: rgba(0, 0, 0, .55); border: 1px solid rgba(255, 255, 255, .25); backdrop-filter: blur(3px);
+  opacity: 0; transform: translate(-50%, -50%) scale(.8); pointer-events: none; transition: opacity .2s ease, transform .25s var(--ease); }
+.mini-full svg { width: 20px; height: 20px; }
+.mini.ctl .mini-full { opacity: 1; transform: translate(-50%, -50%); pointer-events: auto; }
+.mini.ctl .mini-body::after { content: ""; position: absolute; inset: 0; background: rgba(0, 0, 0, .3); pointer-events: none; }
+.mini.show .mini-body > .mini-full { opacity: 0; }
+.mini.show.ctl .mini-body > .mini-full { opacity: 1; }
+@keyframes miniRing { to { stroke-dashoffset: 106.8; } }
+/* Channel page: real video for the landing channel + sound button */
+.tvc-player.has-vid { overflow: hidden; }
+.tvc-vid { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.tvc-snd { position: absolute; right: 10px; bottom: 10px; z-index: 2; width: 36px; height: 36px; display: grid; place-items: center; border-radius: 50%; color: #fff; background: rgba(0, 0, 0, .5); }
+.tvc-snd svg { width: 18px; height: 18px; }
+.tvc-snd .s-on { display: none; }
+.tvc-snd.on .s-on { display: block; }
+.tvc-snd.on .s-off { display: none; }
+.tvc-player.has-vid .tvc-live, .tvc-player.has-vid .tvc-arr, .tvc-player.has-vid .tvc-wm { z-index: 2; }
+@media (prefers-reduced-motion: reduce) { .mini { transform: none; transition: opacity .2s ease; } }

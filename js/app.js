@@ -943,6 +943,7 @@
     const el = SCREENS[route.name](route.params || {});
     el.classList.add("screen");
     host.appendChild(el);
+    syncMini();
     if (!old || dir === "none") {
       if (old) old.remove();
       el.classList.add("enter-fade");
@@ -3095,12 +3096,15 @@
             <button class="back-btn static" data-act="back" aria-label="Back">${I.back}</button>
             <span class="tvc-t"><b>${esc(c.name)}</b><small>${chNo(c)} | ${g.name} | ${c.lang}</small></span>
             <button class="lco-ic" data-toast="Full screen (demo)" aria-label="Full screen">${I.expand}</button>
-            <button class="lco-ic" data-toast="Picture-in-picture (demo)" aria-label="Picture in picture">${I.pip}</button>
+            <button class="lco-ic" data-act="minimise" aria-label="Minimise – keep watching in a mini player">${I.pip}</button>
           </header>
-          <div class="tvc-player" style="background:${grad(c.colors)}">
+          <div class="tvc-player${hasLiveVideo(c) ? " has-vid" : ""}" style="background:${grad(c.colors)}">
+            ${hasLiveVideo(c) ? liveVideoHTML("tvc-vid") : ""}
             <span class="tvc-live"><i></i>LIVE</span>
             <button class="tvc-arr" data-step="-1" aria-label="Previous channel">${I.back}</button>
-            <div class="tvc-now"><b>${esc(c.show)}</b><span class="tvc-eq" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span></div>
+            ${hasLiveVideo(c)
+              ? `<button class="tvc-snd" data-act="sound" aria-label="Turn sound on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h4l5-4v13l-5-4H4z"/><path class="s-on" d="M16.5 8.5a5 5 0 0 1 0 7"/><path class="s-off" d="M16 9.5l5 5M21 9.5l-5 5"/></svg></button>`
+              : `<div class="tvc-now"><b>${esc(c.show)}</b><span class="tvc-eq" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span></div>`}
             <button class="tvc-arr r" data-step="1" aria-label="Next channel">${I.back}</button>
             <img class="tvc-wm" src="${MARK}" alt="" />
           </div>
@@ -3123,6 +3127,19 @@
       bindCommon(root);
       $$("[data-toast]", root).forEach((b) => b.addEventListener("click", () => toast(b.dataset.toast)));
       $$("[data-remind]", root).forEach((b) => b.addEventListener("click", () => toast(`Reminder set: ${b.dataset.remind} (demo)`, "success")));
+      // Minimise: back to the previous screen, the channel keeps playing in the mini player
+      $('[data-act="minimise"]', root).addEventListener("click", () => { PIP.pending = c.id; back(); });
+      const vid = $(".tvc-vid", root);
+      if (vid) {
+        syncLive(vid);
+        const snd = $('[data-act="sound"]', root);
+        snd.addEventListener("click", () => {
+          vid.muted = !vid.muted;
+          snd.classList.toggle("on", !vid.muted);
+          snd.setAttribute("aria-label", vid.muted ? "Turn sound on" : "Turn sound off");
+          if (vid.paused) vid.play().catch(() => {});
+        });
+      }
       // ‹ › switch channel in place (no extra Back steps)
       $$("[data-step]", root).forEach((b) => b.addEventListener("click", () => {
         const mine = myChannels(), at = mine.findIndex((x) => x.id === c.id);   // only channels in the plan
@@ -5320,6 +5337,7 @@
     showLoader("Signing out…");
     await wait(700);
     hideLoader();
+    closeMini();
     state.session = null;
     state.accounts = null;
     Object.assign(state.filter, { genre: null, lang: null, q: "", genres: null, langs: null });   // Watch OTT TV filters
@@ -5361,6 +5379,121 @@
   function enterHome() {
     closeSheet();
     reset("home", {}, "fwd");
+    // Customers (Cable TV, Broadband, Other Users): the landing channel starts in the mini player for 15 s
+    const t = state.session && state.session.type;
+    if (["cable", "broadband", "guest"].includes(t)) setTimeout(() => openMini(landingId(), true), 700);   // after Home has slid in
+  }
+
+  /* ---------- Mini player (picture-in-picture inside the app) ----------
+     1) Landing channel: after a customer signs in, ABP Ananda plays in the mini player with a 15 s countdown.
+     2) Any channel page → Minimise: the channel keeps playing in the mini player while the user browses.
+     ✕ (top left) closes it; tapping it (or ⤢) opens the normal channel page. */
+  const LANDING = "ABP Ananda";
+  const LANDING_SRC = "assets/landing-channel.mp4";
+  const LANDING_SECS = 15;
+  const LIVE_T0 = Date.now();
+  const landingId = () => { const c = CHANNELS.find((x) => x.name === LANDING); return c ? c.id : 0; };
+  const hasLiveVideo = (c) => !!c && c.name === LANDING;
+  const liveVideoHTML = (cls) => `<video class="${cls}" src="${LANDING_SRC}" muted autoplay loop playsinline preload="auto"></video>`;
+  // A live channel: every player shows the same moment (mini player ↔ full page continue seamlessly)
+  function syncLive(v) {
+    const set = () => {
+      try { if (v.duration) v.currentTime = ((Date.now() - LIVE_T0) / 1000) % v.duration; } catch (e) { /* ignore */ }
+      const p = v.play(); if (p && p.catch) p.catch(() => {});
+    };
+    if (v.readyState >= 1) set(); else v.addEventListener("loadedmetadata", set, { once: true });
+  }
+  const PIP = { id: null, landing: false, tick: null, pending: null };
+  function closeMini() {
+    clearInterval(PIP.tick);
+    PIP.tick = null; PIP.id = null; PIP.landing = false;
+    const m = $("#mini");
+    if (m) { const v = $("video", m); if (v) v.pause(); m.remove(); }
+  }
+  function openMini(id, landing = false) {
+    closeMini();
+    const c = CHANNELS[id];
+    if (!c || !state.session) return;
+    const g = GENRES.find((x) => x.key === c.genre);
+    PIP.id = id; PIP.landing = landing;
+    const m = el(`
+      <div class="mini${landing ? " landing" : ""}" id="mini" role="dialog" aria-label="${esc(c.name)} mini player">
+        <div class="mini-head">
+          <button class="mini-x" data-mini="close" aria-label="Close mini player">${I.close}</button>
+          <span class="mini-t"><b>${esc(c.name)}</b><small>LCN ${chNo(c)} | ${g.name} | ${c.lang}</small></span>
+          ${landing ? `<span class="mini-timer" role="timer" aria-label="Closes in ${LANDING_SECS} seconds">
+            <svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="17"/><circle class="mini-ring" cx="20" cy="20" r="17" style="animation-duration:${LANDING_SECS}s"/></svg>
+            <b id="miniSec">${LANDING_SECS}</b></span>` : ""}
+        </div>
+        <div class="mini-body" data-mini="tap" role="button" tabindex="0" aria-label="Show controls for ${esc(c.name)}" style="background:${hasLiveVideo(c) ? "#000" : grad(c.colors)}">
+          ${hasLiveVideo(c) ? liveVideoHTML("mini-vid") : `<span class="mini-show"><b>${esc(c.show)}</b><span class="tvc-eq" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span></span>`}
+          <span class="mini-live"><i></i>LIVE</span>
+          <button class="mini-full" data-mini="open" aria-label="Open full player" tabindex="-1">${I.expand}</button>
+        </div>
+      </div>`);
+    $("#device").appendChild(m);
+    const v = $(".mini-vid", m);
+    if (v) syncLive(v);
+    // Tap the video → the full-screen button appears in the middle (hides again after 3 s); tap it → full channel page
+    let ctlTimer = null;
+    const showCtl = (on) => {
+      clearTimeout(ctlTimer);
+      m.classList.toggle("ctl", on);
+      $(".mini-full", m).tabIndex = on ? 0 : -1;
+      if (on) ctlTimer = setTimeout(() => showCtl(false), 3000);
+    };
+    m.addEventListener("click", (e) => {
+      const b = e.target.closest("[data-mini]");
+      if (!b) return;
+      if (b.dataset.mini === "close") return closeMini();
+      if (b.dataset.mini === "tap") return showCtl(!m.classList.contains("ctl"));
+      clearTimeout(ctlTimer);
+      const wasLanding = PIP.landing;
+      closeMini();
+      if (wasLanding) go("tvChannel", { id }); else watchTv(id);   // the landing channel is free to open
+    });
+    $(".mini-body", m).addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); showCtl(true); $(".mini-full", m).focus(); } });
+    // Slide in only once the picture is ready (video playing, or at most 1.5 s), so it never pops in empty
+    let shown = false;
+    const reveal = () => {
+      if (shown || !m.isConnected) return;
+      shown = true;
+      void m.offsetWidth;            // commit the start position so the slide-in transition runs
+      m.classList.add("show");
+      if (landing) startCountdown();
+    };
+    if (v) { v.addEventListener("playing", reveal, { once: true }); setTimeout(reveal, 1500); }
+    else reveal();
+    function startCountdown() {
+      let left = LANDING_SECS;
+      PIP.tick = setInterval(() => {
+        left -= 1;
+        const sec = $("#miniSec", m);
+        if (sec) sec.textContent = Math.max(left, 0);
+        if (left > 0) return;
+        clearInterval(PIP.tick);
+        m.classList.add("bye");
+        setTimeout(() => { if (PIP.id === id && PIP.landing) closeMini(); }, 380);
+      }, 1000);
+    }
+    syncMini();
+  }
+  // Called on every screen change: show it on signed-in screens, hide it while a full player / payment is open
+  function syncMini() {
+    const top = stack[stack.length - 1];
+    if (PIP.pending !== null && top && top.name !== "tvChannel") {   // just minimised a channel page
+      const id = PIP.pending;
+      PIP.pending = null;
+      openMini(id);
+      return;
+    }
+    const m = $("#mini");
+    if (!m) return;
+    if (!state.session || !top) { closeMini(); return; }
+    if (top.name === "tvChannel") { closeMini(); return; }          // a full channel page takes over
+    m.hidden = ["payGateway", "player"].includes(top.name);
+    const scr = host.lastElementChild;
+    m.classList.toggle("up", !!(scr && scr.querySelector(".ctv-nav, .lco-nav, .bb-nav")));
   }
 
   /* =========================================================

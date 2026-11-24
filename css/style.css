@@ -2878,3 +2878,16 @@ button.lco-card:active { background: #1c1c22; }
 .ir-sum .ir-tot { margin-top: 4px; padding-top: 9px; border-top: 1px solid #2a2340; font-size: 14px; }
 .ir-sum .ir-tot b { color: var(--accent-cyan); font-size: 16px; }
 .lco #irPay { margin: 14px 12px 0; width: calc(100% - 24px); flex-shrink: 0; }
+/* Mini player v3: video only (no title bar). ✕ top right, 15 s timer bottom right;
+   a tap shows the title strip over the top of the video + the full-screen button */
+.mini { background: #000; }
+.mini-head { position: absolute; left: 0; right: 0; top: 0; z-index: 3; padding: 8px 44px 18px 10px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, .82), rgba(0, 0, 0, .45) 60%, transparent);
+  opacity: 0; transform: translateY(-6px); pointer-events: none; transition: opacity .2s ease, transform .25s var(--ease); }
+.mini.ctl .mini-head { opacity: 1; transform: none; }
+.mini-t small { color: rgba(255, 255, 255, .75); }
+.mini-x { position: absolute; top: 6px; right: 6px; z-index: 4; width: 28px; height: 28px; background: rgba(0, 0, 0, .55); border: 1px solid rgba(255, 255, 255, .2); }
+.mini-x svg { width: 14px; height: 14px; }
+.mini-timer { position: absolute; right: 6px; bottom: 6px; z-index: 4; width: 32px; height: 32px; background: rgba(0, 0, 0, .55); }
+.mini-timer b { font-size: 12px; }
+.mini.show.ctl .mini-body > .mini-live { opacity: 0; }   /* the title strip takes the top while controls show */

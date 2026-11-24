@@ -5521,13 +5521,13 @@
     PIP.id = id; PIP.landing = landing;
     const m = el(`
       <div class="mini${landing ? " landing" : ""}" id="mini" role="dialog" aria-label="${esc(c.name)} mini player">
-        <div class="mini-head">
-          <button class="mini-x" data-mini="close" aria-label="Close mini player">${I.close}</button>
+        <div class="mini-head" aria-hidden="true">
           <span class="mini-t"><b>${esc(c.name)}</b><small>LCN ${chNo(c)} | ${g.name} | ${c.lang}</small></span>
-          ${landing ? `<span class="mini-timer" role="timer" aria-label="Closes in ${LANDING_SECS} seconds">
-            <svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="17"/><circle class="mini-ring" cx="20" cy="20" r="17" style="animation-duration:${LANDING_SECS}s"/></svg>
-            <b id="miniSec">${LANDING_SECS}</b></span>` : ""}
         </div>
+        <button class="mini-x" data-mini="close" aria-label="Close mini player">${I.close}</button>
+        ${landing ? `<span class="mini-timer" role="timer" aria-label="Closes in ${LANDING_SECS} seconds">
+          <svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="17"/><circle class="mini-ring" cx="20" cy="20" r="17" style="animation-duration:${LANDING_SECS}s"/></svg>
+          <b id="miniSec">${LANDING_SECS}</b></span>` : ""}
         <div class="mini-body" data-mini="tap" role="button" tabindex="0" aria-label="Show controls for ${esc(c.name)}" style="background:${hasLiveVideo(c) ? "#000" : grad(c.colors)}">
           ${hasLiveVideo(c) ? liveVideoHTML("mini-vid") : `<span class="mini-show"><b>${esc(c.show)}</b><span class="tvc-eq" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span></span>`}
           <span class="mini-live"><i></i>LIVE</span>
@@ -5542,6 +5542,7 @@
     const showCtl = (on) => {
       clearTimeout(ctlTimer);
       m.classList.toggle("ctl", on);
+      $(".mini-head", m).setAttribute("aria-hidden", String(!on));
       $(".mini-full", m).tabIndex = on ? 0 : -1;
       if (on) ctlTimer = setTimeout(() => showCtl(false), 3000);
     };

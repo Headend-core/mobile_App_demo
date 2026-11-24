@@ -2894,3 +2894,8 @@ button.lco-card:active { background: #1c1c22; }
 /* Bigger logo in every header and ☰ menu (user screenshot 81) */
 .brand img { height: 66px; }
 .brand small { font-size: 10.5px; margin-top: 3px; }
+/* Sign-in hero logo moved to the top-left corner (user screenshot 87); next to the back arrow when there is one */
+.hero > .logo { left: 18px; transform: none; }
+.hero > .back-btn + .logo { left: 62px; }
+.hero::after { background: radial-gradient(circle at 22% 30%, rgba(27, 27, 34, .75) 0, rgba(27, 27, 34, 0) 34%); }
+.hero:has(> .back-btn)::after { background: radial-gradient(circle at 34% 32%, rgba(27, 27, 34, .8) 0, rgba(27, 27, 34, 0) 36%); }

@@ -3033,9 +3033,6 @@
             <header class="tv-head">
               <!-- ☰ sits at the top-left, before the logo (the drawer slides in from the left) -->
               <button class="menu-btn" data-act="menu" aria-label="Open menu" aria-expanded="false">${I.menu}</button>
-              <div class="brand">
-                <img src="${MARK}" alt="SITI PLAYTOP MAGIC" />
-              </div>
               ${fromLco ? "" : `<button class="menu-btn head-search${f.q ? " on" : ""}" data-act="search" aria-label="Search channels">${I.search}</button>`}
             </header>
             <div class="searchbar" id="searchbar" ${f.q ? "" : "hidden"}>
@@ -4288,7 +4285,6 @@
           <div class="tv-scroll">
             <header class="tv-head otth-head">
               <button class="menu-btn" data-act="menu" aria-label="Open menu" aria-expanded="false">${I.menu}</button>
-              <div class="brand"><img src="${MARK}" alt="SITI PLAYTOP MAGIC" /></div>
               <button class="menu-btn head-search" data-act="osearch" aria-label="Search movies, shows or apps">${I.search}</button>
             </header>
             <div class="searchbar" id="osb" hidden>${I.search}<input id="oq" type="search" placeholder="Search movies, shows or apps" aria-label="Search OTT" /></div>
